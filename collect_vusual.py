@@ -17,6 +17,7 @@ import cv2
 import os
 import glob
 import json
+import time
 from datetime import datetime
 # os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = '/usr/lib/x86_64-linux-gnu/qt5/plugins/platforms'
 os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = "/home/xspark-ai/miniconda3/envs/robot/lib/qt5/plugins/platforms"
@@ -32,11 +33,26 @@ class StopWorker(QtCore.QThread):
     def run(self):
         if self.is_save:
             self.robot.reset()
-            self.robot.finish()
         elif self.robot.first_start:
             self.robot.first_start = False
             self.robot.reset()
         self.finished.emit()
+
+class MoveWorker(QtCore.QThread):
+    finished = QtCore.pyqtSignal()
+
+    def __init__(self, robot, move_data):
+        super().__init__()
+        self.robot = robot
+        self.move_data = move_data
+
+    def run(self):
+        self.robot.change_mode(teleop=False)
+        self.robot.move(self.move_data)
+        time.sleep(2)
+        self.robot.change_mode(teleop=True)
+        self.finished.emit()
+
 
 class DataCollectorUI(QtWidgets.QWidget):
     def __init__(self, robot):
@@ -159,6 +175,7 @@ class DataCollectorUI(QtWidgets.QWidget):
         # --- 2. Buttons (Bottom, 1/3 height) ---
         btn_layout = QtWidgets.QHBoxLayout()
         self.btn_start = QtWidgets.QPushButton("Start")
+        self.btn_next = QtWidgets.QPushButton("Next")
         self.btn_stop = QtWidgets.QPushButton("Stop")
         self.btn_abort = QtWidgets.QPushButton("Abort")
         
@@ -171,7 +188,7 @@ class DataCollectorUI(QtWidgets.QWidget):
         base_style = "font-size: 24px; font-weight: bold; border-radius: 12px; margin: 5px;"
         disabled_style = "QPushButton:disabled { background-color: #A9A9A9; color: #E0E0E0; }"
 
-        for btn in [self.btn_start, self.btn_stop, self.btn_abort]:
+        for btn in [self.btn_start, self.btn_next, self.btn_stop, self.btn_abort]:
             btn.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         
         for btn in [self.btn_set_dataset, self.btn_set_worker]:
@@ -188,6 +205,7 @@ class DataCollectorUI(QtWidgets.QWidget):
             """)
 
         set_style(self.btn_start, "#4CAF50")
+        set_style(self.btn_next, "#50188C")
         set_style(self.btn_stop, "#f44336")
         set_style(self.btn_abort, "#FF9800")
         set_style(self.btn_set_dataset, "#2196F3")
@@ -197,6 +215,7 @@ class DataCollectorUI(QtWidgets.QWidget):
         right_btn_layout.addWidget(self.btn_set_worker)
         
         btn_layout.addWidget(self.btn_start)
+        btn_layout.addWidget(self.btn_next)
         btn_layout.addWidget(self.btn_stop)
         btn_layout.addWidget(self.btn_abort)
         btn_layout.addLayout(right_btn_layout)
@@ -205,6 +224,7 @@ class DataCollectorUI(QtWidgets.QWidget):
 
         # Connections
         self.btn_start.clicked.connect(self.start_capture)
+        self.btn_next.clicked.connect(self.next_capture)
         self.btn_stop.clicked.connect(self.stop_capture)
         self.btn_abort.clicked.connect(self.abort_capture)
         self.btn_set_dataset.clicked.connect(self.set_dataset)
@@ -227,6 +247,7 @@ class DataCollectorUI(QtWidgets.QWidget):
     def set_initial_state(self, dataset_set=False):
         if not dataset_set:
             self.btn_start.setEnabled(False)
+            self.btn_next.setEnabled(False)
             self.btn_stop.setEnabled(False)
             self.btn_abort.setEnabled(False)
             self.btn_set_dataset.setEnabled(True)
@@ -236,6 +257,7 @@ class DataCollectorUI(QtWidgets.QWidget):
             # Start only enabled if both dataset and worker are set
             can_start = bool(self.worker_name)
             self.btn_start.setEnabled(can_start)
+            self.btn_next.setEnabled(False)
             self.btn_stop.setEnabled(False)
             self.btn_abort.setEnabled(True)
             self.btn_set_dataset.setEnabled(True)
@@ -244,6 +266,7 @@ class DataCollectorUI(QtWidgets.QWidget):
 
     def set_capture_state(self):
         self.btn_start.setEnabled(False)
+        self.btn_next.setEnabled(True)
         self.btn_stop.setEnabled(True)
         self.btn_abort.setEnabled(True)
         self.btn_set_dataset.setEnabled(False)
@@ -384,6 +407,37 @@ class DataCollectorUI(QtWidgets.QWidget):
             self.update_stats()
             self.set_initial_state(dataset_set=True)
 
+    def next_capture(self):
+        if not self.is_running:
+            print("is_running=False")
+            return
+        
+        self.btn_start.setEnabled(False)
+        self.btn_stop.setEnabled(False)
+        self.btn_abort.setEnabled(False)
+        self.btn_set_dataset.setEnabled(False)
+        self.btn_set_worker.setEnabled(False)
+        
+        move_data = {
+            "arm":{
+                "left_arm": {
+                    "joint": [-1.10, -1.27, 0.44, 0.87, -1.0, 1.55],
+                },
+                "right_arm":{
+                    "joint": [0.0, -1.47, 0.56, 0.71, -1.56, -0.33],
+                },
+            },
+        }
+
+        self.next_worker = MoveWorker(self.robot, move_data)
+        self.next_worker.finished.connect(self.on_next_finished)
+        self.next_worker.start()
+        self.timer.start(33)  # 10 Hz
+    
+    def on_next_finished(self):
+        self.set_capture_state()
+        self.show_message("Info", "Move finished!", 2000)
+
     def start_capture(self):
         if self.is_running:
             return
@@ -392,6 +446,7 @@ class DataCollectorUI(QtWidgets.QWidget):
         
         # Disable all during save
         self.btn_start.setEnabled(False)
+        self.btn_next.setEnabled(False)
         self.btn_stop.setEnabled(False)
         self.btn_abort.setEnabled(False)
         self.btn_set_dataset.setEnabled(False)
@@ -406,18 +461,20 @@ class DataCollectorUI(QtWidgets.QWidget):
         self.set_capture_state()
         self.show_message("Info", "Start processing finished!", 2000)
         self.robot.change_mode(teleop=True)
+        self.robot.start()
 
     def stop_capture(self):
         if not self.is_running:
             return
         self.is_running = False
-        # self.timer.stop()
+        self.robot.finish()
         
         # Store frame count before saving/clearing
         self.last_episode_frames = len(self.robot.collection.episode)
         
         # Disable all during save
         self.btn_start.setEnabled(False)
+        self.btn_next.setEnabled(False)
         self.btn_stop.setEnabled(False)
         self.btn_abort.setEnabled(False)
         self.btn_set_dataset.setEnabled(False)
@@ -507,6 +564,7 @@ class DataCollectorUI(QtWidgets.QWidget):
             
             # Disable buttons while resetting
             self.btn_start.setEnabled(False)
+            self.btn_next.setEnabled(False)
             self.btn_stop.setEnabled(False)
             self.btn_abort.setEnabled(False)
             self.btn_set_dataset.setEnabled(False)
@@ -542,11 +600,8 @@ class DataCollectorUI(QtWidgets.QWidget):
 
     def update_views(self):
         data = self.robot.get()
-        if self.is_running:
-            self.robot.collect(data)
 
         self.update_images(data[1])
-        # self.update_3d(data[0])
 
     # ------------ UI Update ------------
     def update_images(self, data):
@@ -554,17 +609,21 @@ class DataCollectorUI(QtWidgets.QWidget):
             # If already a numpy array, return directly (TEST_MODE)
             if isinstance(data, np.ndarray):
                 return data
+            
             jpeg_bytes = data # .tobytes().rstrip(b"\0")
             nparr = np.frombuffer(jpeg_bytes, dtype=np.uint8)
             return cv2.imdecode(nparr, 1)
         cam_head = data["cam_head"]["color"]
         cam_left_wrist = data["cam_left_wrist"]["color"]
         cam_right_wrist = data["cam_right_wrist"]["color"]
-        
-        cam_head = decode(cam_head)
-        cam_left_wrist = decode(cam_left_wrist)
-        cam_right_wrist = decode(cam_right_wrist)
-        
+        try:
+            cam_head = decode(cam_head)
+            cam_left_wrist = decode(cam_left_wrist)
+            cam_right_wrist = decode(cam_right_wrist)
+        except:
+            print("cam type ERROR!")
+            return
+
         cam_head = np.transpose(cam_head, (1, 0, 2)) 
         cam_left_wrist = np.transpose(cam_left_wrist, (1, 0, 2)) 
         cam_right_wrist = np.transpose(cam_right_wrist, (1, 0, 2)) 
@@ -644,8 +703,8 @@ if __name__ == '__main__':
     if TEST_MODE:
         robot = MockRobot()
     else:
-        from my_robot.xspark_robot import XsparkRobot
-        robot = XsparkRobot()
+        from my_robot.xspark_robot_node import XsparkRobotNode
+        robot = XsparkRobotNode()
     
     robot.set_up(teleop=True)
 

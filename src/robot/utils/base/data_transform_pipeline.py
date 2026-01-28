@@ -244,9 +244,6 @@ def diff_freq_pipeline(collection, save_path, episode_id, mapping):
     right_gripper = np.asarray(collection.get_item("right_arm", "gripper"))
     right_timestamp = np.asarray(collection.get_item("right_arm", "timestamp"))
 
-    # =======================
-    # 2. 图像解码（完全正确版）
-    # =======================
     def decode(imgs):
         """
         imgs:
@@ -275,9 +272,6 @@ def diff_freq_pipeline(collection, save_path, episode_id, mapping):
     cam_right_wrist_color = decode(collection.get_item("cam_right_wrist", "color"))
     cam_right_wrist_timestamp = np.asarray(collection.get_item("cam_right_wrist", "timestamp"))
 
-    # =======================
-    # 3. 以相机 avg timestamp 为基准，对齐 arm（最近邻）
-    # =======================
     cam_len = len(cam_head_timestamp)
 
     left_indices = []
@@ -326,9 +320,52 @@ def diff_freq_pipeline(collection, save_path, episode_id, mapping):
     left_indices = np.asarray(left_indices, dtype=np.int64)
     right_indices = np.asarray(right_indices, dtype=np.int64)
 
-    # =======================
-    # 4. 写 HDF5
-    # =======================
+    left_joint = left_joint[left_indices]
+    left_eef = left_eef[left_indices]
+    left_gripper = left_gripper[left_indices]
+    left_timestamp = left_timestamp[left_indices]
+
+    right_joint = right_joint[right_indices]
+    right_eef = right_eef[right_indices]
+    right_gripper = right_gripper[right_indices]
+    right_timestamp = right_timestamp[right_indices]
+
+    # 移动判定
+    tolerance = 0.0001
+    indices = []
+    prev_qpos = None
+
+    for i in range(len(right_joint)):
+        current_qpos = np.concatenate([
+            left_joint[i].reshape(-1),
+            left_gripper[i].reshape(-1),
+            right_joint[i].reshape(-1),
+            right_gripper[i].reshape(-1),
+        ])
+
+        if prev_qpos is None or np.any(np.abs(current_qpos - prev_qpos) > tolerance):
+                indices.append(i)
+                prev_qpos = current_qpos
+    
+    left_joint = left_joint[indices]
+    left_eef = left_eef[indices]
+    left_gripper = left_gripper[indices]
+    left_timestamp = left_timestamp[indices]
+
+    right_joint = right_joint[indices]
+    right_eef = right_eef[indices]
+    right_gripper = right_gripper[indices]
+    right_timestamp = right_timestamp[indices]
+
+    cam_head_color = cam_head_color[indices]
+    cam_head_timestamp = cam_head_timestamp[indices]
+
+    cam_left_wrist_color = cam_left_wrist_color[indices]
+    cam_left_wrist_timestamp = cam_left_wrist_timestamp[indices]
+
+    cam_right_wrist_color = cam_right_wrist_color[indices]
+    cam_right_wrist_timestamp = cam_right_wrist_timestamp[indices]
+
     os.makedirs(save_path, exist_ok=True)
     hdf5_path = os.path.join(save_path, f"{episode_id}.hdf5")
 
@@ -340,15 +377,15 @@ def diff_freq_pipeline(collection, save_path, episode_id, mapping):
         cam_left_wrist = f.create_group("cam_left_wrist")
         cam_right_wrist = f.create_group("cam_right_wrist")
 
-        left_arm.create_dataset("joint", data=left_joint[left_indices])
-        left_arm.create_dataset("qpos", data=left_eef[left_indices])
-        left_arm.create_dataset("gripper", data=left_gripper[left_indices])
-        left_arm.create_dataset("timestamp", data=left_timestamp[left_indices])
+        left_arm.create_dataset("joint", data=left_joint)
+        left_arm.create_dataset("qpos", data=left_eef)
+        left_arm.create_dataset("gripper", data=left_gripper)
+        left_arm.create_dataset("timestamp", data=left_timestamp)
 
-        right_arm.create_dataset("joint", data=right_joint[right_indices])
-        right_arm.create_dataset("qpos", data=right_eef[right_indices])
-        right_arm.create_dataset("gripper", data=right_gripper[right_indices])
-        right_arm.create_dataset("timestamp", data=right_timestamp[right_indices])
+        right_arm.create_dataset("joint", data=right_joint)
+        right_arm.create_dataset("qpos", data=right_eef)
+        right_arm.create_dataset("gripper", data=right_gripper)
+        right_arm.create_dataset("timestamp", data=right_timestamp)
 
         cam_head.create_dataset("color", data=cam_head_color)
         cam_head.create_dataset("timestamp", data=cam_head_timestamp)

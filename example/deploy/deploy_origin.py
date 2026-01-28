@@ -88,7 +88,6 @@ def get_class(import_name, class_name):
         raise SystemExit(f"Unexpected error instantiating model: {e}")
     return return_class
 
-
 def parse_args_and_config():
     parser = argparse.ArgumentParser()
     

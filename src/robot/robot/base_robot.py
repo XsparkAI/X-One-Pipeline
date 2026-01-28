@@ -33,7 +33,7 @@ class Robot:
                 move_check=True, 
                 start_episode=0) -> None:
           
-        self.name = "base_robot"
+        self.name = self.__class__.__name__
         self.controllers = {}
         self.sensors = {}
 

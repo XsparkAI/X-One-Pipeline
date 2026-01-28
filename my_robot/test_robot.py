@@ -11,13 +11,13 @@ from robot.sensor.TestVision_sensor import TestVisonSensor
 from robot.utils.base.data_handler import debug_print
 from robot.data.collect_any import CollectAny
 
-from robot.utils.base.data_transofrm_pipeline import image_rgb_encode_pipeline, general_hdf5_rdt_format_pipeline
+from robot.utils.base.data_transform_pipeline import image_rgb_encode_pipeline, general_hdf5_rdt_format_pipeline
 
 condition = {
     "save_path": "./save/", 
     "task_name": "test_robot", 
     "save_format": "hdf5", 
-    "save_freq": 30,
+    "save_freq": 30, 
 }
 
 class TestRobot(Robot):

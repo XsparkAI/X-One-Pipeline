@@ -54,7 +54,6 @@ class Y1Controller(ArmController):
             self.controller.SetArmControlMode(ControlMode.GRAVITY_COMPENSATION)
         else:
             self.controller.SetArmControlMode(ControlMode.NRT_JOINT_POSITION)
-        time.sleep(2)
         
     # 返回单位为米
     def get_state(self):

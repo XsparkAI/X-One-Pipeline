@@ -75,9 +75,9 @@ class XsparkRobot(Robot):
         self.controllers["arm"]["left_arm"].set_up("can1", teleop=teleop)
         self.controllers["arm"]["right_arm"].set_up("can0", teleop=teleop)
 
-        self.sensors["image"]["cam_head"].set_up(CAMERA_SERIALS['head'], is_depth=False, is_jepg=False)
-        self.sensors["image"]["cam_left_wrist"].set_up(CAMERA_SERIALS['left_wrist'], is_depth=False, is_jepg=False)
-        self.sensors["image"]["cam_right_wrist"].set_up(CAMERA_SERIALS['right_wrist'], is_depth=False, is_jepg=False)
+        self.sensors["image"]["cam_head"].set_up(CAMERA_SERIALS['head'], is_depth=False, is_jepg=True)
+        self.sensors["image"]["cam_left_wrist"].set_up(CAMERA_SERIALS['left_wrist'], is_depth=False, is_jepg=True)
+        self.sensors["image"]["cam_right_wrist"].set_up(CAMERA_SERIALS['right_wrist'], is_depth=False, is_jepg=True)
         
         self.set_collect_type({"arm": ["joint","qpos","gripper"],
                                 "image": ["color"]
@@ -119,7 +119,7 @@ class XsparkRobot(Robot):
             }
         }
         self.move(move_data)
-        time.sleep(3)
+        time.sleep(1)
         # self.change_mode(teleop=True)
     
     # ======================== EXTRA ======================== #
@@ -137,16 +137,24 @@ if __name__ == "__main__":
     robot = XsparkRobot(move_check=False)
     # robot.set_up(teleop=False)
 
-    robot.set_up(teleop=False)
-    robot.reset()
+    robot.set_up(teleop=True)
+    # robot.reset()
+
+    while not is_enter_pressed():
+        print(robot.get()[0]["left_arm"]["joint"], "   ", robot.get()[0]["right_arm"]["joint"])
+    
+    robot.change_mode(teleop=False)
+    
+    exit()
+    robot.replay(data_path="/mnt/nas/y1_real_data/TEST/merged_data/redbao_retry/nuc4/rebao_retry/0.hdf5",key_banned=["qpos"])
     # robot.replay(data_path="/home/xspark-ai/project/old_data/25.hdf5",key_banned=["qpos"])
     # time.sleep(10)
 
-    robot.get()
+    # robot.get()
     # import pdb;pdb.set_trace()
     # robot.replay(data_path="/home/xspark-ai/project/put_block_back_processed_data/53.hdf5",key_banned=["qpos"], is_collect=False)
 
-    robot.replay(data_path="/home/xspark-ai/project/rearrange_block_processed_data/3.hdf5",key_banned=["qpos"], is_collect=False)
+    # robot.replay(data_path="/home/xspark-ai/project/rearrange_block_processed_data/3.hdf5",key_banned=["qpos"], is_collect=False)
     # robot.show_pic(data_path="/home/xspark-ai/project/control_your_robot/save/put_block_back/new/0.hdf5", pic_name="cam_right_wrist")
     # robot.show_pic(data_path="./save_xxx/test/1.hdf5", pic_name="cam_right_wrist", save_path="./save/cam_right_wrist.mp4")
     exit()

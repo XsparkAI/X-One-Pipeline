@@ -259,3 +259,4 @@ class DataBuffer:
 
     def get(self):
         return dict(self.buffer)
+

@@ -3,7 +3,7 @@ info:
   is_block: false
 robot:
   class:
-    class_path: "my_robot.test_robot_2"
+    class_path: "my_robot.test_robot"
     class_name: "TestRobot"
   args: null
 run:
