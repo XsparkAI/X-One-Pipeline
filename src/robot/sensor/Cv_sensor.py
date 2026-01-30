@@ -98,7 +98,7 @@ class CvSensor(VisionSensor):
                 # 普通摄像头没有深度，需要用户自己对接深度数据，这里用全零代替
                 depth_image = np.zeros((frame.shape[0], frame.shape[1]), dtype=np.uint16)
                 image["depth"] = depth_image
-        
+
         return image.copy()
 
     def _undistort_fisheye(self, img, scale=0.8):

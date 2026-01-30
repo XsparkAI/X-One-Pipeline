@@ -82,7 +82,7 @@ if __name__ == "__main__":
     slave_robot = XsparkRobot(move_check=True, condition=condition)
     slave_robot.set_up(teleop=False)
 
-    start_episode = 87
+    start_episode = 0
     num_episode = 1000
 
     for episode_id in range(start_episode, start_episode + num_episode):
@@ -97,12 +97,9 @@ if __name__ == "__main__":
         while not is_enter_pressed():
             time.sleep(0.1)
         debug_print("collect_node", "Collect start! Press ENTER to finish!", "INFO")
-
-        
         
         robot_scheduler.start()
         teleop_scheduler.start()
-        
         
         while not is_enter_pressed():
             time.sleep(0.1)  
@@ -111,6 +108,3 @@ if __name__ == "__main__":
         teleop_scheduler.stop()
 
         slave_robot.finish(episode_id)
-        
-
-

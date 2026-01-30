@@ -10,7 +10,6 @@ import cv2
 from robot.sensor.vision_sensor import VisionSensor
 from robot.utils.base.data_handler import debug_print
 
-
 class V4l2Sensor(VisionSensor):
     """
     V4L2 摄像头采集（MJPEG）
@@ -40,6 +39,9 @@ class V4l2Sensor(VisionSensor):
             self.calib = np.load(f"save/calibrate/{os.path.basename(device)}.npz")
 
         # 打开设备
+        if self.fd is not None:
+            self.cleanup()
+        
         self.fd = os.open(device, os.O_RDWR | os.O_NONBLOCK)
 
         # 设置格式
@@ -90,6 +92,7 @@ class V4l2Sensor(VisionSensor):
             "timestamp": int (ns, monotonic host-aligned)
         }
         """
+        self.latest_image = None
         # 等待 frame 可读
         r, _, _ = select.select([self.fd], [], [], 2.0)
         if not r:
@@ -124,6 +127,7 @@ class V4l2Sensor(VisionSensor):
                 raise ValueError("Depth capture not enabled.")
 
         image["timestamp"] = cam_ns
+
         return image
 
     def _undistort_fisheye(self, img, scale=0.8):
@@ -143,24 +147,53 @@ class V4l2Sensor(VisionSensor):
         return undistorted
 
     def cleanup(self):
+        if self.fd is None:
+            return
+
+        # 1️⃣ 停止 stream
         try:
             buf_type = v4l2.v4l2_buf_type(v4l2.V4L2_BUF_TYPE_VIDEO_CAPTURE)
             fcntl.ioctl(self.fd, v4l2.VIDIOC_STREAMOFF, buf_type)
+        except Exception as e:
+            print(f"[{self.name}] STREAMOFF failed: {e}")
+
+        # 2️⃣ unmap buffers（⚠️ 必须）
+        for mm in self.buffers:
+            try:
+                mm.close()
+            except Exception as e:
+                print(f"[{self.name}] mmap close failed: {e}")
+        self.buffers.clear()
+
+        # 3️⃣ 关闭 fd
+        try:
             os.close(self.fd)
         except Exception as e:
-            print(f"Error during cleanup: {e}")
+            print(f"[{self.name}] fd close failed: {e}")
 
+        self.fd = None
 
 if __name__ == "__main__":
     cam = V4l2Sensor("test_v4l2")
     cam.set_up("/dev/video0", is_undistort=False, is_jepg=False)
     cam.set_collect_info(["color"])
 
-    for i in range(100000000000000):
+    for i in range(10):
         st = time.monotonic_ns()
-        frame = cam.get_image()
-        ts = frame["timestamp"]
-        en = time.monotonic_ns()
+        frame = cam.get_image()["color"][:,:,::-1]
+        cv2.imshow("111", frame)
+        cv2.waitKey(100)
+    
+    cam.cleanup()
+    cam.set_up("/dev/video0", is_undistort=False, is_jepg=False)
+    print("cleanup success!!!")
+    for i in range(10000):
+        st = time.monotonic_ns()
+        frame = cam.get_image()["color"][:,:,::-1]
+        cv2.imshow("111", frame)
+        cv2.waitKey(1)
+        # ts = frame["timestamp"]
+        # en = time.monotonic_ns()
         # delta_ms = (time.monotonic_ns() - ts) / 1e6
-        print(f"st-get: {(ts -st)/1e6}, st-en: {(en-st)/1e6}, full: {(en - ts)/1e6}")
+        # print(f"st-get: {(ts -st)/1e6}, st-en: {(en-st)/1e6}, full: {(en - ts)/1e6}")
         # print(f"frame_ts: {ts}, delta_ms: {delta_ms:.2f}, img shape: {frame['color'].shape}")

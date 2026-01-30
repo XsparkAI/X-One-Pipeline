@@ -1,6 +1,0 @@
-Metadata-Version: 2.1
-Name: qpSWIFT
-Version: 1.0.0
-Summary: Python interface for qpSWIFT
-Author: Abhishek Pandala
-Requires-Dist: numpy>=1.6
