@@ -25,22 +25,27 @@ os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = "/home/xspark-ai/miniconda3/envs/rob
 class StopWorker(QtCore.QThread):
     finished = QtCore.pyqtSignal()
 
-    def __init__(self, robot, is_save=False):
+    def __init__(self, robot, is_save=False, is_reset=True):
         super().__init__()
         self.robot = robot
         self.is_save = is_save
+        self.is_reset = is_reset
 
     def run(self):
         if self.is_save:
+            self.robot.finish()
+        
+        if self.is_reset or self.robot.first_start:
             self.robot.reset()
-        elif self.robot.first_start:
             self.robot.first_start = False
-            self.robot.reset()
+
+        self.robot.clean()
+
         self.finished.emit()
 
 class MoveWorker(QtCore.QThread):
     finished = QtCore.pyqtSignal()
-
+    
     def __init__(self, robot, move_data):
         super().__init__()
         self.robot = robot
@@ -52,7 +57,6 @@ class MoveWorker(QtCore.QThread):
         time.sleep(2)
         self.robot.change_mode(teleop=True)
         self.finished.emit()
-
 
 class DataCollectorUI(QtWidgets.QWidget):
     def __init__(self, robot):
@@ -413,6 +417,7 @@ class DataCollectorUI(QtWidgets.QWidget):
             return
         
         self.btn_start.setEnabled(False)
+        self.btn_next.setEnabled(False)
         self.btn_stop.setEnabled(False)
         self.btn_abort.setEnabled(False)
         self.btn_set_dataset.setEnabled(False)
@@ -451,7 +456,9 @@ class DataCollectorUI(QtWidgets.QWidget):
         self.btn_abort.setEnabled(False)
         self.btn_set_dataset.setEnabled(False)
         self.btn_set_worker.setEnabled(False)
-        self.stop_worker = StopWorker(self.robot, is_save=False)
+
+        self.robot.change_mode(teleop=False)
+        self.stop_worker = StopWorker(self.robot, is_save=False, is_reset=False)
         self.stop_worker.finished.connect(self.on_start_finished)
         self.stop_worker.start()
         self.timer.start(33)  # 10 Hz
@@ -467,11 +474,6 @@ class DataCollectorUI(QtWidgets.QWidget):
         if not self.is_running:
             return
         self.is_running = False
-        self.robot.finish()
-        
-        # Store frame count before saving/clearing
-        self.last_episode_frames = len(self.robot.collection.episode)
-        
         # Disable all during save
         self.btn_start.setEnabled(False)
         self.btn_next.setEnabled(False)
@@ -480,8 +482,11 @@ class DataCollectorUI(QtWidgets.QWidget):
         self.btn_set_dataset.setEnabled(False)
         self.btn_set_worker.setEnabled(False)
 
+        # Store frame count before saving/clearing
+        self.last_episode_frames = len(self.robot.collection.episode)
+        
         self.robot.change_mode(teleop=False)
-        self.stop_worker = StopWorker(self.robot, is_save=True)
+        self.stop_worker = StopWorker(self.robot, is_save=True, is_reset=True)
         self.stop_worker.finished.connect(self.on_stop_finished)
         self.stop_worker.start()
 
@@ -555,10 +560,11 @@ class DataCollectorUI(QtWidgets.QWidget):
             # Discard current
             self.is_running = False
             # self.timer.stop()
-            self.robot.collection.episode = []
+            # self.robot.collection.episode = []
             
             # Reset robot
-            self.stop_worker = StopWorker(self.robot, is_save=False)
+            self.robot.first_start =True
+            self.stop_worker = StopWorker(self.robot, is_save=False, is_reset=True)
             self.stop_worker.finished.connect(self.on_abort_reset_finished)
             self.stop_worker.start()
             
@@ -570,29 +576,29 @@ class DataCollectorUI(QtWidgets.QWidget):
             self.btn_set_dataset.setEnabled(False)
             self.btn_set_worker.setEnabled(False)
             
+        # else:
+        # Discard previous
+        idx = self.robot.collection.episode_index - 1
+        if idx < 0:
+            self.show_message("Warning", "No previous data to discard!", 2000)
+            return
+        
+        save_path = self.robot.collection.condition["save_path"]
+        task_name = self.robot.collection.condition["task_name"]
+        file_path = os.path.join(save_path, task_name, f"{idx}.hdf5")
+        
+        if os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+                # Also remove from ratings.json
+                self.remove_from_ratings_json(f"{idx}.hdf5")
+                self.robot.collection.episode_index = idx
+                self.update_stats()
+                self.show_message("Info", f"Discarded episode {idx}", 2000)
+            except Exception as e:
+                self.show_message("Error", f"Failed to delete: {e}", 2000)
         else:
-            # Discard previous
-            idx = self.robot.collection.episode_index - 1
-            if idx < 0:
-                self.show_message("Warning", "No previous data to discard!", 2000)
-                return
-            
-            save_path = self.robot.collection.condition["save_path"]
-            task_name = self.robot.collection.condition["task_name"]
-            file_path = os.path.join(save_path, task_name, f"{idx}.hdf5")
-            
-            if os.path.exists(file_path):
-                try:
-                    os.remove(file_path)
-                    # Also remove from ratings.json
-                    self.remove_from_ratings_json(f"{idx}.hdf5")
-                    self.robot.collection.episode_index = idx
-                    self.update_stats()
-                    self.show_message("Info", f"Discarded episode {idx}", 2000)
-                except Exception as e:
-                    self.show_message("Error", f"Failed to delete: {e}", 2000)
-            else:
-                self.show_message("Warning", f"File not found: {idx}.hdf5", 2000)
+            self.show_message("Warning", f"File not found: {idx}.hdf5", 2000)
 
     def on_abort_reset_finished(self):
         self.set_initial_state(dataset_set=True)

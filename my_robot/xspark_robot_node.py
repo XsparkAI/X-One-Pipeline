@@ -4,6 +4,7 @@ sys.path.append("./")
 import numpy as np
 
 from robot.data.collect_any import CollectAny
+from robot.robot.base_robot import Robot
 # from robot.utils.base.data_transform_pipeline import X_one_format_pipeline
 from robot.utils.base.data_transform_pipeline import diff_freq_pipeline
 from robot.utils.base.data_handler import is_enter_pressed, debug_print, dict_to_list
@@ -17,7 +18,7 @@ import time
 from my_robot.xspark_robot import XsparkRobot
 
 condition = {
-    "save_path": "./save/dt_test/",
+    "save_path": "./save/",
     "task_name": "new",
     "save_format": "hdf5",
     "save_freq": 30, 
@@ -41,7 +42,6 @@ class DataBuffer:
 
     def update(self, name, data):
         self.show_buffer[name] = data
-        
     
     def get_lastest(self):
         return self.show_buffer
@@ -80,6 +80,7 @@ class ComponentNode(TaskNode):
     
     def task_step(self):
         data = self.component.get()
+
         self.data_buffer.update(self.component.name, data)
 
 
@@ -188,6 +189,13 @@ class XsparkRobotNode(XsparkRobot):
     def start(self): 
         self.start_event.set()       
         debug_print("collect_node", "Collect data start!", "INFO")
+    
+    def clean(self):
+        for sensor_data_buffer in self.sensor_data_buffers.values():
+            sensor_data_buffer.clear()
+        for controller_data_buffer in self.controller_data_buffers.values():
+            controller_data_buffer.clear()
+        debug_print(self.name, "Pipe cleaned!", "INFO")
 
     def finish(self, episode_id=None):
         if self.start_event.is_set():
@@ -210,6 +218,14 @@ class XsparkRobotNode(XsparkRobot):
                 controller_data_buffer.clear()
         
         super().finish(episode_id=episode_id)
+    
+    def reset(self):
+        for controller_data_buffer in self.controller_data_buffers.values():
+            controller_data_buffer.clear()
+
+        for sensor_data_buffer in self.sensor_data_buffers.values():
+            sensor_data_buffer.clear()
+        super().reset()
 
 if __name__ == "__main__":
     robot = XsparkRobotNode()
@@ -225,6 +241,9 @@ if __name__ == "__main__":
             time.sleep(0.1)
 
         robot.start()
+
+        robot.reload_cameras()
+
         debug_print("MAIN", "robot Start!", "INFO")
         while not is_enter_pressed():
             # data = robot.get()

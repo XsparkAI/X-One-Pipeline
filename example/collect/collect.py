@@ -3,7 +3,9 @@ sys.path.append("./")
 
 import select
 
-from my_robot.test_robot import TestRobot
+# from my_robot.test_robot import TestRobot
+from my_robot.xspark_robot_node import XsparkRobotNode
+from my_robot.xspark_robot import XsparkRobot
 
 import time
 
@@ -12,10 +14,11 @@ from robot.utils.base.data_handler import is_enter_pressed,debug_print
 
 if __name__ == "__main__":
     import os
-    os.environ["INFO_LEVEL"] = "DEBUG" # DEBUG , INFO, ERROR
+    os.environ["INFO_LEVEL"] = "INFO" # DEBUG , INFO, ERROR
 
-    robot = TestRobot()
-    robot.set_up()
+    # robot = XsparkRobotNode()
+    robot = XsparkRobot()
+    robot.set_up(teleop=True)
 
     start_episode = 0
     num_episode = 5

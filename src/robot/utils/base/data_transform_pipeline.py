@@ -331,7 +331,7 @@ def diff_freq_pipeline(collection, save_path, episode_id, mapping):
     right_timestamp = right_timestamp[right_indices]
 
     # 移动判定
-    tolerance = 0.0001
+    tolerance = 0.00001
     indices = []
     prev_qpos = None
 
