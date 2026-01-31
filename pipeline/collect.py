@@ -1,0 +1,63 @@
+import argparse, os
+import sys
+sys.path.append('./')
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--task_name", type=str)
+parser.add_argument("--collect_cfg", type=str, required=True, help="config file name for data collection")
+args_cli = parser.parse_args()
+
+from my_robot.xspark_robot_node import XsparkRobotNode
+from my_robot.xspark_robot import XsparkRobot
+
+import time
+
+from robot.utils.base.data_handler import is_enter_pressed, debug_print
+from config._GLOBAL_CONFIG import CONFIG_DIR
+from tools.load_file import load_yaml
+
+if __name__ == "__main__":
+    
+    collect_config = load_yaml(os.path.join(CONFIG_DIR, f'{args_cli.collect_cfg}.yml'))
+    task_name = args_cli.task_name if args_cli.task_name else collect_config.get("task_name")
+    
+    os.environ["INFO_LEVEL"] = collect_config.get("INFO_LEVEL") # DEBUG , INFO, ERROR
+
+    robot = XsparkRobot() if not collect_config.get("use_node", False) else XsparkRobotNode()
+    robot.set_up(teleop=True)
+
+    start_episode = collect_config.get("start_episode")
+    num_episode = collect_config.get("num_episode")
+
+    for episode_id in range(start_episode, start_episode + num_episode):
+        robot.reset()
+        debug_print("main", "Press Enter to start...", "INFO")
+        while not robot.is_start() or not is_enter_pressed():
+            time.sleep(1 / robot.condition["save_freq"])
+        debug_print("main", "Press Enter to finish...", "INFO")
+
+        avg_collect_time, collect_num = 0.0, 0
+        while True:
+            last_time = time.monotonic()
+
+            data = robot.get()
+            robot.collect(data)
+            
+            if is_enter_pressed():
+                robot.finish(episode_id)
+                break
+                
+            collect_num += 1
+
+            while True:
+                current_time = time.monotonic()
+                if current_time - last_time > 1 / robot.condition["save_freq"]:
+                    avg_collect_time += current_time - last_time
+                    break
+                else:
+                    time.sleep(0.001) # hard code
+
+        extra_info = {}
+        avg_collect_time = avg_collect_time / collect_num
+        extra_info["avg_time_interval"] = avg_collect_time
+        robot.collection.add_extra_condition_info(extra_info)

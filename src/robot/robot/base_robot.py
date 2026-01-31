@@ -63,8 +63,7 @@ class Robot:
                     sensor.set_collect_info(value)
     
     def get(self):
-        controller_data = {}
-        sensor_data = {}
+        controller_data, sensor_data = {}, {}
 
         if self.controllers is not None:
             for type_name, controller_type in self.controllers.items():
@@ -161,7 +160,6 @@ class Robot:
 
 
     def replay(self, data_path, key_banned=None, is_collect=False, episode_id=None):
-        parent_dir = os.path.dirname(data_path)
         # config_path = os.path.join(parent_dir, "config.json")
         
         # with open(config_path, 'r', encoding='utf-8') as f:
