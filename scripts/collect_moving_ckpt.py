@@ -8,11 +8,11 @@ import select
 import numpy as np
 
 from my_robot.test_robot import TestRobot
-from robot.data.collect_any import CollectAny
+from hardware.data.collect_any import CollectAny
 
-from robot.utils.worker.time_scheduler import TimeScheduler
-from robot.utils.worker.robot_worker import RobotWorker
-from robot.utils.base.data_handler import debug_print
+from hardware.utils.worker.time_scheduler import TimeScheduler
+from hardware.utils.worker.robot_worker import RobotWorker
+from hardware.utils.base.data_handler import debug_print
 
 ARM_INFO_NAME = ["qpos", "gripper"]
 

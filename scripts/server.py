@@ -6,9 +6,9 @@ import numpy as np
 import time
 import cv2
 
-from robot.utils.base.bisocket import BiSocket
-from robot.policy.test_policy.inference_model import TestModel
-from robot.utils.base.data_handler import debug_print
+from hardware.utils.base.bisocket import BiSocket
+from hardware.policy_tmp.test_policy.inference_model import TestModel
+from hardware.utils.base.data_handler import debug_print
 
 class Server:
     def __init__(self, model, control_freq=10):

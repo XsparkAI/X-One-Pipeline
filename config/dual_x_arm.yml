@@ -1,0 +1,23 @@
+INFO_LEVEL: INFO # DEBUG, INFO, ERROR
+
+use_node: true
+
+save_dir: ./save
+default_task_name: demo_task
+save_format: hdf5
+start_episode: 0
+num_episode: 5
+
+robot:
+  type: dual_x_arm
+  init_qpos: 
+    left_arm: [0, 0, 0, 0, 0, 0, 1.0]
+    right_arm: [0, 0, 0, 0, 0, 0, 1.0]
+  control_mode: position
+  ROBOT_CAN:
+    left_arm: can1
+    right_arm: can0
+  CAMERA_SERIALS:
+    head: "/dev/head_camera"
+    left_wrist: "/dev/left_wrist_camera"
+    right_wrist: "/dev/right_wrist_camera"

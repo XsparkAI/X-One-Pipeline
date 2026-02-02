@@ -3,8 +3,8 @@ sys.path.append('./')
 
 # change to your controller and test_controller
 # from robot.controller.Piper_controller import PiperController
-from robot.controller.TestArm_controller import TestArmController
-from robot.utils.base.data_handler import debug_print
+from hardware.controller.TestArm_controller import TestArmController
+from hardware.utils.base.data_handler import debug_print
 
 if __name__ == "__main__":
     import os
