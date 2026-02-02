@@ -1,20 +1,14 @@
 import argparse, os
-import sys
-sys.path.append('./')
+import time
+from hardware.robot import ROBOT_REGISTRY
+from hardware.utils.base.data_handler import is_enter_pressed, debug_print
+from config._GLOBAL_CONFIG import CONFIG_DIR
+from tools.load_file import load_yaml
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--task_name", type=str)
 parser.add_argument("--collect_cfg", type=str, required=True, help="config file name for data collection")
 args_cli = parser.parse_args()
-
-from my_robot.xspark_robot_node import XsparkRobotNode
-from my_robot.xspark_robot import XsparkRobot
-
-import time
-
-from robot.utils.base.data_handler import is_enter_pressed, debug_print
-from config._GLOBAL_CONFIG import CONFIG_DIR
-from tools.load_file import load_yaml
 
 if __name__ == "__main__":
     
@@ -23,7 +17,8 @@ if __name__ == "__main__":
     
     os.environ["INFO_LEVEL"] = collect_config.get("INFO_LEVEL") # DEBUG , INFO, ERROR
 
-    robot = XsparkRobot() if not collect_config.get("use_node", False) else XsparkRobotNode()
+    robot_type = collect_config["robot"]["type"]
+    robot = ROBOT_REGISTRY[robot_type](config=collect_config)
     robot.set_up(teleop=True)
 
     start_episode = collect_config.get("start_episode")

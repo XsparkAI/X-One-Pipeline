@@ -9,8 +9,8 @@ import time
 import yaml
 import json
 
-from robot.utils.base.data_handler import debug_print
-from robot.data.collect_any import CollectAny
+from hardware.utils.base.data_handler import debug_print
+from hardware.data.collect_any import CollectAny
 
 def get_class(import_name, class_name):
     try:

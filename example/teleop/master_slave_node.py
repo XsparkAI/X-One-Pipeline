@@ -2,9 +2,9 @@ import sys
 sys.path.append("./")
 
 from my_robot.base_robot import Robot
-from robot.utils.base.data_handler import is_enter_pressed, debug_print, dict_to_list
-from robot.utils.node.node import TaskNode
-from robot.utils.node.scheduler import Scheduler
+from hardware.utils.base.data_handler import is_enter_pressed, debug_print, dict_to_list
+from hardware.utils.node.node import TaskNode
+from hardware.utils.node.scheduler import Scheduler
 
 from threading import Lock
 import time
