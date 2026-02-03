@@ -21,6 +21,6 @@ robot:
     left_arm: can1
     right_arm: can0
   CAMERA_SERIALS:
-    head: "/dev/head_camera"
-    left_wrist: "/dev/left_wrist_camera"
-    right_wrist: "/dev/right_wrist_camera"
+    head: "/dev/video0"
+    left_wrist: "/dev/video2"
+    right_wrist: "/dev/video4"

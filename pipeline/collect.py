@@ -1,10 +1,10 @@
 import argparse, os
 import time
-from hardware.robot import ROBOT_REGISTRY
-from hardware.utils.base.data_handler import is_enter_pressed, debug_print
-from config._GLOBAL_CONFIG import CONFIG_DIR
-from tools.load_file import load_yaml
-from hardware.robot.base_robot_node import build_robot_node
+from robot.robot import ROBOT_REGISTRY
+from robot.utils.base.data_handler import is_enter_pressed, debug_print
+from robot.config._GLOBAL_CONFIG import CONFIG_DIR
+from robot.utils.base.load_file import load_yaml
+from robot.robot.base_robot_node import build_robot_node
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--task_name", type=str)

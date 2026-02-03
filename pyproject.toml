@@ -1,44 +1,42 @@
 [build-system]
-requires = ["setuptools>=69", "wheel"]
+requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "xai"
-version = "0.1.0"
-description = "X-One Pipeline project"
+name = "robot"
+version = "1.0"
+description = "Xspark AI open source repo"
 readme = "README.md"
 requires-python = ">=3.10"
-authors = [{ name = "TianxingChen" }]
-license = { text = "MIT" }
-dependencies = []
+license = { file = "LICENSE" }
 
+dependencies = [
+    "tqdm",
+    "scipy",
+    "numpy",
+    "h5py",
+    "pyrealsense2",
+    "opencv-python",
+    "keyboard",
+    "pyyaml",
+    "seaborn",
+    "seaborn",
+]
+
+[project.urls]
+Repository = "https://github.com/XsparkAI/X-One-Pipeline"
+
+# ⭐ 关键配置：告诉 setuptools，包在 src/ 下面
 [tool.setuptools]
-include-package-data = true
+package-dir = {"" = "src"}
 
-# 如果你是“顶层多包”布局，用 where=["."] 最稳
 [tool.setuptools.packages.find]
-where = ["."]
-include = [
-  "pipeline*",
-  "policy*",
-  "hardware*",
-  "tools*",
-  "task_info*",
-  "config*"
-]
-exclude = [
-  "third_party*",
-  "tests*",
-  "test*",
-  "example*",
-  "scripts*",
-  "save*"
-]
+where = ["src"]
 
-# 如果你运行时需要读 config / task_info 之类的非 .py 文件，建议明确打包
-# 注意：只有当这些目录属于“某个包内部”时，package-data 才能生效；
-# 若它们是仓库顶层裸目录，更推荐用 MANIFEST.in（见下方说明）。
-[tool.setuptools.package-data]
-"pipeline" = ["**/*.yaml", "**/*.yml", "**/*.json"]
-"policy" = ["**/*.yaml", "**/*.yml", "**/*.json"]
-"task_info" = ["**/*.yaml", "**/*.yml", "**/*.json", "**/*.txt"]
+# 你原来就有的
+[tool.uv.workspace]
+members = ["packages/*"]
+
+[tool.pytest.ini_options]
+markers = ["manual: should be run manually."]
+testpaths = ["src", "scripts", "pipeline"]
