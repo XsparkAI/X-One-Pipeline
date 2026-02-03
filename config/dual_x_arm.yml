@@ -2,7 +2,7 @@ INFO_LEVEL: INFO # DEBUG, INFO, ERROR
 
 use_node: true
 
-save_dir: ./save
+save_dir: ./data
 save_format: hdf5
 start_episode: 0
 num_episode: 5
