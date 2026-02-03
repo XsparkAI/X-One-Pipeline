@@ -4,14 +4,15 @@ from robot.utils.base.data_handler import debug_print
 from y1_sdk import Y1SDKInterface, ControlMode
 import os
 import time
-
+from robot.config._GLOBAL_CONFIG import THIRD_PARTY_PATH
 '''
 Piper base code from:
 https://github.com/agilexrobotics/piper_sdk.git
 '''
 
-# package_path = "/home/user/project/y1_sdk_python/y1_ros2/src/y1_controller/" # TODO
-package_path = "/home/xspark-ai/project/y1_sdk_python/y1_ros/src/y1_controller/" # TODO
+package_path = os.path.join(THIRD_PARTY_PATH, "y1_sdk_python/y1_ros/src/y1_controller/")
+if not os.path.exists(package_path):
+    package_path = os.path.join(THIRD_PARTY_PATH, "y1_sdk_python/y1_ros2/src/y1_controller/")
 
 class Y1Controller(ArmController):
     def __init__(self, name):
