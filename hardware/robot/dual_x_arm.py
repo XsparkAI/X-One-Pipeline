@@ -59,12 +59,12 @@ class Dual_X_Arm(Robot):
         move_data = {
             "arm":{
                 "left_arm":{
-                    "joint": self.config['robot']['init_qpos']['left_arm'][:-1],
-                    "gripper":  self.config['robot']['init_qpos']['left_arm'][-1],
+                    "joint": self.config['robot']['init_qpos']['left_arm'],
+                    "gripper":  self.config['robot']['init_qpos']['left_gripper'],
                 },
                 "right_arm":{
-                    "joint": self.config['robot']['init_qpos']['right_arm'][:-1],
-                    "gripper":  self.config['robot']['init_qpos']['right_arm'][-1],
+                    "joint": self.config['robot']['init_qpos']['right_arm'],
+                    "gripper":  self.config['robot']['init_qpos']['right_gripper'],
                 }
             }
         }
