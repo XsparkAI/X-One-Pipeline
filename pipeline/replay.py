@@ -1,9 +1,9 @@
 import argparse, os
 
-from tools.load_file import load_yaml
-from config._GLOBAL_CONFIG import CONFIG_DIR
-from hardware.robot import ROBOT_REGISTRY
-from hardware.robot.base_robot_node import build_robot_node
+from robot.utils.base.load_file import load_yaml
+from robot.config._GLOBAL_CONFIG import CONFIG_DIR
+from robot.robot import ROBOT_REGISTRY
+from robot.robot.base_robot_node import build_robot_node
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--task_name", type=str)
@@ -24,6 +24,7 @@ if __name__ == "__main__":
     robot_cls = ROBOT_REGISTRY[robot_type]
     if collect_config['use_node']:
         robot_cls = build_robot_node(robot_cls)
+    collect_config["task_name"] = task_name
     robot = robot_cls(config=collect_config)
     robot.set_up(teleop=False)
     robot.reset()

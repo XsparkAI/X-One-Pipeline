@@ -2,7 +2,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-from hardware.utils.base.data_handler import hdf5_groups_to_dict
+from robot.utils.base.data_handler import hdf5_groups_to_dict
 
 
 # ==========================

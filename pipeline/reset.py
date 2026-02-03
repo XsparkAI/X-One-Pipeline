@@ -1,8 +1,8 @@
 import argparse, os
 
-from tools.load_file import load_yaml
-from config._GLOBAL_CONFIG import CONFIG_DIR
-from hardware.robot import ROBOT_REGISTRY
+from robot.utils.base.load_file import load_yaml
+from robot.config._GLOBAL_CONFIG import CONFIG_DIR
+from robot.robot import ROBOT_REGISTRY
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--collect_cfg", type=str, required=True, help="config file name for data collection")
