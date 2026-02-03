@@ -7,7 +7,7 @@ save_format: hdf5
 start_episode: 0
 num_episode: 5
 save_freq: 30  # in Hz
-move_check: true
+move_check: false
 
 robot:
   type: dual_x_arm

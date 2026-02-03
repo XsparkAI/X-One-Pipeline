@@ -3,6 +3,7 @@ import argparse, os
 from tools.load_file import load_yaml
 from config._GLOBAL_CONFIG import CONFIG_DIR
 from hardware.robot import ROBOT_REGISTRY
+from hardware.robot.base_robot_node import build_robot_node
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--task_name", type=str)
@@ -20,7 +21,10 @@ if __name__ == "__main__":
     task_name = args_cli.task_name if args_cli.task_name else collect_config.get("task_name")
     save_dir = os.path.join(collect_config.get("save_dir"), task_name)
     robot_type = collect_config["robot"]["type"]
-    robot = ROBOT_REGISTRY[robot_type](config=collect_config)
+    robot_cls = ROBOT_REGISTRY[robot_type]
+    if collect_config['use_node']:
+        robot_cls = build_robot_node(robot_cls)
+    robot = robot_cls(config=collect_config)
     robot.set_up(teleop=False)
     robot.reset()
     robot.replay(data_path=os.path.join(save_dir, f"{args_cli.idx}.hdf5"), key_banned=["qpos"], is_collect=args_cli.collect, episode_id=args_cli.collect_idx)

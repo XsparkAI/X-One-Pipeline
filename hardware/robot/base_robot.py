@@ -90,46 +90,6 @@ class Robot:
         debug_print(self.name, "your are using default func: reset(), this will return True only", "DEBUG")
         return True
 
-    def show_pic(self, data_path, pic_name, save_path=None, fps=30):
-        """
-            展示或保存视频
-            
-            :param data_path: HDF5 数据路径
-            :param pic_name: 图片名称键
-            :param save_path: 可选，保存视频的路径。如果提供，将合成视频而不显示。
-            :param fps: 视频帧率，默认 30
-        """
-        if save_path:
-            os.makedirs(os.path.dirname(save_path), exist_ok=True)
-
-        episode = dict_to_list(hdf5_groups_to_dict(data_path))
-        
-        video_writer = None
-        
-        for idx, ep in enumerate(episode):
-            img_data = ep[pic_name]["color"]
-            
-            if isinstance(img_data, (bytes, bytearray)) or (isinstance(img_data, np.ndarray) and img_data.ndim == 1):
-                img_array = np.frombuffer(img_data, dtype=np.uint8)
-                img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
-            else:
-                img = img_data 
-
-            if save_path:
-                if video_writer is None:
-                    h, w = img.shape[:2]
-                    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # mp4 编码
-                    video_writer = cv2.VideoWriter(save_path, fourcc, fps, (w, h))
-                
-                video_writer.write(img)
-            else:
-                cv2.imshow(f"{pic_name}", img)
-                cv2.waitKey(int(1000 / fps)) 
-
-        if video_writer:
-            video_writer.release()
-
-
     def replay(self, data_path, key_banned=None, is_collect=False, episode_id=None):
         time_interval = 1 / 20
         episode_data = dict_to_list(hdf5_groups_to_dict(data_path))
@@ -187,4 +147,4 @@ def remove_duplicate_keys(source_dict, keys_to_remove):
 
 if __name__ == "__main__":
     robot = Robot()
-    robot.show_pic("save/test_robot/0.hdf5","cam_head")
+    robot.vis_video("save/test_robot/0.hdf5","cam_head")

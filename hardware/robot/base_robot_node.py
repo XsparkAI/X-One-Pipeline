@@ -1,14 +1,11 @@
 from hardware.robot.base_robot import Robot
+
 from hardware.utils.base.data_transform_pipeline import diff_freq_pipeline
-from hardware.utils.base.data_handler import is_enter_pressed, debug_print, dict_to_list
-import time
+from hardware.utils.base.data_handler import debug_print, dict_to_list
 from hardware.utils.node.node import TaskNode
 from hardware.utils.node.scheduler import Scheduler
 
 from threading import Lock, Event
-import time
-
-from hardware.robot.dual_x_arm import Dual_X_Arm
 
 ROBOT_MAP = {
     "sensor": {
@@ -67,6 +64,7 @@ class ComponentNode(TaskNode):
         data = self.component.get()
 
         self.data_buffer.update(self.component.name, data)
+
 
 class DataNode(TaskNode):
     def task_init(self, data_buffer: DataBuffer):
@@ -139,74 +137,81 @@ def build_map(sensor_nodes, sensor_data_nodes, controller_nodes, controller_data
     
     return sensor_schedulers, controller_schedulers
 
-class Dual_X_Arm_Node(Dual_X_Arm):
-    def __init__(self, config, start_episode=0):
-        super().__init__(config=config, start_episode=start_episode)
-        self.collection._add_data_transform_pipeline(diff_freq_pipeline)
+def build_robot_node(base_robot_cls):
+    class RobotNode(base_robot_cls):
+        def __init__(self, config):
+            super().__init__(config)
+            self.collector._add_data_transform_pipeline(diff_freq_pipeline)
 
-    def set_up(self, teleop=False):
-        super().set_up(teleop=teleop)
-        self.sensor_data_buffers, self.sensor_nodes, self.sensor_data_nodes, self.controller_data_buffers, self.controller_nodes, self.controller_data_nodes, self.start_event = init(self)
+        def set_up(self, teleop=False):
+            super().set_up(teleop=teleop)
+            (
+                self.sensor_data_buffers,
+                self.sensor_nodes,
+                self.sensor_data_nodes,
+                self.controller_data_buffers,
+                self.controller_nodes,
+                self.controller_data_nodes,
+                self.start_event,
+            ) = init(self)
 
-        self.sensor_schedulers,self. controller_schedulers = build_map(self.sensor_nodes, self.sensor_data_nodes, self.controller_nodes, self.controller_data_nodes)
+            self.sensor_schedulers, self.controller_schedulers = build_map(
+                self.sensor_nodes,
+                self.sensor_data_nodes,
+                self.controller_nodes,
+                self.controller_data_nodes,
+            )
 
-        for sensor_scheduler in self.sensor_schedulers.values():
-            sensor_scheduler.start()
-        
-        for controller_scheduler in self.controller_schedulers.values():
-            controller_scheduler.start()
+            for s in self.sensor_schedulers.values():
+                s.start()
+            for c in self.controller_schedulers.values():
+                c.start()
 
-    def get(self):
-        controller_data = {}
-        for controller_data_buffer in self.controller_data_buffers.values():
-            data = controller_data_buffer.get_lastest()
-            for k, v in data.items():
-                controller_data[k] = v
+        def get(self):
+            controller_data = {}
+            for buf in self.controller_data_buffers.values():
+                for k, v in buf.get_lastest().items():
+                    controller_data[k] = v
 
-        sensor_data = {}
-        for sensor_data_buffer in self.sensor_data_buffers.values():
-            data = sensor_data_buffer.get_lastest()
-            for k, v in data.items():
-                sensor_data[k] = v
-        return controller_data.copy(), sensor_data.copy()
+            sensor_data = {}
+            for buf in self.sensor_data_buffers.values():
+                for k, v in buf.get_lastest().items():
+                    sensor_data[k] = v
 
-    def start(self): 
-        self.start_event.set()       
-        debug_print("collect_node", "Collect data start!", "INFO")
-    
-    def clean(self):
-        for sensor_data_buffer in self.sensor_data_buffers.values():
-            sensor_data_buffer.clear()
-        for controller_data_buffer in self.controller_data_buffers.values():
-            controller_data_buffer.clear()
-        debug_print(self.name, "Pipe cleaned!", "INFO")
+            return controller_data.copy(), sensor_data.copy()
 
-    def finish(self, episode_id=None):
-        if self.start_event.is_set():
-            self.start_event.clear()
-            
-            for sensor_data_buffer in self.sensor_data_buffers.values():
-                datas = sensor_data_buffer.get()
-                for data in datas:
-                    d = [None, data]
-                    self.collect(d)
+        def start(self):
+            self.start_event.set()
+            debug_print("collect_node", "Collect data start!", "INFO")
 
-                sensor_data_buffer.clear()
+        def clean(self):
+            for b in self.sensor_data_buffers.values():
+                b.clear()
+            for b in self.controller_data_buffers.values():
+                b.clear()
+            debug_print(self.name, "Pipe cleaned!", "INFO")
 
-            for controller_data_buffer in self.controller_data_buffers.values():
-                datas = controller_data_buffer.get()
-                for data in datas:
-                    d = [data, None]
-                    self.collect(d)
-                
-                controller_data_buffer.clear()
-        
-        super().finish(episode_id=episode_id)
-    
-    def reset(self):
-        for controller_data_buffer in self.controller_data_buffers.values():
-            controller_data_buffer.clear()
+        def finish(self, episode_id=None):
+            if self.start_event.is_set():
+                self.start_event.clear()
 
-        for sensor_data_buffer in self.sensor_data_buffers.values():
-            sensor_data_buffer.clear()
-        super().reset()
+                for buf in self.sensor_data_buffers.values():
+                    for data in buf.get():
+                        self.collect([None, data])
+                    buf.clear()
+
+                for buf in self.controller_data_buffers.values():
+                    for data in buf.get():
+                        self.collect([data, None])
+                    buf.clear()
+
+            super().finish(episode_id=episode_id)
+
+        def reset(self):
+            for b in self.sensor_data_buffers.values():
+                b.clear()
+            for b in self.controller_data_buffers.values():
+                b.clear()
+            super().reset()
+
+    return RobotNode

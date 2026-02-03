@@ -4,6 +4,7 @@ from hardware.robot import ROBOT_REGISTRY
 from hardware.utils.base.data_handler import is_enter_pressed, debug_print
 from config._GLOBAL_CONFIG import CONFIG_DIR
 from tools.load_file import load_yaml
+from hardware.robot.base_robot_node import build_robot_node
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--task_name", type=str)
@@ -19,7 +20,10 @@ if __name__ == "__main__":
     os.environ["INFO_LEVEL"] = collect_config.get("INFO_LEVEL") # DEBUG, INFO, ERROR
 
     robot_type = collect_config["robot"]["type"]
-    robot = ROBOT_REGISTRY[robot_type](config=collect_config)
+    robot_cls = ROBOT_REGISTRY[robot_type]
+    if collect_config['use_node']:
+        robot_cls = build_robot_node(robot_cls)
+    robot = robot_cls(config=collect_config)
     robot.set_up(teleop=True)
 
     start_episode = collect_config.get("start_episode")
