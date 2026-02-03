@@ -12,8 +12,10 @@ move_check: true
 robot:
   type: dual_x_arm
   init_qpos: 
-    left_arm: [0, 0, 0, 0, 0, 0, 1.0]
-    right_arm: [0, 0, 0, 0, 0, 0, 1.0]
+    left_arm: [0, 0, 0, 0, 0, 0]
+    left_gripper: 1.0
+    right_arm: [0, 0, 0, 0, 0, 0]
+    right_gripper: 1.0
   control_mode: position
   ROBOT_CAN:
     left_arm: can1
