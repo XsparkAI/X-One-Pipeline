@@ -141,7 +141,7 @@ def build_robot_node(base_robot_cls):
     class RobotNode(base_robot_cls):
         def __init__(self, config):
             super().__init__(config)
-            self.collector._add_data_transform_pipeline(diff_freq_pipeline)
+            # self.collector._add_data_transform_pipeline(diff_freq_pipeline)
 
         def set_up(self, teleop=False):
             super().set_up(teleop=teleop)
