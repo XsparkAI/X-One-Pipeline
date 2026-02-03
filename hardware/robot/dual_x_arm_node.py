@@ -1,11 +1,4 @@
-import sys
-sys.path.append("./")
-
-import numpy as np
-
-from hardware.data.collect_any import CollectAny
-from hardware.base_robot import Robot
-# from robot.utils.base.data_transform_pipeline import X_one_format_pipeline
+from hardware.robot.base_robot import Robot
 from hardware.utils.base.data_transform_pipeline import diff_freq_pipeline
 from hardware.utils.base.data_handler import is_enter_pressed, debug_print, dict_to_list
 import time
@@ -15,14 +8,7 @@ from hardware.utils.node.scheduler import Scheduler
 from threading import Lock, Event
 import time
 
-from my_robot.xspark_robot import XsparkRobot
-
-condition = {
-    "save_path": "./save/",
-    "task_name": "new",
-    "save_format": "hdf5",
-    "save_freq": 30, 
-}
+from hardware.robot.dual_x_arm import Dual_X_Arm
 
 ROBOT_MAP = {
     "sensor": {
@@ -60,7 +46,6 @@ class DataBuffer:
 
     def get(self):
         with self.lock:
-            # import pdb;pdb.set_trace()
             try:
                 ret = dict_to_list(self._buffer)
             except:
@@ -82,7 +67,6 @@ class ComponentNode(TaskNode):
         data = self.component.get()
 
         self.data_buffer.update(self.component.name, data)
-
 
 class DataNode(TaskNode):
     def task_init(self, data_buffer: DataBuffer):
@@ -156,8 +140,8 @@ def build_map(sensor_nodes, sensor_data_nodes, controller_nodes, controller_data
     return sensor_schedulers, controller_schedulers
 
 class Dual_X_Arm_Node(Dual_X_Arm):
-    def __init__(self, condition=condition, move_check=False, start_episode=0):
-        super().__init__(condition=condition, move_check=move_check, start_episode=start_episode)
+    def __init__(self, config, start_episode=0):
+        super().__init__(config=config, start_episode=start_episode)
         self.collection._add_data_transform_pipeline(diff_freq_pipeline)
 
     def set_up(self, teleop=False):
@@ -226,28 +210,3 @@ class Dual_X_Arm_Node(Dual_X_Arm):
         for sensor_data_buffer in self.sensor_data_buffers.values():
             sensor_data_buffer.clear()
         super().reset()
-
-if __name__ == "__main__":
-    robot = XsparkRobotNode()
-
-    robot.set_up(teleop=True)
-
-    for i in range(10):
-        # robot.reset()
-
-        # robot.change_mode(teleop=True)
-        debug_print("MAIN", "Waiting for ENTER to start...", "INFO")
-        while not is_enter_pressed():
-            time.sleep(0.1)
-
-        robot.start()
-
-        robot.reload_cameras()
-
-        debug_print("MAIN", "robot Start!", "INFO")
-        while not is_enter_pressed():
-            # data = robot.get()
-            # robot.collect(data)
-            time.sleep(1/30)
-        
-        robot.finish(i)

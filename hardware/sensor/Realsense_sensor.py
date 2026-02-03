@@ -1,8 +1,7 @@
 import numpy as np
 import pyrealsense2 as rs
 import time
-from hardware.sensor.vision_sensor import VisionSensor
-from copy import copy
+from hardware.sensor.base_vision_sensor import BaseVisionSensor
 
 from hardware.utils.base.data_handler import debug_print
 
@@ -14,7 +13,7 @@ def find_device_by_serial(devices, serial):
             return i
     return None
 
-class RealsenseSensor(VisionSensor):
+class RealsenseSensor(BaseVisionSensor):
     def __init__(self, name, encode_rgb=False):
         super().__init__(encode_rgb=encode_rgb)
         self.name = name

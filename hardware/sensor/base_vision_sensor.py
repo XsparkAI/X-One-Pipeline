@@ -2,7 +2,7 @@ from hardware.sensor.sensor import Sensor
 import numpy as np
 from hardware.utils.base.data_handler import debug_print
 
-class VisionSensor(Sensor):
+class BaseVisionSensor(Sensor):
     def __init__(self, TEST=False):
         super().__init__()
         self.name = "vision_sensor"

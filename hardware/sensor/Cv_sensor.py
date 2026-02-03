@@ -1,10 +1,10 @@
 import cv2
 import numpy as np
 import time
-from hardware.sensor.vision_sensor import VisionSensor
+from hardware.sensor.base_vision_sensor import BaseVisionSensor
 from hardware.utils.base.data_handler import debug_print
 
-class CvSensor(VisionSensor):
+class CvSensor(BaseVisionSensor):
     def __init__(self, name):
         super().__init__()
         self.name = name

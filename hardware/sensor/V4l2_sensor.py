@@ -7,10 +7,10 @@ import v4l2
 import time
 import cv2
 
-from hardware.sensor.vision_sensor import VisionSensor
+from hardware.sensor.base_vision_sensor import BaseVisionSensor
 from hardware.utils.base.data_handler import debug_print
 
-class V4l2Sensor(VisionSensor):
+class V4l2Sensor(BaseVisionSensor):
     def __init__(self, name):
         super().__init__()
         self.name = name

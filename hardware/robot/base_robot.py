@@ -10,13 +10,13 @@ import cv2
 ALLOW_TYPES = ["arm", "mobile","image", "tactile", "teleop"]
 
 class Robot:
-    def __init__(self, config, move_check=True, start_episode=0) -> None:
+    def __init__(self, config, start_episode=0) -> None:
         self.name = self.__class__.__name__
         self.controllers = {}
         self.sensors = {}
 
         self.config = config
-        self.collector = CollectAny(config, move_check=move_check, start_episode=start_episode)
+        self.collector = CollectAny(config, start_episode=start_episode)
 
     def set_up(self):
         for controller_type in self.controllers.keys():
@@ -77,10 +77,10 @@ class Robot:
         for controller_type_name, controller_type in move_data.items():
             for controller_name, controller_action in controller_type.items():
                 if key_banned is None:
-                    self.controllers[controller_type_name][controller_name].move(controller_action,is_delta=False)
+                    self.controllers[controller_type_name][controller_name].move(controller_action, is_delta=False)
                 else:
                     controller_action = remove_duplicate_keys(controller_action, key_banned)
-                    self.controllers[controller_type_name][controller_name].move(controller_action,is_delta=False)
+                    self.controllers[controller_type_name][controller_name].move(controller_action, is_delta=False)
     
     def is_start(self):
         debug_print(self.name, "your are using default func: is_start(), this will return True only", "DEBUG")
