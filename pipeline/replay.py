@@ -16,6 +16,7 @@ if args_cli.collect and args_cli.collect_idx is None:
 
 if __name__ == "__main__":
     collect_config = load_yaml(os.path.join(CONFIG_DIR, f'{args_cli.collect_cfg}.yml'))
+    os.environ["INFO_LEVEL"] = collect_config.get("INFO_LEVEL") # DEBUG, INFO, ERROR
     task_name = args_cli.task_name if args_cli.task_name else collect_config.get("task_name")
     save_dir = os.path.join(collect_config.get("save_dir"), task_name)
     robot_type = collect_config["robot"]["type"]

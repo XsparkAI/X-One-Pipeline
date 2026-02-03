@@ -5,8 +5,8 @@ from datetime import datetime
 import time
 
 class Dual_X_Arm(Robot):
-    def __init__(self, config, move_check=True, start_episode=0):
-        super().__init__(config=config, move_check=move_check, start_episode=start_episode)
+    def __init__(self, config, start_episode=0):
+        super().__init__(config=config, start_episode=start_episode)
         self.first_start = True
         self.config = config
         self.controllers = {

@@ -14,8 +14,9 @@ if __name__ == "__main__":
     
     collect_config = load_yaml(os.path.join(CONFIG_DIR, f'{args_cli.collect_cfg}.yml'))
     task_name = args_cli.task_name if args_cli.task_name else collect_config.get("task_name")
+    collect_config["task_name"] = task_name
     
-    os.environ["INFO_LEVEL"] = collect_config.get("INFO_LEVEL") # DEBUG , INFO, ERROR
+    os.environ["INFO_LEVEL"] = collect_config.get("INFO_LEVEL") # DEBUG, INFO, ERROR
 
     robot_type = collect_config["robot"]["type"]
     robot = ROBOT_REGISTRY[robot_type](config=collect_config)
@@ -28,7 +29,7 @@ if __name__ == "__main__":
         robot.reset()
         debug_print("main", "Press Enter to start...", "INFO")
         while not robot.is_start() or not is_enter_pressed():
-            time.sleep(1 / robot.condition["save_freq"])
+            time.sleep(1 / robot.config["save_freq"])
         debug_print("main", "Press Enter to finish...", "INFO")
 
         avg_collect_time, collect_num = 0.0, 0
@@ -46,7 +47,7 @@ if __name__ == "__main__":
 
             while True:
                 current_time = time.monotonic()
-                if current_time - last_time > 1 / robot.condition["save_freq"]:
+                if current_time - last_time > 1 / robot.config["save_freq"]:
                     avg_collect_time += current_time - last_time
                     break
                 else:
@@ -55,4 +56,4 @@ if __name__ == "__main__":
         extra_info = {}
         avg_collect_time = avg_collect_time / collect_num
         extra_info["avg_time_interval"] = avg_collect_time
-        robot.collection.add_extra_condition_info(extra_info)
+        robot.collector.add_extra_config_info(extra_info)

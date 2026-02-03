@@ -9,7 +9,6 @@ from hardware.utils.base.data_handler import debug_print
 
 import os
 import numpy as np
-import h5py
 import json
 import glob
 import re
@@ -17,11 +16,11 @@ import re
 KEY_BANNED = ["timestamp"]
 
 class CollectAny:
-    def __init__(self, config=None, start_episode=0, move_check=True, resume=False):
+    def __init__(self, config=None, start_episode=0, resume=False):
         
         self.config = config
         self.episode = []
-        self.move_check = move_check
+        self.move_check = config.get("move_check", False) if config is not None else False
         self.last_controller_data = None
         self.resume = resume
         self.handler = None
