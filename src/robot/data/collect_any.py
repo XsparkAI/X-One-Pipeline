@@ -12,6 +12,7 @@ import numpy as np
 import json
 import glob
 import re
+import h5py
 
 KEY_BANNED = ["timestamp"]
 

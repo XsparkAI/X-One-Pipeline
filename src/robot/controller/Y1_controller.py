@@ -10,8 +10,8 @@ Piper base code from:
 https://github.com/agilexrobotics/piper_sdk.git
 '''
 
-# package_path = "/home/user/project/y1_sdk_python/y1_ros2/src/y1_controller/" # TODO
-package_path = "/home/xspark-ai/project/y1_sdk_python/y1_ros/src/y1_controller/" # TODO
+package_path = "/home/user/project/y1_sdk_python/y1_ros2/src/y1_controller/" # TODO
+# package_path = "/home/xspark-ai/project/y1_sdk_python/y1_ros/src/y1_controller/" # TODO
 
 class Y1Controller(ArmController):
     def __init__(self, name):
