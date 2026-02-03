@@ -160,6 +160,7 @@ def vis_video(data_path, picture_key, save_path=None, fps=30):
 
     if video_writer:
         video_writer.release()
+        debug_print("vis_video", f"save video at: {save_path} .", "INFO")
 
 
 class DataBuffer:
