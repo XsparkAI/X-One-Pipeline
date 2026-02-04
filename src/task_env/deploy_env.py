@@ -4,6 +4,7 @@ from robot.utils.base.load_file import load_yaml
 from robot.config._GLOBAL_CONFIG import ROOT_DIR
 from .base_env import BaseEnv
 from datetime import datetime
+from client_server.model_client import ModelClient
 
 class DeployEnv(BaseEnv):
     def __init__(self, deploy_cfg, env_cfg):
@@ -14,26 +15,27 @@ class DeployEnv(BaseEnv):
         self.task_info = load_yaml(os.path.join(ROOT_DIR, f"task_info/{env_cfg['task_name']}.json"))
         self.episode_step_limit = self.task_info['step_lim']
         os.makedirs(self.save_dir, exist_ok=True)
-        self.model = None
+        self.model_client = ModelClient(port=deploy_cfg['port'])
+
 
     def get_obs(self): # TODO: type
         return self.robot.get_obs()
 
     def eval_one_episode(self):
         policy_name = self.deploy_cfg['policy_name']
-        eval_module = __import__(f'policy.{policy_name}.deploy', fromlist=['eval_one_episode'])
+        eval_module = __import__(f'policy_lab.{policy_name}.deploy', fromlist=['eval_one_episode'])
         eval_module.eval_one_episode(TASK_ENV=self, model=self.model)
     
     def reset(self):
         self.robot.reset()
-        self.model.reset()
+        self.model_client.call(func="reset")
         self.episode_step = 0
 
     def load_model(self):
-        # Load the policy model from the specified path
+        # Load the policy_lab model from the specified path
         print("Start Loading Model...")
         policy_name = self.deploy_cfg['policy_name']
-        policy_module = __import__(f'policy.{policy_name}.deploy', fromlist=['get_model'])
+        policy_module = __import__(f'policy_lab.{policy_name}.deploy', fromlist=['get_model'])
         self.model = policy_module.get_model(usr_args=self.deploy_cfg)
         print("Finish Loading Model.")
 
