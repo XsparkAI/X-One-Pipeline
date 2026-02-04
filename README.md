@@ -1,6 +1,10 @@
 <h1 align="center">Xspark AI X-One平台</h1>
 
-> 这是Xspark AI X-One平台的使用代码仓库以及文档
+> 本仓库提供 Xspark AI X-One 平台的使用代码与完整文档。X-One 是一个支持主从一体控制与遥操作数据采集的机器人操作学习平台，集成示教采集、数据存储、回放与算法评测能力，构建端到端的一体化工作流。
+> 
+> X-One相关URDF/USD仓库：[https://github.com/XsparkAI/X-Arm-Description](https://github.com/XsparkAI/X-Arm-Description)
+>
+> 如果有任何使用问题，欢迎通过以下联系方式进行联系【[X-One答疑飞书群](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=1f7l701d-8907-4bf2-9931-d1ec298a4abf)】或【微信联系方式 `TianxingChen_2002`】。
 
 ## 1. 机械臂setup
 首先到达配置路径:
@@ -97,7 +101,3 @@ bash scripts/replay.sh ${task_name} ${collect_cfg} ${idx}
 ### 2.6 部署策略
 
 TODO: 将于2026年2月6日前完善。
-
-## ☎️ 联系我们
-
-如果有任何使用问题，欢迎通过以下联系方式进行联系【[X-One答疑飞书群](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=1f7l701d-8907-4bf2-9931-d1ec298a4abf)】或【微信联系方式 `TianxingChen_2002`】。
