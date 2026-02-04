@@ -24,10 +24,10 @@ class DeployEnv(BaseEnv):
         self.robot.set_up(teleop=False)
 
         if self.env_cfg.get("deploy", False):
-            self.offline_eval_mode = True if env_cfg["deploy"].get("offline_eval", False) else False
+            # self.offline_eval_mode = True if env_cfg["deploy"].get("offline_eval", False) else False
             self.force_reach_mode = True if env_cfg["deploy"].get("force_reach", False) else False
         else:
-            self.offline_eval_mode = False
+            # self.offline_eval_mode = False
             self.force_reach_mode = False
 
     def get_obs(self): # TODO: type
@@ -72,13 +72,13 @@ class DeployEnv(BaseEnv):
 
     def is_episode_end(self):
         # offline eval
-        if self.offline_eval_mode:
-            if self.robot.get() is None or self.episode_step >= self.episode_step_limit:
-                return True
-            else:
-                return False
-        else:    
-            return self.episode_step >= self.episode_step_limit
+        # if self.offline_eval_mode:
+        #     if self.robot.get() is None or self.episode_step >= self.episode_step_limit:
+        #         return True
+        #     else:
+        #         return False
+        # else:    
+        return self.episode_step >= self.episode_step_limit
     
     def finish_episode(self):
         # Finalize and log information for the completed episode

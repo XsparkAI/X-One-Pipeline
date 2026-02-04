@@ -44,3 +44,4 @@ checkpoints/
 eval_results/
 data/
 .vscode/
+src/robot/config

@@ -167,8 +167,8 @@ def build_robot_node(base_robot_cls):
                 c.start()
 
         def get(self):
-            if self.offline_eval is not None:
-                return self.offline_eval.get_data()
+            # if self.offline_eval is not None:
+            #     return self.offline_eval.get_data()
             
             controller_data = {}
             for buf in self.controller_data_buffers.values():

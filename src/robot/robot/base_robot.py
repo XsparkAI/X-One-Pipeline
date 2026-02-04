@@ -58,21 +58,21 @@ class Robot:
         self.last_controller_data = None
         self.move_tolerance = config.get("move_tolerance", 0.001)
 
-        self.replay_sample = None
-        self.offline_eval = None
-        data_path = None
+        # self.replay_sample = None
+        # self.offline_eval = None
+        # data_path = None
 
-        if self.config.get("deploy", False):
-            data_path = self.config["deploy"].get("offline_eval", None) # List[file_path], file_path, floder_path
+        # if self.config.get("deploy", False):
+        #     data_path = self.config["deploy"].get("offline_eval", None) # List[file_path], file_path, floder_path
 
-        if data_path is not None:
-            if isinstance(data_path, list):
-                replay_paths = data_path
-            elif os.path.isfile(data_path):
-                replay_paths = [data_path]
-            else:
-                 replay_paths = glob.glob(os.path.join(data_path, "*.hdf5"))
-            self.replay_sample = ReplaySampler(replay_paths=replay_paths)
+        # if data_path is not None:
+        #     if isinstance(data_path, list):
+        #         replay_paths = data_path
+        #     elif os.path.isfile(data_path):
+        #         replay_paths = [data_path]
+        #     else:
+        #          replay_paths = glob.glob(os.path.join(data_path, "*.hdf5"))
+        #     self.replay_sample = ReplaySampler(replay_paths=replay_paths)
 
     def set_up(self):
         for controller_type in self.controllers.keys():
@@ -109,28 +109,28 @@ class Robot:
                     sensor.set_collect_info(value)
     
     def get_obs(self):
-        if self.replay_sample is not None:
-            if self.offline_eval is None:
-                self.offline_eval = OfflineEval(self.replay_sample.sample())
-            data = self.offline_eval.get_data()
-            if data is None:
-                return None
+        # if self.replay_sample is not None:
+            # if self.offline_eval is None:
+            #     self.offline_eval = OfflineEval(self.replay_sample.sample())
+            # data = self.offline_eval.get_data()
+            # if data is None:
+            #     return None
             
-            controller_data, sensor_data = data
+            # controller_data, sensor_data = data
 
-            controller_data = {
-                k: v
-                for k, v in controller_data.items()
-                if k in self.controller_names
-            }
+            # controller_data = {
+            #     k: v
+            #     for k, v in controller_data.items()
+            #     if k in self.controller_names
+            # }
 
-            sensor_data = {
-                k: v
-                for k, v in sensor_data.items()
-                if k in self.sensor_names
-            }
+            # sensor_data = {
+            #     k: v
+            #     for k, v in sensor_data.items()
+            #     if k in self.sensor_names
+            # }
 
-            return controller_data, sensor_data
+            # return controller_data, sensor_data
         
         controller_data, sensor_data = {}, {}
 
@@ -165,8 +165,8 @@ class Robot:
         self.collector.write(episode_id)
     
     def move(self, move_data, key_banned=None):
-        if self.offline_eval is not None:
-            self.offline_eval.move_once()
+        # if self.offline_eval is not None:
+        #     self.offline_eval.move_once()
         
         if move_data is None:
             return
@@ -185,8 +185,8 @@ class Robot:
     def reset(self):
         debug_print(self.name, "your are using reset(), this will return True.", "DEBUG")
         # reload a new tarjectory
-        if self.offline_eval is not None:
-            self.offline_eval = None
+        # if self.offline_eval is not None:
+        #     self.offline_eval = None
         return True
     
     def is_move(self):

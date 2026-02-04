@@ -9,6 +9,6 @@ CONFIG_DIR = os.path.join(ROOT_DIR, "config")
 ROBOTS_PATH = os.path.join(ROOT_DIR, "assets/robots")
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 COLLECT_CONFIG_PATH = os.path.join(ROOT_DIR, "collect_cfg")
-THIRD_PARTY_PATH = os.path.join(ROOT_DIR, "third_party")
+THIRD_PARTY_PATH =  "/home/user/project" 
 
 POLLING_INTERVAL=0.0001
