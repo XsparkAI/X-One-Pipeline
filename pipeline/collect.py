@@ -9,7 +9,6 @@ parser.add_argument("--collect_cfg", type=str, required=True, help="config file 
 args_cli = parser.parse_args()
 
 if __name__ == "__main__":
-    
     collect_cfg = load_yaml(os.path.join(CONFIG_DIR, f'{args_cli.collect_cfg}.yml'))
     task_name = args_cli.task_name if args_cli.task_name else collect_cfg.get("task_name")
     collect_cfg["task_name"] = task_name
@@ -20,8 +19,7 @@ if __name__ == "__main__":
 
     start_episode = collect_cfg.get("start_episode")
     num_episode = collect_cfg.get("num_episode")
-
+    TASK_ENV.set_up(teleop=True)
     for episode_id in range(start_episode, start_episode + num_episode):
-        TASK_ENV.set_up(teleop=True)
         TASK_ENV.set_episode_idx(episode_id)
         TASK_ENV.collect_one_episode()

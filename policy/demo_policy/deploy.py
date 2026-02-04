@@ -17,9 +17,7 @@ def eval_one_episode(TASK_ENV, model):
         actions = model.get_action() # Get Action according to observation chunk
 
         for action_idx, action in enumerate(actions):
-            TASK_ENV.take_action(action, action_type='joint')
-            # TASK_ENV.take_action(action, action_type='ee')
-            # TASK_ENV.take_action(action, action_type='delta_ee')
+            TASK_ENV.take_action(action)
 
             if action_idx != len(actions) - 1:
                 model.update_obs(obs)

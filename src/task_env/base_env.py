@@ -18,8 +18,8 @@ class BaseEnv:
     def set_episode_idx(self, idx):
         self.episode_idx = idx
     
-    # def take_action(self, action, action_type='joint'):
-    #     self.robot.take_action(action, action_type=action_type)
+    def take_action(self, action):
+        self.robot.move(action)
     
     def get_obs(self): # TODO: type
         return self.robot.get_obs()
