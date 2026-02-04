@@ -48,7 +48,7 @@ class CollectEnv(BaseEnv):
     
     def eval_one_episode(self):
         policy_name = self.deploy_cfg['policy_name']
-        eval_module = __import__(f'policy.{policy_name}.deploy', fromlist=['eval_one_episode'])
+        eval_module = __import__(f'policy_lab.{policy_name}.deploy', fromlist=['eval_one_episode'])
         eval_module.eval_one_episode(TASK_ENV=self, model=self.model)
     
     def reset(self):

@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61"]
+requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -11,29 +11,30 @@ requires-python = ">=3.10"
 license = { file = "LICENSE" }
 
 dependencies = [
-    "tqdm",
-    "scipy",
-    "numpy",
-    "h5py",
-    "pyrealsense2",
-    "opencv-python",
-    "keyboard",
-    "pyyaml",
-    "seaborn",
-    "seaborn",
+  "tqdm",
+  "scipy",
+  "numpy",
+  "h5py",
+  "pyrealsense2",
+  "opencv-python",
+  "keyboard",
+  "pyyaml",
+  "seaborn",
 ]
 
 [project.urls]
 Repository = "https://github.com/XsparkAI/X-One-Pipeline"
 
 [tool.setuptools]
-package-dir = {"" = "src"}
+include-package-data = true
+# ✅ 关键：以仓库根目录为基准发现包
+package-dir = { "" = "." }
 
 [tool.setuptools.packages.find]
-where = ["src", "policy"]
-
-[tool.uv.workspace]
-members = ["packages/*"]
+# ✅ 同时扫描 src 与 policy_lab，但用 include 限定只打包你要的顶层包
+where = ["src", "."]
+include = ["robot*", "client_server*", "task_env*", "policy_lab*"]
+exclude = ["tests*", "third_party*", "docs*", "assets*", "packages*"]
 
 [tool.pytest.ini_options]
 markers = ["manual: should be run manually."]
