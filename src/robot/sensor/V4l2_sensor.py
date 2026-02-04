@@ -23,9 +23,9 @@ class V4l2Sensor(BaseVisionSensor):
         self.is_undistort = False
         self.base_cam_ns = None
 
-    def set_up(self, device: str, is_depth=False, is_jepg=False, is_undistort=False):
+    def set_up(self, device: str, is_depth=False, is_jpeg=False, is_undistort=False):
         self.is_depth = is_depth
-        self.is_jepg = is_jepg
+        self.is_jpeg = is_jpeg
         self.is_undistort = is_undistort
 
         if self.is_undistort:
