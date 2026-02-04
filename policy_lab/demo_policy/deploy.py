@@ -6,7 +6,6 @@ def get_model(usr_args):
     return model
 
 def eval_one_episode(TASK_ENV, model_client):
-
     instruction = TASK_ENV.get_instruction()
     model_client.call(func_name="set_language", obs=instruction)
 

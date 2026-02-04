@@ -37,6 +37,8 @@ class Dual_Test_Robot(Robot):
         print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}] ✅ Setup complete.")
 
     def reset(self):
+        super().reset()
+        
         move_data = {
             "arm":{
                 "left_arm":{

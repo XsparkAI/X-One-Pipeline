@@ -9,9 +9,13 @@ from .base_env import BaseEnv
 
 class CollectEnv(BaseEnv):
     def __init__(self, env_cfg):
+        if env_cfg.get("collect", False):
+            env_cfg["collect"] = None 
+
         super().__init__(env_cfg=env_cfg)
         self.success_num, self.episode_num = 0, 0
         self.env_cfg = env_cfg
+        
 
     def collect_one_episode(self):
         self.robot.reset()

@@ -1,7 +1,7 @@
 import os
 import random
 from robot.utils.base.load_file import load_yaml
-from robot.config._GLOBAL_CONFIG import ROOT_DIR
+from robot.config._GLOBAL_CONFIG import ROOT_DIR, POLLING_INTERVAL
 from .base_env import BaseEnv
 from datetime import datetime
 from client_server.model_client import ModelClient
@@ -9,7 +9,11 @@ import time
 
 class DeployEnv(BaseEnv):
     def __init__(self, deploy_cfg, env_cfg):
+        if env_cfg.get("collect", False):
+            env_cfg["collect"] = None 
+
         super().__init__(env_cfg=env_cfg)
+
         self.success_num, self.episode_num = 0, 0
         self.deploy_cfg, self.env_cfg = deploy_cfg, env_cfg
         self.save_dir = os.path.join(deploy_cfg.get("result_dir"), deploy_cfg.get("policy_name"), env_cfg['task_name'])
@@ -19,6 +23,13 @@ class DeployEnv(BaseEnv):
         self.model_client = ModelClient(port=deploy_cfg['port'])
         self.robot.set_up(teleop=False)
 
+        if self.env_cfg.get("deploy", False):
+            self.offline_eval_mode = True if env_cfg["deploy"].get("offline_eval", False) else False
+            self.move_block_mode = True if env_cfg["deploy"].get("move_block", False) else False
+        else:
+            self.offline_eval_mode = False
+            self.move_block_mode = False
+
     def get_obs(self): # TODO: type
         return self.robot.get_obs()
 
@@ -26,7 +37,7 @@ class DeployEnv(BaseEnv):
         policy_name = self.deploy_cfg['policy_name']
         eval_module = __import__(f'policy_lab.{policy_name}.deploy', fromlist=['eval_one_episode'])
         eval_module.eval_one_episode(TASK_ENV=self, model_client=self.model_client)
-    
+
     def reset(self):
         self.robot.reset()
         self.model_client.call(func_name="reset")
@@ -39,12 +50,35 @@ class DeployEnv(BaseEnv):
 
     def take_action(self, action):
         print(f"Action Step: {self.episode_step} / {self.episode_step_limit} (step_limit)", end='\r')
+        if self.episode_step > self.episode_step_limit:
+            return
+        
         self.episode_step += 1
+
         super().take_action(action)
-        time.sleep(1 / self.robot.config["save_freq"])
+
+        self.last_time = time.monotonic()
+        if self.move_block_mode:
+            while self.robot.is_move():
+                time.sleep(POLLING_INTERVAL)
+        else:
+            while True:
+                now = time.monotonic()
+                if now - self.last_time > 1 / self.robot.config["save_freq"]:
+                    break
+                else:
+                    time.sleep(POLLING_INTERVAL)
+            self.last_time = now
 
     def is_episode_end(self):
-        return self.episode_step >= self.episode_step_limit
+        # offline eval
+        if self.offline_eval_mode:
+            if self.robot.get() is None or self.episode_step >= self.episode_step_limit:
+                return True
+            else:
+                return False
+        else:    
+            return self.episode_step >= self.episode_step_limit
     
     def finish_episode(self):
         # Finalize and log information for the completed episode
