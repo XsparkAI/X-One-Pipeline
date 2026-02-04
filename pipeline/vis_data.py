@@ -2,7 +2,7 @@ import argparse, os
 
 from robot.utils.base.load_file import load_yaml
 from robot.config._GLOBAL_CONFIG import CONFIG_DIR
-from utils.base.data_handler import vis_video
+from robot.utils.base.data_handler import vis_video
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--task_name", type=str)
