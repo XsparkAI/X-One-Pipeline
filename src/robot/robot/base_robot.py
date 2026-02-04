@@ -1,10 +1,7 @@
-import os
-from typing import Dict, Any, List
-import numpy as np
+from typing import Dict, Any
 import time
 from robot.data.collect_any import CollectAny
 from robot.utils.base.data_handler import debug_print, hdf5_groups_to_dict, dict_to_list
-import cv2
 
 # add your controller/sensor type here
 ALLOW_TYPES = ["arm", "mobile","image", "tactile", "teleop"]
@@ -38,7 +35,7 @@ class Robot:
                 for sensor in self.sensors[key].values():
                     sensor.set_collect_info(value)
     
-    def get(self):
+    def get_obs(self):
         controller_data, sensor_data = {}, {}
 
         if self.controllers is not None:
@@ -68,7 +65,7 @@ class Robot:
             for key in self.sensors[sensor_type].keys():
                 extra_info[sensor_type].append(key)
 
-        self.collector.add_extra_config_info(extra_info)
+        self.collector.add_extra_cfg_info(extra_info)
         self.collector.write(episode_id)
     
     def move(self, move_data, key_banned=None):
@@ -100,7 +97,7 @@ class Robot:
                 now_time = time.monotonic()
                 time.sleep(0.00001)
             if is_collect:
-                data = self.get()
+                data = self.get_obs()
                 self.collect(data)
             
             self.play_once(current_action, key_banned)
@@ -124,4 +121,4 @@ def remove_duplicate_keys(source_dict, keys_to_remove):
     
 if __name__ == "__main__":
     robot = Robot()
-    robot.vis_video("save/test_robot/0.hdf5","cam_head")
+    robot.vis_video("save/test_robot/0.hdf5", "cam_head")

@@ -40,3 +40,6 @@ src/robot/policy/ACT_0/*.ckpt
 *.pt
 src/robot/policy/ACT_0/checkpoints/rearrange_nohands/policy_epoch_6000_seed_0.ckpt
 checkpoints/
+
+eval_results/
+data/

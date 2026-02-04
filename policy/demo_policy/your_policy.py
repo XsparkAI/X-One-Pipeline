@@ -9,7 +9,7 @@ class Your_Policy:
 
     def get_action(self):
         # Compute and return the action(s) based on the current observation cache/window
-        actions = []
+        actions = [0]
         # ...
         return actions
     

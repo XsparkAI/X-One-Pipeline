@@ -13,9 +13,9 @@ parser.add_argument("--picture_key", type=str, default="cam_head", help="the key
 args_cli = parser.parse_args()
 
 if __name__ == "__main__":
-    collect_config = load_yaml(os.path.join(CONFIG_DIR, f'{args_cli.collect_cfg}.yml'))
-    task_name = args_cli.task_name if args_cli.task_name else collect_config.get("task_name")
-    save_dir = os.path.join(collect_config.get("save_dir"), task_name)
+    collect_cfg = load_yaml(os.path.join(CONFIG_DIR, f'{args_cli.collect_cfg}.yml'))
+    task_name = args_cli.task_name if args_cli.task_name else collect_cfg.get("task_name")
+    save_dir = os.path.join(collect_cfg.get("save_dir"), task_name)
     data_path = os.path.join(save_dir, f"{args_cli.idx}.hdf5")
     print("load data from:", data_path)
     vis_video(data_path, args_cli.picture_key, args_cli.save_path)

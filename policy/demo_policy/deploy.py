@@ -1,9 +1,8 @@
-
 def get_model(usr_args):
     # import packages and module here
-    from deploy.demo_policy.your_policy import Your_Policy
+    from policy.demo_policy.your_policy import Your_Policy
     # Initialize and return your policy model here according to usr_args
-    model = None
+    model = Your_Policy(usr_args)
     return model
 
 def eval_one_episode(TASK_ENV, model):
@@ -24,5 +23,3 @@ def eval_one_episode(TASK_ENV, model):
 
             if action_idx != len(actions) - 1:
                 model.update_obs(obs)
-
-    model.reset()  # Reset Observation Cache/Window after one episode ends

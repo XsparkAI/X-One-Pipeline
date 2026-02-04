@@ -22,6 +22,7 @@ if __name__ == "__main__":
     deploy_cfg["task_name"], deploy_cfg['policy_name'] = task_name, policy_name
     
     deploy_env = DeployEnv(deploy_cfg=deploy_cfg, env_cfg=collect_cfg)
+    deploy_env.set_up(teleop=False)
     
     # Load Policy
     deploy_env.load_model()
@@ -31,3 +32,4 @@ if __name__ == "__main__":
         deploy_env.reset() # reset model, robot, and environment
         deploy_env.eval_one_episode()
         deploy_env.finish_episode()
+

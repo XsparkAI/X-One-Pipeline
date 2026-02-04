@@ -16,16 +16,16 @@ if args_cli.collect and args_cli.collect_idx is None:
     parser.error("--collect requires --collect_idx (e.g. --collect --collect_idx 3)")
 
 if __name__ == "__main__":
-    collect_config = load_yaml(os.path.join(CONFIG_DIR, f'{args_cli.collect_cfg}.yml'))
-    os.environ["INFO_LEVEL"] = collect_config.get("INFO_LEVEL") # DEBUG, INFO, ERROR
-    task_name = args_cli.task_name if args_cli.task_name else collect_config.get("task_name")
-    save_dir = os.path.join(collect_config.get("save_dir"), task_name)
-    robot_type = collect_config["robot"]["type"]
+    collect_cfg = load_yaml(os.path.join(CONFIG_DIR, f'{args_cli.collect_cfg}.yml'))
+    os.environ["INFO_LEVEL"] = collect_cfg.get("INFO_LEVEL") # DEBUG, INFO, ERROR
+    task_name = args_cli.task_name if args_cli.task_name else collect_cfg.get("task_name")
+    save_dir = os.path.join(collect_cfg.get("save_dir"), task_name)
+    robot_type = collect_cfg["robot"]["type"]
     robot_cls = ROBOT_REGISTRY[robot_type]
-    if collect_config['use_node']:
+    if collect_cfg['use_node']:
         robot_cls = build_robot_node(robot_cls)
-    collect_config["task_name"] = task_name
-    robot = robot_cls(config=collect_config)
+    collect_cfg["task_name"] = task_name
+    robot = robot_cls(config=collect_cfg)
     robot.set_up(teleop=False)
     robot.reset()
     robot.replay(data_path=os.path.join(save_dir, f"{args_cli.idx}.hdf5"), key_banned=["qpos"], is_collect=args_cli.collect, episode_id=args_cli.collect_idx)

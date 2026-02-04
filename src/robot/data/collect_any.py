@@ -100,7 +100,7 @@ class CollectAny:
         data = np.array(data)
         return data
         
-    def add_extra_config_info(self, extra_info):
+    def add_extra_cfg_info(self, extra_info):
         save_dir = os.path.join(self.config["save_dir"], f"{self.config['task_name']}/")
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
