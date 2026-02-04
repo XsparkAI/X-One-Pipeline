@@ -6,10 +6,9 @@ policy_name=demo_policy
 task_name=${1}
 collect_cfg=${2}
 ckpt_setting=${3}
-seed=${4}
-gpu_id=${5}
-policy_conda_env=${6} # Conda
-sim_conda_env=${7} # Conda
+gpu_id=${4}
+policy_conda_env=${5} # Conda
+sim_conda_env=${6} # Conda
 
 export CUDA_VISIBLE_DEVICES=${gpu_id}
 echo -e "\033[33m[INFO] GPU ID (to use): ${gpu_id}\033[0m"
