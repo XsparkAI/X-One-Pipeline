@@ -29,9 +29,9 @@ class Dual_X_Arm(Robot):
         self.controllers["arm"]["left_arm"].set_up(self.config['robot']['ROBOT_CAN']['left_arm'], teleop=teleop)
         self.controllers["arm"]["right_arm"].set_up(self.config['robot']['ROBOT_CAN']['right_arm'], teleop=teleop)
 
-        self.sensors["image"]["cam_head"].set_up(self.config['robot']['CAMERA_SERIALS']['head'], is_depth=False, is_jepg=True)
-        self.sensors["image"]["cam_left_wrist"].set_up(self.config['robot']['CAMERA_SERIALS']['left_wrist'], is_depth=False, is_jepg=True)
-        self.sensors["image"]["cam_right_wrist"].set_up(self.config['robot']['CAMERA_SERIALS']['right_wrist'], is_depth=False, is_jepg=True)
+        self.sensors["image"]["cam_head"].set_up(self.config['robot']['CAMERA_SERIALS']['head'], is_depth=False, is_jpeg=True)
+        self.sensors["image"]["cam_left_wrist"].set_up(self.config['robot']['CAMERA_SERIALS']['left_wrist'], is_depth=False, is_jpeg=True)
+        self.sensors["image"]["cam_right_wrist"].set_up(self.config['robot']['CAMERA_SERIALS']['right_wrist'], is_depth=False, is_jpeg=True)
         
         self.set_collect_type({"arm": ["joint", "qpos", "gripper"], "image": ["color"]})
         print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}] ✅ Setup complete.")
@@ -45,9 +45,9 @@ class Dual_X_Arm(Robot):
             print("Cleaning up existing cameras done.")
 
             """Reload camera devices"""
-            self.sensors["image"]["cam_head"].set_up(self.config['robot']['CAMERA_SERIALS']['head'], is_depth=False, is_jepg=True)
-            self.sensors["image"]["cam_left_wrist"].set_up(self.config['robot']['CAMERA_SERIALS']['left_wrist'], is_depth=False, is_jepg=True)
-            self.sensors["image"]["cam_right_wrist"].set_up(self.config['robot']['CAMERA_SERIALS']['right_wrist'], is_depth=False, is_jepg=True)
+            self.sensors["image"]["cam_head"].set_up(self.config['robot']['CAMERA_SERIALS']['head'], is_depth=False, is_jpeg=True)
+            self.sensors["image"]["cam_left_wrist"].set_up(self.config['robot']['CAMERA_SERIALS']['left_wrist'], is_depth=False, is_jpeg=True)
+            self.sensors["image"]["cam_right_wrist"].set_up(self.config['robot']['CAMERA_SERIALS']['right_wrist'], is_depth=False, is_jpeg=True)
             print("[INFO][camera] ✅ Cleaned up existing cameras.")
         except Exception as e:
             print(f"Error reloading cameras: {str(e)}")
