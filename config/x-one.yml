@@ -2,7 +2,7 @@ INFO_LEVEL: INFO # DEBUG, INFO, ERROR
 
 use_node: true
 
-save_dir: ./data/dual_x_arm/
+save_dir: ./data/x-one/
 save_format: hdf5
 start_episode: 0
 num_episode: 5
@@ -10,8 +10,6 @@ save_freq: 30  # in Hz
 move_check: false
 
 deploy:
-  offline_eval:
-    ["data/test_robot/test/0.hdf5", "data/test_robot/test/1.hdf5"]
   force_reach: true
 
 robot:

@@ -10,8 +10,8 @@ save_freq: 30  # in Hz
 move_check: false
 
 deploy:
-  offline_eval:
-    ["data/test_robot/test/0.hdf5", "data/test_robot/test/1.hdf5"]
+  # offline_eval:
+  #   ["data/test_robot/test/0.hdf5", "data/test_robot/test/1.hdf5"]
   force_reach: true
 
 robot:
