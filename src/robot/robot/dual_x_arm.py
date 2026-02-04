@@ -53,6 +53,8 @@ class Dual_X_Arm(Robot):
             print(f"Error reloading cameras: {str(e)}")
 
     def reset(self):
+        super().reset()
+        
         if self.teleop_mode:
             self.change_mode(teleop=False)
         time.sleep(2) # TODO

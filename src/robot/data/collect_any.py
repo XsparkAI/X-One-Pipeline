@@ -25,6 +25,7 @@ class CollectAny:
         self.last_controller_data = None
         self.resume = resume
         self.handler = None
+        self.move_tolerance = config.get("move_tolerance", 0.001)
         
         # Initialize episode_index based on resume parameter
         if resume and config is not None:
@@ -77,7 +78,7 @@ class CollectAny:
                 self.last_controller_data = controllers_data
                 self.episode.append(episode_data)
             else:
-                if self.move_check_success(controllers_data, tolerance=0.001): # TODO
+                if self.move_check_success(controllers_data, tolerance=self.move_tolerance):
                     self.episode.append(episode_data)
                 else:
                     debug_print("CollectAny", f"robot is not moving, skip this frame!", "INFO")
