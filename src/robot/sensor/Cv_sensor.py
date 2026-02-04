@@ -148,7 +148,7 @@ class CvSensor(BaseVisionSensor):
 if __name__ == "__main__":
     cam = CvSensor("test_cv")
     # cam.set_up(0, is_undistort=True)  # 默认摄像头
-    cam.set_up(4, is_undistort=False, is_jepg=True)  # 默认摄像头
+    cam.set_up(4, is_undistort=False, is_jpeg=True)  # 默认摄像头
     cam.set_collect_info(["color"])  # 只采集彩色
     cam_list = []
     for i in range(10000000):

@@ -19,7 +19,7 @@ class V4l2Sensor(BaseVisionSensor):
         self.width = 640
         self.height = 480
         self.is_depth = False
-        self.is_jepg = False
+        self.is_jpeg = False
         self.is_undistort = False
         self.base_cam_ns = None
 
@@ -146,7 +146,7 @@ class V4l2Sensor(BaseVisionSensor):
 
 if __name__ == "__main__":
     cam = V4l2Sensor("test_v4l2")
-    cam.set_up("/dev/video0", is_undistort=False, is_jepg=False)
+    cam.set_up("/dev/video0", is_undistort=False, is_jpeg=False)
     cam.set_collect_info(["color"])
 
     for i in range(10):
@@ -156,7 +156,7 @@ if __name__ == "__main__":
         cv2.waitKey(100)
     
     cam.cleanup()
-    cam.set_up("/dev/video0", is_undistort=False, is_jepg=False)
+    cam.set_up("/dev/video0", is_undistort=False, is_jpeg=False)
     print("cleanup success!!!")
     for i in range(10000):
         st = time.monotonic_ns()
