@@ -5,6 +5,7 @@ from robot.config._GLOBAL_CONFIG import ROOT_DIR
 from .base_env import BaseEnv
 from datetime import datetime
 from client_server.model_client import ModelClient
+import time
 
 class DeployEnv(BaseEnv):
     def __init__(self, deploy_cfg, env_cfg):
@@ -16,7 +17,6 @@ class DeployEnv(BaseEnv):
         self.episode_step_limit = self.task_info['step_lim']
         os.makedirs(self.save_dir, exist_ok=True)
         self.model_client = ModelClient(port=deploy_cfg['port'])
-
 
     def get_obs(self): # TODO: type
         return self.robot.get_obs()
@@ -44,9 +44,11 @@ class DeployEnv(BaseEnv):
         print("Get Instruction:", instruction)
         return instruction
 
-    def take_action(self, action, action_type='joint'):
-        print(f"Action Step: {self.episode_step + 1} / {self.episode_step_limit} (step_limit)", end='\r')
-        super().take_action(action, action_type)
+    def take_action(self, action):
+        print(f"Action Step: {self.episode_step} / {self.episode_step_limit} (step_limit)", end='\r')
+        self.episode_step += 1
+        super().take_action(action)
+        time.sleep(1 / self.robot.config["save_freq"])
 
     def is_episode_end(self):
         return self.episode_step >= self.episode_step_limit
