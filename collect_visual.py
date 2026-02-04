@@ -10,8 +10,6 @@ sys.path.append("./")
 import numpy as np
 from PyQt5 import QtWidgets, QtCore
 import pyqtgraph as pg
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
 import cv2
 
 import os
