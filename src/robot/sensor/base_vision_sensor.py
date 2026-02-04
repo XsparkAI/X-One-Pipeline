@@ -22,7 +22,7 @@ class BaseVisionSensor(Sensor):
             image["depth"] = None
         
         if "color" in self.collect_info:
-            if getattr(self, "is_jepg", False):
+            if getattr(self, "is_jpeg", False):
                 import cv2
                 img_raw = image["color"]
                 if img_raw is not None:

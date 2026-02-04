@@ -1,0 +1,19 @@
+INFO_LEVEL: INFO # DEBUG, INFO, ERROR
+
+use_node: true
+
+save_dir: ./data/test_robot/
+save_format: hdf5
+start_episode: 0
+num_episode: 5
+save_freq: 30  # in Hz
+move_check: false
+
+robot:
+  type: dual_test_robot
+  init_qpos: 
+    left_arm: [0, 0, 0, 0, 0, 0]
+    left_gripper: 1.0
+    right_arm: [0, 0, 0, 0, 0, 0]
+    right_gripper: 1.0
+  control_mode: position
