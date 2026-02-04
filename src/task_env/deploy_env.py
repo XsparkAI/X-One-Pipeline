@@ -4,6 +4,7 @@ from robot.utils.base.load_file import load_yaml
 from robot.config._GLOBAL_CONFIG import ROOT_DIR
 from .base_env import BaseEnv
 from datetime import datetime
+import time
 
 class DeployEnv(BaseEnv):
     def __init__(self, deploy_cfg, env_cfg):
@@ -42,9 +43,11 @@ class DeployEnv(BaseEnv):
         print("Get Instruction:", instruction)
         return instruction
 
-    def take_action(self, action, action_type='joint'):
-        print(f"Action Step: {self.episode_step + 1} / {self.episode_step_limit} (step_limit)", end='\r')
-        super().take_action(action, action_type)
+    def take_action(self, action):
+        print(f"Action Step: {self.episode_step} / {self.episode_step_limit} (step_limit)", end='\r')
+        self.episode_step += 1
+        super().take_action(action)
+        time.sleep(1 / self.robot.config["save_freq"])
 
     def is_episode_end(self):
         return self.episode_step >= self.episode_step_limit
