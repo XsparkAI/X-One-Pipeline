@@ -26,14 +26,12 @@ dependencies = [
 [project.urls]
 Repository = "https://github.com/XsparkAI/X-One-Pipeline"
 
-# ⭐ 关键配置：告诉 setuptools，包在 src/ 下面
 [tool.setuptools]
 package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["src", "policy"]
 
-# 你原来就有的
 [tool.uv.workspace]
 members = ["packages/*"]
 
