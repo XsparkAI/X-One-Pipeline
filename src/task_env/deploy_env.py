@@ -25,7 +25,7 @@ class DeployEnv(BaseEnv):
     def eval_one_episode(self):
         policy_name = self.deploy_cfg['policy_name']
         eval_module = __import__(f'policy_lab.{policy_name}.deploy', fromlist=['eval_one_episode'])
-        eval_module.eval_one_episode(TASK_ENV=self, model=self.model_client)
+        eval_module.eval_one_episode(TASK_ENV=self, model_client=self.model_client)
     
     def reset(self):
         self.robot.reset()

@@ -15,11 +15,9 @@ def eval_one_episode(TASK_ENV, model_client):
         obs = TASK_ENV.get_obs() # Get Observation
         model_client.call(func_name="update_obs", obs=obs)  # Update Observation, `update_obs` here can be modified
         actions = model_client.call(func_name="get_action") # Get Action according to observation chunk
-
+        
         for action_idx, action in enumerate(actions):
-            TASK_ENV.take_action(action, action_type='joint')
-            # TASK_ENV.take_action(action, action_type='ee')
-            # TASK_ENV.take_action(action, action_type='delta_ee')
+            TASK_ENV.take_action(action)
 
             if action_idx != len(actions) - 1:
                 model_client.call(func_name="update_obs", obs=obs)

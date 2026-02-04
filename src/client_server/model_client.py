@@ -1,6 +1,7 @@
 from .client_server_utils import *
 import socket
 import time
+import pickle
 
 class ModelClient:
     def __init__(self, host="localhost", port=9999, timeout=30):

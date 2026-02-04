@@ -2,7 +2,7 @@ import socket
 import threading
 import traceback
 from .client_server_utils import *
-
+import pickle
 class ModelServer:
     def __init__(self, model, host="localhost", port=None):
         self.model = model
@@ -77,9 +77,9 @@ class ModelServer:
                         chunks.append(chunk)
                         remaining -= len(chunk)
                     raw_msg = b"".join(chunks).decode("utf-8")
-
                     # Deserialize JSON to Python, reconstruct any numpy arrays
                     data = json_to_numpy(raw_msg)
+                    # data = pickle.loads(raw_msg)
 
                     # Extract command and observation
                     cmd = data.get("cmd")
@@ -91,6 +91,7 @@ class ModelServer:
                         raise AttributeError(f"No model method named '{cmd}'")
                     # Call method with or without obs
                     result = method(obs) if obs is not None else method()
+                    
                     response = {"res": result}
 
                     # Serialize response and send back with length header
