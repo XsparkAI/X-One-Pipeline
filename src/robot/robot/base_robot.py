@@ -80,11 +80,11 @@ class Robot:
                     self.controllers[controller_type_name][controller_name].move(controller_action, is_delta=False)
     
     def is_start(self):
-        debug_print(self.name, "your are using default func: is_start(), this will return True only", "DEBUG")
+        debug_print(self.name, "your are using default func_name: is_start(), this will return True only", "DEBUG")
         return True
 
     def reset(self):
-        debug_print(self.name, "your are using default func: reset(), this will return True only", "DEBUG")
+        debug_print(self.name, "your are using default func_name: reset(), this will return True only", "DEBUG")
         return True
 
     def replay(self, data_path, key_banned=None, is_collect=False, episode_id=None):

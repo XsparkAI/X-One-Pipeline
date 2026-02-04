@@ -17,6 +17,7 @@ class DeployEnv(BaseEnv):
         self.episode_step_limit = self.task_info['step_lim']
         os.makedirs(self.save_dir, exist_ok=True)
         self.model_client = ModelClient(port=deploy_cfg['port'])
+        self.robot.set_up(teleop=False)
 
     def get_obs(self): # TODO: type
         return self.robot.get_obs()
@@ -24,20 +25,12 @@ class DeployEnv(BaseEnv):
     def eval_one_episode(self):
         policy_name = self.deploy_cfg['policy_name']
         eval_module = __import__(f'policy_lab.{policy_name}.deploy', fromlist=['eval_one_episode'])
-        eval_module.eval_one_episode(TASK_ENV=self, model=self.model)
+        eval_module.eval_one_episode(TASK_ENV=self, model=self.model_client)
     
     def reset(self):
         self.robot.reset()
-        self.model_client.call(func="reset")
+        self.model_client.call(func_name="reset")
         self.episode_step = 0
-
-    def load_model(self):
-        # Load the policy_lab model from the specified path
-        print("Start Loading Model...")
-        policy_name = self.deploy_cfg['policy_name']
-        policy_module = __import__(f'policy_lab.{policy_name}.deploy', fromlist=['get_model'])
-        self.model = policy_module.get_model(usr_args=self.deploy_cfg)
-        print("Finish Loading Model.")
 
     def get_instruction(self):
         instruction = random.choice(self.task_info['instructions'])
