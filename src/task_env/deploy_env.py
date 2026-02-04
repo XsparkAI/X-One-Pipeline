@@ -44,8 +44,7 @@ class DeployEnv(BaseEnv):
 
     def take_action(self, action, action_type='joint'):
         print(f"Action Step: {self.episode_step + 1} / {self.episode_step_limit} (step_limit)", end='\r')
-        # Execute the given action in the environment
-        self.episode_step += 1
+        super().take_action(action, action_type)
 
     def is_episode_end(self):
         return self.episode_step >= self.episode_step_limit

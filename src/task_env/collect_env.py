@@ -54,8 +54,3 @@ class CollectEnv(BaseEnv):
     def reset(self):
         self.model.reset()
         self.episode_step = 0
-
-    def take_action(self, action, action_type='joint'):
-        print(f"Action Step: {self.episode_step + 1} / {self.episode_step_limit} (step_limit)", end='\r')
-        # Execute the given action in the environment
-        self.episode_step += 1
