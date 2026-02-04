@@ -43,3 +43,4 @@ checkpoints/
 
 eval_results/
 data/
+.vscode/

@@ -25,10 +25,10 @@ class DeployEnv(BaseEnv):
 
         if self.env_cfg.get("deploy", False):
             self.offline_eval_mode = True if env_cfg["deploy"].get("offline_eval", False) else False
-            self.move_block_mode = True if env_cfg["deploy"].get("move_block", False) else False
+            self.force_reach_mode = True if env_cfg["deploy"].get("force_reach", False) else False
         else:
             self.offline_eval_mode = False
-            self.move_block_mode = False
+            self.force_reach_mode = False
 
     def get_obs(self): # TODO: type
         return self.robot.get_obs()
@@ -58,7 +58,7 @@ class DeployEnv(BaseEnv):
         super().take_action(action)
 
         self.last_time = time.monotonic()
-        if self.move_block_mode:
+        if self.force_reach_mode:
             while self.robot.is_move():
                 time.sleep(POLLING_INTERVAL)
         else:
