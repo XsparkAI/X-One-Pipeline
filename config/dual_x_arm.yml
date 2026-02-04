@@ -9,6 +9,11 @@ num_episode: 5
 save_freq: 30  # in Hz
 move_check: false
 
+deploy:
+  offline_eval:
+    ["data/test_robot/test/0.hdf5", "data/test_robot/test/1.hdf5"]
+  move_block: true
+
 robot:
   type: dual_x_arm
   init_qpos: 
