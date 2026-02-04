@@ -11,14 +11,14 @@ class CvSensor(BaseVisionSensor):
         self.cap = None
         self.is_depth = False
 
-    def set_up(self, device_index='', is_depth=False, is_jepg=False, is_undistort=False):
+    def set_up(self, device_index='', is_depth=False, is_jpeg=False, is_undistort=False):
         """
         初始化摄像头
         :param device_index: 摄像头索引号（0 为默认摄像头）
         :param is_depth: 是否为深度摄像头（True 时必须外部提供深度数据）
         """
         self.is_depth = is_depth
-        self.is_jepg = is_jepg
+        self.is_jpeg = is_jpeg
         self.is_undistort = is_undistort
 
         if self.is_undistort:

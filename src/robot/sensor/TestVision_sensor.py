@@ -10,10 +10,10 @@ class TestVisonSensor(BaseVisionSensor):
         self.name = name
         self.INFO = INFO
     
-    def set_up(self, input=None, is_depth = False, encode_rgb=True):
+    def set_up(self, input=None, is_depth=False, is_jpeg=True):
         debug_print(self.name, f"setup success, is_depth={is_depth}",self.INFO)
         self.is_depth = is_depth
-        self.encode_rgb = encode_rgb
+        self.is_jpeg = is_jpeg
 
     def get_image(self):
         image = {}
