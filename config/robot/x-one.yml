@@ -16,3 +16,8 @@ CAMERA_SERIALS:
   head: "/dev/video0"
   left_wrist: "/dev/video2"
   right_wrist: "/dev/video4"
+bias:
+  left_arm:
+    gripper: -0.01
+  right_arm:
+    gripper: -0.01

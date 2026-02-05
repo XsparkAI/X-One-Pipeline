@@ -61,6 +61,8 @@ class Robot:
         self.last_controller_data = None
         self.move_tolerance = robot_config.get("move_tolerance", 0.001)
 
+        self.bias = self.robot_config.get("bias", None)
+
     def set_up(self):
         for controller_type in self.controllers.keys():
             if controller_type not in ALLOW_TYPES:
@@ -128,9 +130,15 @@ class Robot:
     def move(self, move_data, key_banned=None):
         if move_data is None:
             return
+        
         for controller_type_name, controller_type in move_data.items():
             for controller_name, controller_action in controller_type.items():
-                if key_banned is None:
+                if self.bias:
+                    if controller_name in self.bias.keys():
+                        for k in self.bias[controller_name].keys():
+                            controller_action[k] += self.bias[controller_name][k]
+                
+                if key_banned is None:        
                     self.controllers[controller_type_name][controller_name].move(controller_action, is_delta=False)
                 else:
                     controller_action = remove_duplicate_keys(controller_action, key_banned)
@@ -215,9 +223,11 @@ class Robot:
         for controller_type, controller_group in self.controllers.items():
             for controller_name, controller in controller_group.items():
                 if controller_name in episode:
+                    controller_action = episode[controller_name].copy()
+                    
                     move_data = {
                         controller_type: {
-                            controller_name: episode[controller_name],
+                            controller_name: controller_action,
                         },
                     }
                     self.move(move_data, key_banned=key_banned)
