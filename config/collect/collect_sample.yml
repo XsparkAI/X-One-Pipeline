@@ -4,3 +4,4 @@ start_episode: 0
 num_episode: 5
 save_freq: 30  # in Hz
 move_check: false
+task_name: "TEST"

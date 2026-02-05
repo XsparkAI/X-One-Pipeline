@@ -18,7 +18,7 @@ import json
 import time
 from datetime import datetime
 # os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = '/usr/lib/x86_64-linux-gnu/qt5/plugins/platforms'
-os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = "/home/xspark-ai/miniconda3/envs/robot/lib/qt5/plugins/platforms"
+os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = "/home/xspark-ai/miniconda3/envs/Xone/lib/qt5/plugins/platforms"
 
 class StopWorker(QtCore.QThread):
     finished = QtCore.pyqtSignal()
@@ -286,7 +286,7 @@ class DataCollectorUI(QtWidgets.QWidget):
 
     def update_stats(self):
         """Update the top info label with Task, Worker and daily collected hours"""
-        task_name = self.robot.collection.condition.get("task_name", "None")
+        task_name = self.robot.collector.config.get("task_name", "None")
         # Ensure task_name is not empty string, otherwise show None
         if not task_name:
             task_name = "None"
@@ -295,7 +295,7 @@ class DataCollectorUI(QtWidgets.QWidget):
         hours = 0.0
 
         if self.worker_name and task_name != "None":
-            save_path = self.robot.collection.condition["save_path"]
+            save_path = self.robot.collector.config["save_dir"]
             dataset_path = os.path.join(save_path, task_name)
             ratings_file = os.path.join(dataset_path, "ratings.json")
             
@@ -383,10 +383,10 @@ class DataCollectorUI(QtWidgets.QWidget):
         text, ok = QtWidgets.QInputDialog.getText(self, "Set Dataset", "Dataset Name:")
         if ok and text:
             # Update robot condition
-            self.robot.collection.condition["task_name"] = text
+            self.robot.collector.config["task_name"] = text
             
             # Ensure directory exists
-            save_path = self.robot.collection.condition["save_path"]
+            save_path = self.robot.collector.config["save_dir"]
             dataset_path = os.path.join(save_path, text)
             if not os.path.exists(dataset_path):
                 os.makedirs(dataset_path, exist_ok=True)
@@ -403,8 +403,8 @@ class DataCollectorUI(QtWidgets.QWidget):
                 except ValueError:
                     pass
             
-            self.robot.collection.episode_index = max_idx + 1
-            print(f"Dataset set to: {text}, Next Episode ID: {self.robot.collection.episode_index}")
+            self.robot.collector.episode_index = max_idx + 1
+            print(f"Dataset set to: {text}, Next Episode ID: {self.robot.collector.episode_index}")
             
             self.update_stats()
             self.set_initial_state(dataset_set=True)
@@ -445,7 +445,7 @@ class DataCollectorUI(QtWidgets.QWidget):
         if self.is_running:
             return
         
-        self.robot.collection.episode = []
+        self.robot.collector.episode = []
         
         # Disable all during save
         self.btn_start.setEnabled(False)
@@ -481,7 +481,7 @@ class DataCollectorUI(QtWidgets.QWidget):
         self.btn_set_worker.setEnabled(False)
 
         # Store frame count before saving/clearing
-        self.last_episode_frames = len(self.robot.collection.episode)
+        self.last_episode_frames = len(self.robot.collector.episode)
         
         self.robot.change_mode(teleop=False)
         self.stop_worker = StopWorker(self.robot, is_save=True, is_reset=True)
@@ -497,8 +497,8 @@ class DataCollectorUI(QtWidgets.QWidget):
     
     def save_ratings_json(self):
         """Save episode metadata to ratings.json"""
-        save_path = self.robot.collection.condition["save_path"]
-        task_name = self.robot.collection.condition["task_name"]
+        save_path = self.robot.collector.config["save_dir"]
+        task_name = self.robot.collector.config["task_name"]
         dataset_path = os.path.join(save_path, task_name)
         ratings_file = os.path.join(dataset_path, "ratings.json")
         
@@ -510,7 +510,7 @@ class DataCollectorUI(QtWidgets.QWidget):
             ratings = {}
         
         # Get the current episode index (the one that was just saved)
-        episode_idx = self.robot.collection.episode_index - 1
+        episode_idx = self.robot.collector.episode_index - 1
         file_name = f"{episode_idx}.hdf5"
         
         # Add new entry
@@ -529,8 +529,8 @@ class DataCollectorUI(QtWidgets.QWidget):
     
     def remove_from_ratings_json(self, file_name):
         """Remove episode metadata from ratings.json"""
-        save_path = self.robot.collection.condition["save_path"]
-        task_name = self.robot.collection.condition["task_name"]
+        save_path = self.robot.collector.config["save_dir"]
+        task_name = self.robot.collector.config["task_name"]
         dataset_path = os.path.join(save_path, task_name)
         ratings_file = os.path.join(dataset_path, "ratings.json")
         
@@ -558,7 +558,7 @@ class DataCollectorUI(QtWidgets.QWidget):
             # Discard current
             self.is_running = False
             # self.timer.stop()
-            # self.robot.collection.episode = []
+            # self.robot.collector.episode = []
             
             # Reset robot
             self.robot.first_start =True
@@ -576,13 +576,13 @@ class DataCollectorUI(QtWidgets.QWidget):
             
         # else:
         # Discard previous
-        idx = self.robot.collection.episode_index - 1
+        idx = self.robot.collector.episode_index - 1
         if idx < 0:
             self.show_message("Warning", "No previous data to discard!", 2000)
             return
         
-        save_path = self.robot.collection.condition["save_path"]
-        task_name = self.robot.collection.condition["task_name"]
+        save_path = self.robot.collector.config["save_dir"]
+        task_name = self.robot.collector.config["task_name"]
         file_path = os.path.join(save_path, task_name, f"{idx}.hdf5")
         
         if os.path.exists(file_path):
@@ -590,7 +590,7 @@ class DataCollectorUI(QtWidgets.QWidget):
                 os.remove(file_path)
                 # Also remove from ratings.json
                 self.remove_from_ratings_json(f"{idx}.hdf5")
-                self.robot.collection.episode_index = idx
+                self.robot.collector.episode_index = idx
                 self.update_stats()
                 self.show_message("Info", f"Discarded episode {idx}", 2000)
             except Exception as e:
@@ -603,7 +603,7 @@ class DataCollectorUI(QtWidgets.QWidget):
         self.show_message("Info", "Aborted and Reset!", 2000)
 
     def update_views(self):
-        data = self.robot.get()
+        data = self.robot.get_obs()
 
         self.update_images(data[1])
 
@@ -707,8 +707,14 @@ if __name__ == '__main__':
     if TEST_MODE:
         robot = MockRobot()
     else:
-        from my_robot.xspark_robot_node import XsparkRobotNode
-        robot = XsparkRobotNode()
+        # from my_robot.xspark_robot_node import XsparkRobotNode
+        # robot = XsparkRobotNode()
+        from robot.robot import get_robot
+        from robot.utils.base.load_file import load_yaml
+        robot_cfg = load_yaml("config/robot/x-one.yml")
+        collect_cfg = load_yaml("config/collect/collect_sample.yml")
+        robot = get_robot(robot_cfg)
+        robot.collect_init(collect_cfg)
     
     robot.set_up(teleop=True)
 
