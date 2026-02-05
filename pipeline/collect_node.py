@@ -35,8 +35,14 @@ if __name__ == "__main__":
             f"\033[92m[START]\033[0m set_episode_idx -> {episode_id}\n"
         )
 
-        TASK_ENV.set_episode_idx(episode_id)
-        TASK_ENV.collect_one_episode()
+        # TASK_ENV.set_episode_idx(episode_id)
+        # TASK_ENV.collect_one_episode()
+        from robot.utils.base.data_handler import is_enter_pressed
+        import time
+        TASK_ENV.robot.start()
+        while not is_enter_pressed():
+            time.sleep(0.01)
+        TASK_ENV.robot.finish()
 
         print(
             f"\033[92m[DONE ]\033[0m episode_id={episode_id}\n"

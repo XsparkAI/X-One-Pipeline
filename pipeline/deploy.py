@@ -30,7 +30,7 @@ if __name__ == "__main__":
     else:
         collect_cfg=None
 
-    deploy_env = DeployEnv(robot_cfg=robot_cfg,deploy_cfg=deploy_cfg, task_name=task_name, collect_cfg=collect_cfg)
+    deploy_env = DeployEnv(robot_cfg=robot_cfg, deploy_cfg=deploy_cfg, task_name=task_name, collect_cfg=collect_cfg)
 
     # Load policy_lab
     for idx in range(args_cli.eval_episode):
