@@ -7,10 +7,10 @@ from task_env.deploy_env import DeployEnv
 parser = argparse.ArgumentParser()
 parser.add_argument("--task_name", required=True, type=str)
 parser.add_argument("--policy_name", type=str, required=True, help="policy_lab module name for deployment")
-parser.add_argument("--robot_cfg", type=str, required=True, help="config file name for data collection")
 parser.add_argument("--port", type=int, required=True, help="number of evaluation episodes")
-parser.add_argument("--eval_episode", type=int, default=100, help="number of evaluation episodes")
-parser.add_argument("--collect_cfg", type=str, required=False, help="config file name for data collection")
+parser.add_argument("--eval_episode_num", type=int, default=100, help="number of evaluation episodes")
+parser.add_argument("--robot_cfg", type=str, default="x-one", help="config file name for data collection")
+parser.add_argument("--collect_cfg", type=str, default="collect_sample", help="config file name for data collection")
 args_cli = parser.parse_args()
 
 if __name__ == "__main__":
@@ -33,7 +33,7 @@ if __name__ == "__main__":
     deploy_env = DeployEnv(robot_cfg=robot_cfg,deploy_cfg=deploy_cfg, task_name=task_name, collect_cfg=collect_cfg)
 
     # Load policy_lab
-    for idx in range(args_cli.eval_episode):
+    for idx in range(args_cli.eval_episode_num):
         print(f"\033[94m🚀 Running Episode {idx}\033[0m")
         deploy_env.set_episode_idx(idx)
         deploy_env.reset() # reset model, robot, and environment
