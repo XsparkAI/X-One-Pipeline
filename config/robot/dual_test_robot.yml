@@ -2,11 +2,11 @@ INFO_LEVEL: INFO # DEBUG, INFO, ERROR
 
 use_node: true
 
-robot:
-  type: dual_test_robot
-  init_qpos: 
-    left_arm: [0, 0, 0, 0, 0, 0]
-    left_gripper: 1.0
-    right_arm: [0, 0, 0, 0, 0, 0]
-    right_gripper: 1.0
-  control_mode: position
+
+type: dual_test_robot
+init_qpos: 
+  left_arm: [0, 0, 0, 0, 0, 0]
+  left_gripper: 1.0
+  right_arm: [0, 0, 0, 0, 0, 0]
+  right_gripper: 1.0
+control_mode: position

@@ -12,4 +12,4 @@ python pipeline/replay.py \
   --robot_cfg "${robot_cfg}" \
   --collect_cfg "${collect_cfg}" \
   --idx "${idx}" \
-  "$@"
+  # "$@"

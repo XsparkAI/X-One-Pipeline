@@ -64,13 +64,12 @@ class DeployEnv(BaseEnv):
             while self.robot.is_move():
                 time.sleep(POLLING_INTERVAL)
         else:
+            if self.robot.collect_cfg is not None:
+                save_freq = 1 / self.robot.collect_cfg["save_freq"]
+            else:
+                save_freq = 1 /10
             while True:
                 now = time.monotonic()
-                if self.robot.collect_cfg is not None:
-                    save_freq = 1 / self.robot.collect_cfg["save_freq"]
-                else:
-                    save_freq = 1 /10
-                
                 if now - self.last_time > save_freq:
                     break
                 

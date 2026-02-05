@@ -26,6 +26,7 @@ if __name__ == "__main__":
     if collect_cfg_path is not None:
         collect_cfg_path = os.path.join(CONFIG_DIR, "collect/",f'{collect_cfg_path}.yml')
         collect_cfg = load_yaml(collect_cfg_path)
+        collect_cfg["task_name"] = task_name
     else:
         collect_cfg=None
 

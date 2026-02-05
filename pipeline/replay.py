@@ -22,7 +22,7 @@ if __name__ == "__main__":
     robot_cfg = load_yaml(os.path.join(CONFIG_DIR, "robot",f'{args_cli.robot_cfg}.yml'))
 
     task_name = args_cli.task_name if args_cli.task_name else collect_cfg.get("task_name")
-    save_dir = os.path.join(collect_cfg.get("save_dir"), task_name)
+    save_dir = os.path.join(collect_cfg.get("save_dir"), robot_cfg["type"],task_name)
 
     collect_cfg["task_name"] = task_name
 
