@@ -97,3 +97,46 @@ bash scripts/replay.sh ${task_name} ${collect_cfg} ${idx}
 
 ### 2.6 部署策略
 
+要适配指定策略，可以参考 `policy_lab/demo_policy`。  
+你需要模仿此结构，实现以下文件：
+
+- `deploy.py`
+- `deploy.sh`
+- `${your_policy}.py`
+- `eval.sh`
+
+其中 `deploy.yml` 可以直接复制，除非你需要额外输入参数。
+
+---
+
+#### 在 `deploy.py` 中需要实现两个函数
+
+1. `get_model(usr_args)`  
+   - 通过输入的 `usr_args` 实例化你的策略。
+
+2. `eval_one_episode(TASK_ENV, model_client)`  
+   - 这个函数可以直接复制，不需要改动，除非你在推理阶段需要加入其他逻辑。
+
+---
+
+#### 在 `${your_policy}.py` 中封装策略接口
+
+你需要将你的函数封装，用来给 `deploy.py` 的 `get_model()` 返回实例化模型。  
+你可以修改 `demo_policy` 中的对应接口的代码，但**不能修改输入参数**。
+
+1. `update_obs(obs)`  
+   - 无需返回值。  
+   - 每次执行推理前，会调用该函数更新策略的 observation。  
+   - 可在此添加处理逻辑，方便在 `get_action()` 中使用。
+
+2. `get_action(self, obs=None)`  
+   - 默认不输入 `obs`（置为 `None`），只用 `update_obs()` 更新的 observation 来进行推理。  
+   - 需要返回一个 dictionary，可参考 `your_policy.py` 中的实现。
+
+3. `reset(self)`  
+   - 重置模型的 observation，避免新一轮推理受到上一轮影响。  
+   - 如果无需处理，可以直接 `return`。
+
+4. `set_language(self, instruction)`  
+   - 可不实现，仅在 `eval_one_episode()` 中选择性调用。  
+   - 可类似实现其他函数，用来实现完整推理流程。
