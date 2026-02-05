@@ -1,6 +1,5 @@
 import numpy as np
-from robot.utils.base.data_handler import debug_print, hdf5_groups_to_dict, dict_to_list
-
+from robot.utils.base.data_handler import debug_print
 import numpy as np
 
 STATE_POINTS = [
@@ -9,7 +8,7 @@ STATE_POINTS = [
     [0.0, 0., 0.3, 0.1, 0., 0., 0., 0.0, 0., 0.3, 0.1, 0., 0., 0.],
 ]
 
-class Replay:
+class RUN_POINT:
     def __init__(self, state_points, interp_frames=30, chunk_size=10):
         self.state_points = np.asarray(state_points, dtype=np.float32)
         self.interp_frames = interp_frames
@@ -55,7 +54,7 @@ class Your_Policy:
     def __init__(self, usr_args=None):
         # Initialize your policy model here
         self.usr_args = usr_args
-        self.model = Replay(STATE_POINTS)
+        self.model = RUN_POINT(STATE_POINTS)
         
     def update_obs(self, obs):
         # 如果你后面要用历史窗口，可以存在这里
@@ -69,7 +68,6 @@ class Your_Policy:
 
         ret_actions = []
         for action in actions:
-            print(action[:7])
             ret_action = {
                 "arm": {
                     "left_arm": {
@@ -93,4 +91,4 @@ class Your_Policy:
     def reset(self):
         # Reset the observation cache or window here
         self.model.reset()
-        debug_print("YOUR_POLICY", "Replay model reset success!", "INFO")
+        debug_print("YOUR_POLICY", "RUN_POINT model reset success!", "INFO")

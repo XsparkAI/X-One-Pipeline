@@ -141,6 +141,7 @@ def build_robot_node(base_robot_cls):
     class RobotNode(base_robot_cls):
         def __init__(self, config):
             super().__init__(config)
+            self.name = self.name + "_node"
 
         def set_up(self, teleop=False):
             super().set_up(teleop=teleop)

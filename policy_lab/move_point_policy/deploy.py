@@ -1,6 +1,6 @@
 def get_model(usr_args):
     # import packages and module here
-    from policy_lab.demo_policy.your_policy import Your_Policy
+    from policy_lab.move_point_policy.your_policy import Your_Policy
     # Initialize and return your policy_lab model here according to usr_args
     model = Your_Policy(usr_args)
     return model

@@ -5,18 +5,23 @@ from task_env.collect_env import CollectEnv
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--task_name", type=str)
+parser.add_argument("--robot_cfg", type=str, required=True, help="config file name for robot setup.")
 parser.add_argument("--collect_cfg", type=str, required=True, help="config file name for data collection")
 parser.add_argument("--st_idx", type=int, help="start episode index")
 args_cli = parser.parse_args()
 
 if __name__ == "__main__":
-    collect_cfg = load_yaml(os.path.join(CONFIG_DIR, f'{args_cli.collect_cfg}.yml'))
+    # get cfg
+    collect_cfg = load_yaml(os.path.join(CONFIG_DIR, 'collect/',f'{args_cli.collect_cfg}.yml'))
     task_name = args_cli.task_name if args_cli.task_name else collect_cfg.get("task_name")
     collect_cfg["task_name"] = task_name
     
-    os.environ["INFO_LEVEL"] = collect_cfg.get("INFO_LEVEL") # DEBUG, INFO, ERROR
+    robot_cfg = load_yaml(os.path.join(CONFIG_DIR, 'robot/', f'{args_cli.robot_cfg}.yml'))
 
-    TASK_ENV = CollectEnv(env_cfg=collect_cfg)
+    # setup INFO level
+    os.environ["INFO_LEVEL"] = collect_cfg.get("INFO_LEVEL", "INFO") # DEBUG, INFO, ERROR
+
+    TASK_ENV = CollectEnv(robot_cfg, collect_cfg)
     TASK_ENV.set_up(teleop=True)
     
     START = collect_cfg.get("st_idx", 0)

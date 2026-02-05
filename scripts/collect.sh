@@ -2,10 +2,12 @@
 set -euo pipefail
 
 task_name="${1:?task_name required}"
-collect_cfg="${2:?collect_cfg required}"
-shift 2
+robot_cfg="${2:?robot_cfg required}"
+collect_cfg="${3:?collect_cfg required}"
+shift 3
 
 python pipeline/collect.py \
   --task_name "${task_name}" \
+  --robot_cfg "${robot_cfg}" \
   --collect_cfg "${collect_cfg}" \
   "$@"

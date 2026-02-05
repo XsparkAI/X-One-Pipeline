@@ -1,4 +1,6 @@
 from .base_robot import *
+from .base_robot_node import build_robot_node
+
 from .dual_x_arm import Dual_X_Arm
 from .dual_test_robot import Dual_Test_Robot
 
@@ -6,3 +8,11 @@ ROBOT_REGISTRY = {
     "dual_x_arm": Dual_X_Arm,
     "dual_test_robot": Dual_Test_Robot,
 }
+
+def get_robot(robot_cfg):
+    robot_type = robot_cfg["robot"]["type"]
+    robot_cls = ROBOT_REGISTRY[robot_type]
+    if robot_cfg['use_node']:
+        robot_cls = build_robot_node(robot_cls)
+    robot = robot_cls(config=robot_cfg)
+    return robot

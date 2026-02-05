@@ -48,31 +48,17 @@ class OfflineEval:
         self.ptr += 1
     
 class Robot:
-    def __init__(self, config, start_episode=0) -> None:
+    def __init__(self, robot_config) -> None:
         self.name = self.__class__.__name__
         self.controllers = {}
         self.sensors = {}
 
-        self.config = config
-        self.collector = CollectAny(config, start_episode=start_episode)
+        self.robot_config = robot_config
+        self.collect_cfg = None
+        self.collector = None
+        
         self.last_controller_data = None
-        self.move_tolerance = config.get("move_tolerance", 0.001)
-
-        # self.replay_sample = None
-        # self.offline_eval = None
-        # data_path = None
-
-        # if self.config.get("deploy", False):
-        #     data_path = self.config["deploy"].get("offline_eval", None) # List[file_path], file_path, floder_path
-
-        # if data_path is not None:
-        #     if isinstance(data_path, list):
-        #         replay_paths = data_path
-        #     elif os.path.isfile(data_path):
-        #         replay_paths = [data_path]
-        #     else:
-        #          replay_paths = glob.glob(os.path.join(data_path, "*.hdf5"))
-        #     self.replay_sample = ReplaySampler(replay_paths=replay_paths)
+        self.move_tolerance = robot_config.get("move_tolerance", 0.001)
 
     def set_up(self):
         for controller_type in self.controllers.keys():
@@ -84,20 +70,6 @@ class Robot:
             if sensor_type not in ALLOW_TYPES:
                 debug_print(self.name, f"It's recommanded to set your sensor type into our format.\nYOUR STPE:{sensor_type}\n\
                             ALLOW_TYPES:{ALLOW_TYPES}", "WARNING")
-        
-        controller_names = []
-        for _, controller in self.controllers.items():
-            controller_names.extend(controller.keys())
-
-        # 去重（可选）
-        self.controller_names = list(set(controller_names))
-        
-        sensor_names = []
-        for _, sensor in self.sensors.items():
-            sensor_names.extend(sensor.keys())
-
-        # 去重（可选）
-        self.sensor_names = list(set(controller_names))
 
     def set_collect_type(self,INFO_NAMES: Dict[str, Any]):
         for key,value in INFO_NAMES.items():
@@ -109,29 +81,6 @@ class Robot:
                     sensor.set_collect_info(value)
     
     def get_obs(self):
-        # if self.replay_sample is not None:
-            # if self.offline_eval is None:
-            #     self.offline_eval = OfflineEval(self.replay_sample.sample())
-            # data = self.offline_eval.get_data()
-            # if data is None:
-            #     return None
-            
-            # controller_data, sensor_data = data
-
-            # controller_data = {
-            #     k: v
-            #     for k, v in controller_data.items()
-            #     if k in self.controller_names
-            # }
-
-            # sensor_data = {
-            #     k: v
-            #     for k, v in sensor_data.items()
-            #     if k in self.sensor_names
-            # }
-
-            # return controller_data, sensor_data
-        
         controller_data, sensor_data = {}, {}
 
         if self.controllers is not None:
@@ -146,10 +95,21 @@ class Robot:
 
         return [controller_data, sensor_data]
     
+    def collect_init(self, collect_cfg):
+        collect_cfg["save_dir"] = os.path.join(collect_cfg["save_dir"], self.name)
+        self.collect_cfg = collect_cfg
+        debug_print(self.name, f"set collect_cfg: \n {collect_cfg}", "INFO")
+        self.collector = CollectAny(collect_cfg)
+
     def collect(self, data):
+        if self.collector is None:
+            raise ValueError("Should setup collector by running collect_init(collect_dfg) first!")
         self.collector.collect(data[0], data[1])
     
     def finish(self, episode_id=None):
+        if self.collector is None:
+            raise ValueError("Should setup collector by running collect_init(collect_dfg) first!")
+        
         extra_info = {}
         for controller_type in self.controllers.keys():
             extra_info[controller_type] = []
@@ -165,9 +125,6 @@ class Robot:
         self.collector.write(episode_id)
     
     def move(self, move_data, key_banned=None):
-        # if self.offline_eval is not None:
-        #     self.offline_eval.move_once()
-        
         if move_data is None:
             return
         for controller_type_name, controller_type in move_data.items():
@@ -184,9 +141,6 @@ class Robot:
 
     def reset(self):
         debug_print(self.name, "your are using reset(), this will return True.", "DEBUG")
-        # reload a new tarjectory
-        # if self.offline_eval is not None:
-        #     self.offline_eval = None
         return True
     
     def is_move(self):

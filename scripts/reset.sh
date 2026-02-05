@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-collect_cfg="${1:?collect_cfg required}"
+robot_cfg="${1:?robot_cfg required}"
 
-python pipeline/reset.py --collect_cfg "${collect_cfg}"
+python pipeline/reset.py --robot_cfg "${robot_cfg}"

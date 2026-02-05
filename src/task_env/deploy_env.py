@@ -2,35 +2,37 @@ import os
 import random
 from robot.utils.base.load_file import load_yaml
 from robot.config._GLOBAL_CONFIG import ROOT_DIR, POLLING_INTERVAL
+from robot.utils.base.data_handler import debug_print
 from .base_env import BaseEnv
 from datetime import datetime
 from client_server.model_client import ModelClient
 import time
 
 class DeployEnv(BaseEnv):
-    def __init__(self, deploy_cfg, env_cfg):
-        if env_cfg.get("collect", False):
-            env_cfg["collect"] = None 
-
-        super().__init__(env_cfg=env_cfg)
+    def __init__(self, robot_cfg, deploy_cfg, task_name, collect_cfg=None):
+        super().__init__(robot_cfg=robot_cfg)
 
         self.success_num, self.episode_num = 0, 0
-        self.deploy_cfg, self.env_cfg = deploy_cfg, env_cfg
-        self.save_dir = os.path.join(deploy_cfg.get("result_dir"), deploy_cfg.get("policy_name"), env_cfg['task_name'])
-        self.task_info = load_yaml(os.path.join(ROOT_DIR, f"task_info/{env_cfg['task_name']}.json"))
+        self.deploy_cfg = deploy_cfg
+
+        self.save_dir = os.path.join(deploy_cfg.get("result_dir"), deploy_cfg.get("policy_name"), task_name)
+        self.task_info = load_yaml(os.path.join(ROOT_DIR, f"task_info/{task_name}.json"))
         self.episode_step_limit = self.task_info['step_lim']
         os.makedirs(self.save_dir, exist_ok=True)
         self.model_client = ModelClient(port=deploy_cfg['port'])
         self.robot.set_up(teleop=False)
 
-        if self.env_cfg.get("deploy", False):
-            # self.offline_eval_mode = True if env_cfg["deploy"].get("offline_eval", False) else False
-            self.force_reach_mode = True if env_cfg["deploy"].get("force_reach", False) else False
-        else:
-            # self.offline_eval_mode = False
-            self.force_reach_mode = False
+        if collect_cfg is not None:
+            self.robot.collect_init(collect_cfg)
 
-    def get_obs(self): # TODO: type
+        if self.deploy_cfg.get("deploy", False):
+            self.force_reach_mode = True if deploy_cfg["deploy"].get("force_reach", False) else False
+            debug_print("DEPLOY", "deloy policy force_reach_mode=True.", "INFO")
+        else:
+            self.force_reach_mode = False
+            debug_print("DEPLOY", "deloy policy force_reach_mode=False.", "INFO")
+
+    def get_obs(self):
         return self.robot.get_obs()
 
     def eval_one_episode(self):
@@ -64,20 +66,19 @@ class DeployEnv(BaseEnv):
         else:
             while True:
                 now = time.monotonic()
-                if now - self.last_time > 1 / self.robot.config["save_freq"]:
+                if self.robot.collect_cfg is not None:
+                    save_freq = 1 / self.robot.collect_cfg["save_freq"]
+                else:
+                    save_freq = 1 /10
+                
+                if now - self.last_time > save_freq:
                     break
+                
                 else:
                     time.sleep(POLLING_INTERVAL)
             self.last_time = now
 
     def is_episode_end(self):
-        # offline eval
-        # if self.offline_eval_mode:
-        #     if self.robot.get() is None or self.episode_step >= self.episode_step_limit:
-        #         return True
-        #     else:
-        #         return False
-        # else:    
         return self.episode_step >= self.episode_step_limit
     
     def finish_episode(self):
