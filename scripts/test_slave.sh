@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 # set -euo pipefail
 
-task_name="test"
+task_name="test_teleop"
 robot_cfg="x-one"
 collect_cfg="collect_sample"
-shift 3
+port="10002"
+shift 4
 
-python pipeline/collect_node.py \
+python pipeline/collect_teleop_slave.py \
   --task_name "${task_name}" \
-  --robot_cfg "${robot_cfg}" \
+  --slave_robot_cfg "${robot_cfg}" \
   --collect_cfg "${collect_cfg}" \
+  --port "${port}"
   "$@"

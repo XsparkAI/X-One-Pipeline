@@ -3,5 +3,5 @@ save_format: hdf5
 start_episode: 0
 num_episode: 5
 save_freq: 30  # in Hz
-move_check: false
+move_check: true
 task_name: "TEST"

@@ -4,11 +4,12 @@ import time
 import pickle
 
 class ModelClient:
-    def __init__(self, host="localhost", port=9999, timeout=30):
+    def __init__(self, host="localhost", port=9999, timeout=30, recv=True):
         self.host = host
         self.port = port
         self.timeout = timeout
         self.sock = None
+        self._recv = recv
         self._connect()
 
     def _connect(self):
@@ -34,8 +35,7 @@ class ModelClient:
                 else:
                     raise ConnectionError(f"Failed to connect to server after {max_attempts} attempts: {str(e)}")
 
-    def _send_recv(self, data):
-        """Send request and receive response with numpy array support"""
+    def _send(self, data):
         try:
             # Serialize with numpy support
             json_data = numpy_to_json(data).encode("utf-8")
@@ -44,8 +44,24 @@ class ModelClient:
             self.sock.sendall(len(json_data).to_bytes(4, "big"))
             self.sock.sendall(json_data)
 
+        except Exception as e:
+            self.close()
+            raise ConnectionError(f"Communication error: {str(e)}")
+
+    def _send_recv(self, data):
+        """Send request and receive response with numpy array support"""
+        try:
+            st =time.monotonic()
+            # Serialize with numpy support
+            json_data = numpy_to_json(data).encode("utf-8")
+
+            # Send data length and data
+            self.sock.sendall(len(json_data).to_bytes(4, "big"))
+            self.sock.sendall(json_data)
+            print("0: ",time.monotonic() - st)
             # Receive and deserialize response
             response = self._recv_response()
+            print("2: ",time.monotonic() - st)
             return response
 
         except Exception as e:
@@ -55,7 +71,10 @@ class ModelClient:
     def _recv_response(self):
         """Receive response with numpy array reconstruction"""
         # Read response length
+        
         len_data = self.sock.recv(4)
+        st = time.monotonic()
+
         if not len_data:
             raise ConnectionError("Connection closed by server")
 
@@ -70,7 +89,7 @@ class ModelClient:
                 raise ConnectionError("Incomplete response received")
             chunks.append(chunk)
             received += len(chunk)
-
+        print("1: ",time.monotonic() - st)
         # Deserialize with numpy reconstruction
         return json_to_numpy(b"".join(chunks).decode("utf-8"))
 

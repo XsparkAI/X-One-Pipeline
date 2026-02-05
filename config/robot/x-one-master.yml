@@ -2,7 +2,7 @@ INFO_LEVEL: INFO # DEBUG, INFO, ERROR
 
 use_node: true
 
-type: dual_x_arm
+type: dual_x_arm_master
 init_qpos: 
   left_arm: [0, 0, 0, 0, 0, 0]
   left_gripper: 1.0
@@ -10,12 +10,9 @@ init_qpos:
   right_gripper: 1.0
 control_mode: position
 ROBOT_CAN:
-  left_arm: can0
-  right_arm: can1
-CAMERA_SERIALS:
-  head: "/dev/video0"
-  left_wrist: "/dev/video2"
-  right_wrist: "/dev/video4"
+  left_arm: can2
+  right_arm: can3
+
 bias:
   left_arm:
     gripper: -0.01

@@ -131,7 +131,6 @@ def is_enter_pressed():
 def vis_video(data_path, picture_key, save_path=None, fps=30):
     if save_path:
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    import pdb;pdb.set_trace()
     episode = dict_to_list(hdf5_groups_to_dict(data_path))
     
     video_writer = None
