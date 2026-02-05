@@ -10,9 +10,9 @@ ROBOT_REGISTRY = {
 }
 
 def get_robot(robot_cfg):
-    robot_type = robot_cfg["robot"]["type"]
+    robot_type = robot_cfg["type"]
     robot_cls = ROBOT_REGISTRY[robot_type]
-    if robot_cfg['use_node']:
+    if robot_cfg.get('use_node', False):
         robot_cls = build_robot_node(robot_cls)
-    robot = robot_cls(config=robot_cfg)
+    robot = robot_cls(robot_config=robot_cfg)
     return robot

@@ -7,7 +7,7 @@ import time
 class Dual_Test_Robot(Robot):
     def __init__(self, robot_config):
         super().__init__(robot_config=robot_config)
-        self.name = self.__class__.__name__
+        
         self.first_start = True
         self.controllers = {
             "arm":{
@@ -42,12 +42,12 @@ class Dual_Test_Robot(Robot):
         move_data = {
             "arm":{
                 "left_arm":{
-                    "joint": self.robot_config['robot']['init_qpos']['left_arm'],
-                    "gripper":  self.robot_config['robot']['init_qpos']['left_gripper'],
+                    "joint": self.robot_config['init_qpos']['left_arm'],
+                    "gripper":  self.robot_config['init_qpos']['left_gripper'],
                 },
                 "right_arm":{
-                    "joint": self.robot_config['robot']['init_qpos']['right_arm'],
-                    "gripper":  self.robot_config['robot']['init_qpos']['right_gripper'],
+                    "joint": self.robot_config['init_qpos']['right_arm'],
+                    "gripper":  self.robot_config['init_qpos']['right_gripper'],
                 }
             }
         }

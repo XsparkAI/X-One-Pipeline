@@ -49,11 +49,12 @@ class OfflineEval:
     
 class Robot:
     def __init__(self, robot_config) -> None:
-        self.name = self.__class__.__name__
+        self.robot_config = robot_config
+
+        self.name = self.robot_config["type"]
         self.controllers = {}
         self.sensors = {}
 
-        self.robot_config = robot_config
         self.collect_cfg = None
         self.collector = None
         

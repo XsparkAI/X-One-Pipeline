@@ -2,25 +2,17 @@ INFO_LEVEL: INFO # DEBUG, INFO, ERROR
 
 use_node: true
 
-save_dir: ./data/x-one/
-save_format: hdf5
-start_episode: 0
-num_episode: 5
-save_freq: 30  # in Hz
-move_check: false
-
-robot:
-  type: dual_x_arm
-  init_qpos: 
-    left_arm: [0, 0, 0, 0, 0, 0]
-    left_gripper: 1.0
-    right_arm: [0, 0, 0, 0, 0, 0]
-    right_gripper: 1.0
-  control_mode: position
-  ROBOT_CAN:
-    left_arm: can1
-    right_arm: can0
-  CAMERA_SERIALS:
-    head: "/dev/video0"
-    left_wrist: "/dev/video2"
-    right_wrist: "/dev/video4"
+type: dual_x_arm
+init_qpos: 
+  left_arm: [0, 0, 0, 0, 0, 0]
+  left_gripper: 1.0
+  right_arm: [0, 0, 0, 0, 0, 0]
+  right_gripper: 1.0
+control_mode: position
+ROBOT_CAN:
+  left_arm: can1
+  right_arm: can0
+CAMERA_SERIALS:
+  head: "/dev/video0"
+  left_wrist: "/dev/video2"
+  right_wrist: "/dev/video4"
