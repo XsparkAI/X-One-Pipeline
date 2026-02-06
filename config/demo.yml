@@ -1,4 +1,7 @@
 INFO_LEVEL: INFO # DEBUG, INFO, ERROR
+
+task_name: null
+
 collect:
   type: demo
   save_dir: ./data/

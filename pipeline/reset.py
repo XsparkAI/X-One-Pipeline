@@ -5,13 +5,13 @@ from robot.config._GLOBAL_CONFIG import CONFIG_DIR
 from robot.robot import get_robot
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--robot_cfg", type=str, required=True, help="config file name for robot setup")
+parser.add_argument("--base_cfg", type=str, required=True, help="config file name for robot setup")
 args_cli = parser.parse_args()
 
 if __name__ == "__main__":
-    robot_cfg = load_yaml(os.path.join(CONFIG_DIR, "robot",f'{args_cli.robot_cfg}.yml'))
-    os.environ["INFO_LEVEL"] = robot_cfg.get("INFO_LEVEL", "INFO") # DEBUG, INFO, ERROR
-    robot = get_robot(robot_cfg)
+    base_cfg = load_yaml(os.path.join(CONFIG_DIR, f'{args_cli.base_cfg}.yml'))
+    os.environ["INFO_LEVEL"] = base_cfg.get("INFO_LEVEL", "INFO") # DEBUG, INFO, ERROR
+    robot = get_robot(base_cfg['robot'])
     
     robot.set_up(teleop=False)
     robot.reset()

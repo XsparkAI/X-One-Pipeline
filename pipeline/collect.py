@@ -4,28 +4,25 @@ from robot.utils.base.load_file import load_yaml
 from task_env.collect_env import CollectEnv
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--task_name", type=str)
-parser.add_argument("--robot_cfg", type=str, default="x-one", help="config file name for robot setup.")
-parser.add_argument("--collect_cfg", type=str, default="collect_sample", help="config file name for data collection")
+parser.add_argument("--task_name", type=str, required=True)
+parser.add_argument("--base_cfg", type=str, required=True)
 parser.add_argument("--st_idx", type=int, default=0, help="start episode index")
 args_cli = parser.parse_args()
 
 if __name__ == "__main__":
     # get cfg
-    collect_cfg = load_yaml(os.path.join(CONFIG_DIR, 'collect/',f'{args_cli.collect_cfg}.yml'))
-    task_name = args_cli.task_name if args_cli.task_name else collect_cfg.get("task_name")
-    collect_cfg["task_name"] = task_name
-    
-    robot_cfg = load_yaml(os.path.join(CONFIG_DIR, 'robot/', f'{args_cli.robot_cfg}.yml'))
+    base_cfg = load_yaml(os.path.join(CONFIG_DIR, f'{args_cli.base_cfg}.yml'))
+    task_name = args_cli.task_name
+    base_cfg["task_name"] = task_name
 
     # setup INFO level
-    os.environ["INFO_LEVEL"] = collect_cfg.get("INFO_LEVEL", "INFO") # DEBUG, INFO, ERROR
+    os.environ["INFO_LEVEL"] = base_cfg.get("INFO_LEVEL", "INFO") # DEBUG, INFO, ERROR
 
-    TASK_ENV = CollectEnv(robot_cfg, collect_cfg)
+    TASK_ENV = CollectEnv(base_cfg)
     TASK_ENV.set_up(teleop=True)
     
     START = args_cli.st_idx
-    END = collect_cfg.get("num_episode")
+    END = base_cfg.get("num_episode")
 
     for episode_id in range(START, END):
         print(
