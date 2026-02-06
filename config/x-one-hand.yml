@@ -1,0 +1,32 @@
+INFO_LEVEL: INFO # DEBUG, INFO, ERROR
+
+collect:
+  task_name: null
+  type: demo
+  save_dir: ./data/
+  save_format: hdf5
+  start_episode: 0
+  num_episode: 100
+  save_freq: 30  # in Hz
+  move_check: true
+
+robot:
+  use_node: true
+
+  type: dual_x_arm_hand
+  init_qpos: 
+    left_arm: [0, 0, 0, 0, 0, 0]
+    left_gripper: 1.0
+    right_arm: [0, 0, 0, 0, 0, 0]
+    right_gripper: 1.0
+  control_mode: position
+  ROBOT_CAN:
+    left_arm: can0
+    right_arm: can1
+  RIGHT_HAND_CFG_PATH: "/home/xspark-ai/project/merge/hand_setting.yml"
+
+  bias:
+    left_arm:
+      gripper: -0.01
+    right_arm:
+      gripper: -0.01
