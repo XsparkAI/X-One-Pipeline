@@ -50,7 +50,6 @@ class ModelClient:
     def _send_recv(self, data):
         """Send request and receive response with numpy array support"""
         try:
-            st =time.monotonic()
             # Serialize with numpy support
             json_data = numpy_to_json(data).encode("utf-8")
 
@@ -70,7 +69,6 @@ class ModelClient:
         # Read response length
         
         len_data = self.sock.recv(4)
-        st = time.monotonic()
 
         if not len_data:
             raise ConnectionError("Connection closed by server")
