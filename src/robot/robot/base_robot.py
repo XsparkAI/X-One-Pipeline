@@ -99,7 +99,8 @@ class Robot:
         return [controller_data, sensor_data]
     
     def collect_init(self, collect_cfg):
-        collect_cfg["save_dir"] = os.path.join(collect_cfg["save_dir"], self.name)
+        collect_cfg["save_dir"] = os.path.join(collect_cfg["save_dir"], collect_cfg["task_name"])
+        collect_cfg["floder_name"] = collect_cfg["type"] + "-" + self.name
         self.collect_cfg = collect_cfg
         debug_print(self.name, f"set collect_cfg: \n {collect_cfg}", "INFO")
         self.collector = CollectAny(collect_cfg)
@@ -124,7 +125,7 @@ class Robot:
             for key in self.sensors[sensor_type].keys():
                 extra_info[sensor_type].append(key)
 
-        self.collector.add_extra_cfg_info(extra_info)
+        self.collector.add_extra_cfg_info(extra_info, repeat=False)
         self.collector.write(episode_id)
     
     def move(self, move_data, key_banned=None):

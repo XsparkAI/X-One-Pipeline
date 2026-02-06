@@ -1,7 +1,7 @@
+type: 30hz-move_check
 save_dir: ./data/
 save_format: hdf5
 start_episode: 0
-num_episode: 5
+num_episode: 100
 save_freq: 30  # in Hz
-move_check: false
-task_name: "TEST"
+move_check: true

@@ -3,6 +3,7 @@ import argparse, os
 from robot.utils.base.load_file import load_yaml
 from robot.config._GLOBAL_CONFIG import CONFIG_DIR
 from robot.utils.base.data_handler import vis_video
+from robot.robot import get_robot
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--task_name", type=str)
@@ -18,11 +19,10 @@ if __name__ == "__main__":
     robot_cfg = load_yaml(os.path.join(CONFIG_DIR, "robot", f'{args_cli.robot_cfg}.yml'))
     task_name = args_cli.task_name if args_cli.task_name else collect_cfg.get("task_name")
 
-    robot_name = robot_cfg["type"]
-    if robot_cfg.get("use_node", False):
-        robot_name = robot_name
+    robot = get_robot(robot_cfg)
 
-    save_dir = os.path.join(collect_cfg.get("save_dir"), robot_name, task_name)
+
+    save_dir = os.path.join(collect_cfg.get("save_dir"), robot.name, task_name)
     data_path = os.path.join(save_dir, f"{args_cli.idx}.hdf5")
     print("load data from:", data_path)
     vis_video(data_path, args_cli.picture_key, args_cli.save_path)

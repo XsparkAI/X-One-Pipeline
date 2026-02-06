@@ -43,6 +43,7 @@ if __name__ == "__main__":
         while not is_enter_pressed():
             time.sleep(0.01)
         TASK_ENV.robot.finish()
+        TASK_ENV.robot.reset()
 
         print(
             f"\033[92m[DONE ]\033[0m episode_id={episode_id}\n"

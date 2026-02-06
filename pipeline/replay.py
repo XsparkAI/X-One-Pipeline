@@ -22,7 +22,6 @@ if __name__ == "__main__":
     robot_cfg = load_yaml(os.path.join(CONFIG_DIR, "robot",f'{args_cli.robot_cfg}.yml'))
 
     task_name = args_cli.task_name if args_cli.task_name else collect_cfg.get("task_name")
-    save_dir = os.path.join(collect_cfg.get("save_dir"), robot_cfg["type"],task_name)
 
     collect_cfg["task_name"] = task_name
 
@@ -31,5 +30,7 @@ if __name__ == "__main__":
 
     robot.set_up(teleop=False)
     robot.reset()
+
+    save_dir = os.path.join(collect_cfg.get("save_dir"), robot.name, task_name)
     
     robot.replay(data_path=os.path.join(save_dir, f"{args_cli.idx}.hdf5"), key_banned=["qpos"], is_collect=args_cli.collect, episode_id=args_cli.collect_idx)

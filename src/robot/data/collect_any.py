@@ -37,7 +37,7 @@ class CollectAny:
         self.handler = handler
 
     def _get_next_episode_index(self):
-        save_dir = os.path.join(self.config["save_dir"], f"{self.config['task_name']}")
+        save_dir = os.path.join(self.config["save_dir"], f"{self.config['floder_name']}")
         if not os.path.exists(save_dir):
             debug_print("CollectAny", f"Save path {save_dir} does not exist, starting from episode 0", "INFO")
             return 0
@@ -101,21 +101,25 @@ class CollectAny:
         data = np.array(data)
         return data
         
-    def add_extra_cfg_info(self, extra_info):
-        save_dir = os.path.join(self.config["save_dir"], f"{self.config['task_name']}/")
+    def add_extra_cfg_info(self, extra_info, repeat=True):
+        save_dir = os.path.join(self.config["save_dir"], f"{self.config['floder_name']}")
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
         
         config_path = os.path.join(save_dir, "config.json")
         if os.path.exists(config_path):
             with open(config_path, 'r', encoding='utf-8') as f:
-                self.config = json.load(f)
+                old_config = json.load(f)
+            self.config = merge_config(self.config, old_config)
+
             for key in extra_info.keys():
                 if key in self.config.keys():
                     value = self.config[key]
                     if not isinstance(value, list):
                         value = [value]
-                    value.append(extra_info[key])
+                    
+                    if repeat:
+                        value.append(extra_info[key])
                     
                     self.config[key] = value
                 else:
@@ -128,7 +132,7 @@ class CollectAny:
             json.dump(self.config, f, ensure_ascii=False, indent=4)
         
     def write(self, episode_id=None):
-        save_dir = os.path.join(self.config["save_dir"], f"{self.config['task_name']}")
+        save_dir = os.path.join(self.config["save_dir"], f"{self.config['floder_name']}")
         
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
@@ -202,3 +206,36 @@ class CollectAny:
                     return True
 
         return False
+
+
+def merge_config(base, incoming, prefix: str = ""):
+    conflicts = []
+
+    for k, v in incoming.items():
+        full_key = f"{prefix}.{k}" if prefix else k
+
+        if k not in base:
+            base[k] = v
+            continue
+
+        base_v = base[k]
+
+        # dict → 递归 merge
+        if isinstance(base_v, dict) and isinstance(v, dict):
+            sub_conflicts = merge_config(base_v, v, full_key)
+            conflicts.extend(sub_conflicts)
+
+        # 非 dict，值不同 → 冲突
+        elif base_v != v:
+            conflicts.append((full_key, base_v, v))
+
+        # else: 值相同 → 什么都不做
+
+    for key, base_v, inc_v in conflicts:
+        debug_print(
+            "merge_config",
+            f"conflict at '{key}': keep={base_v}, incoming={inc_v}",
+            "WARNING",
+        )
+
+    return base
