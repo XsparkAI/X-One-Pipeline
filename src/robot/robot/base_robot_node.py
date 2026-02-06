@@ -10,10 +10,9 @@ import time
 
 ROBOT_MAP = {
     "sensor": {
-        "image": 30,
     },
     "controller": {
-        "arm": 120,
+        "arm": 200,
     }
 }
 
@@ -125,7 +124,8 @@ def build_robot_node(base_robot_cls):
     class RobotNode(base_robot_cls):
         def __init__(self, robot_config):
             super().__init__(robot_config=robot_config)
-
+            self.name = self.name + "_node"
+        
         def set_up(self, teleop=False):
             super().set_up(teleop=teleop)
             (
@@ -164,6 +164,9 @@ def build_robot_node(base_robot_cls):
             return controller_data.copy(), sensor_data.copy()
 
         def start(self):
+            if self.start_event.is_set():
+                self.reset()
+            
             controller_buffers = []
             for v in self.controller_data_buffers.values():
                 controller_buffers.append(v)

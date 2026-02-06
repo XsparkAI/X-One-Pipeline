@@ -34,6 +34,19 @@ class ModelClient:
                 else:
                     raise ConnectionError(f"Failed to connect to server after {max_attempts} attempts: {str(e)}")
 
+    def _send(self, data):
+        try:
+            # Serialize with numpy support
+            json_data = numpy_to_json(data).encode("utf-8")
+
+            # Send data length and data
+            self.sock.sendall(len(json_data).to_bytes(4, "big"))
+            self.sock.sendall(json_data)
+
+        except Exception as e:
+            self.close()
+            raise ConnectionError(f"Communication error: {str(e)}")
+
     def _send_recv(self, data):
         """Send request and receive response with numpy array support"""
         try:
@@ -43,7 +56,6 @@ class ModelClient:
             # Send data length and data
             self.sock.sendall(len(json_data).to_bytes(4, "big"))
             self.sock.sendall(json_data)
-
             # Receive and deserialize response
             response = self._recv_response()
             return response
@@ -55,7 +67,9 @@ class ModelClient:
     def _recv_response(self):
         """Receive response with numpy array reconstruction"""
         # Read response length
+        
         len_data = self.sock.recv(4)
+
         if not len_data:
             raise ConnectionError("Connection closed by server")
 
@@ -70,7 +84,6 @@ class ModelClient:
                 raise ConnectionError("Incomplete response received")
             chunks.append(chunk)
             received += len(chunk)
-
         # Deserialize with numpy reconstruction
         return json_to_numpy(b"".join(chunks).decode("utf-8"))
 

@@ -3,4 +3,4 @@ python pipeline/deploy.py \
     --policy_name move_point_policy \
     --robot_cfg x-one \
     --port 10001 \
-    --collect_cfg collect_sample
+    --collect_cfg collect-30hz
