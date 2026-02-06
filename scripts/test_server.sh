@@ -7,4 +7,4 @@ python policy_lab/setup_policy_server.py \
     --ckpt_setting 0 \
     --seed 0 \
     --policy_name replay_policy \
-    --data_path data/dual_x_arm/pick_up_block/0.hdf5
+    --data_path data/x-one/tianxing/3.hdf5

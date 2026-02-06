@@ -7,9 +7,9 @@ from robot.robot.base_robot_node import build_robot_node
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--task_name", type=str)
-parser.add_argument("--robot_cfg", type=str, required=True, help="config file name for robot setup")
-parser.add_argument("--collect_cfg", type=str, required=True, help="config file name for data collection")
 parser.add_argument("--idx", type=int, required=True, help="config file name for data collection")
+parser.add_argument("--robot_cfg", type=str, default="x-one", help="config file name for robot setup")
+parser.add_argument("--collect_cfg", type=str, default="collect_sample", help="config file name for data collection")
 parser.add_argument("--collect", action="store_true", help="enable data collection")
 parser.add_argument("--collect_idx", type=int, help="required when --collect is set")
 args_cli = parser.parse_args()
