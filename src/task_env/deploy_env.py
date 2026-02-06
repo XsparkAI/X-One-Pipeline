@@ -9,8 +9,8 @@ from client_server.model_client import ModelClient
 import time
 
 class DeployEnv(BaseEnv):
-    def __init__(self, robot_cfg, deploy_cfg, task_name, collect_cfg=None):
-        super().__init__(robot_cfg=robot_cfg)
+    def __init__(self, base_cfg, deploy_cfg, task_name):
+        super().__init__(base_cfg=base_cfg)
 
         self.success_num, self.episode_num = 0, 0
         self.deploy_cfg = deploy_cfg
@@ -21,9 +21,6 @@ class DeployEnv(BaseEnv):
         os.makedirs(self.save_dir, exist_ok=True)
         self.model_client = ModelClient(port=deploy_cfg['port'])
         self.robot.set_up(teleop=False)
-
-        if collect_cfg is not None:
-            self.robot.collect_init(collect_cfg)
 
         if self.deploy_cfg.get("deploy", False):
             self.force_reach_mode = True if deploy_cfg["deploy"].get("force_reach", False) else False

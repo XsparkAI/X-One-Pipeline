@@ -9,22 +9,18 @@ import types
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--task_name", required=True, type=str)
-parser.add_argument("--slave_robot_cfg", type=str, required=True, help="config file name for data collection")
-parser.add_argument("--collect_cfg", type=str, required=True, help="config file name for data collection")
+parser.add_argument("--slave_base_cfg", type=str, required=True, help="config file name for data collection")
 parser.add_argument("--port", type=int, required=True, help="number of evaluation episodes")
 args_cli = parser.parse_args()
 
 def main():
     port = args_cli.port
-    slave_robot_cfg = load_yaml(os.path.join(CONFIG_DIR, 'robot/',f"{args_cli.slave_robot_cfg}.yml"))
-    collect_cfg = load_yaml(os.path.join(CONFIG_DIR, 'collect/',f"{args_cli.collect_cfg}.yml"))
-    task_name = args_cli.task_name if args_cli.task_name else collect_cfg.get("task_name")
-    collect_cfg["task_name"] = task_name
+    slave_base_cfg = load_yaml(os.path.join(CONFIG_DIR, f"{args_cli.slave_base_cfg}.yml"))
+    task_name = args_cli.task_name
+    slave_base_cfg["collect"]["task_name"] = task_name
     
-    slave_robot = get_robot(slave_robot_cfg)
+    slave_robot = get_robot(slave_base_cfg)
     slave_robot.set_up(teleop=False)
-    
-    slave_robot.collect_init(collect_cfg)
     
     server = ModelServer(slave_robot, port=port)
     thread = threading.Thread(target=server.start, daemon=True)

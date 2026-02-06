@@ -13,7 +13,7 @@ if __name__ == "__main__":
     # get cfg
     base_cfg = load_yaml(os.path.join(CONFIG_DIR, f'{args_cli.base_cfg}.yml'))
     task_name = args_cli.task_name
-    base_cfg["task_name"] = task_name
+    base_cfg["collect"]["task_name"] = task_name
 
     # setup INFO level
     os.environ["INFO_LEVEL"] = base_cfg.get("INFO_LEVEL", "INFO") # DEBUG, INFO, ERROR
@@ -22,7 +22,7 @@ if __name__ == "__main__":
     TASK_ENV.set_up(teleop=True)
     
     START = args_cli.st_idx
-    END = base_cfg.get("num_episode")
+    END = base_cfg["collect"].get("num_episode")
 
     for episode_id in range(START, END):
         print(

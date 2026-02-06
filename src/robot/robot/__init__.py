@@ -11,10 +11,10 @@ ROBOT_REGISTRY = {
     "dual_x_arm_master": Dual_X_Arm_master,
 }
 
-def get_robot(robot_cfg):
-    robot_type = robot_cfg["type"]
+def get_robot(base_cfg):
+    robot_type = base_cfg["robot"]["type"]
     robot_cls = ROBOT_REGISTRY[robot_type]
-    if robot_cfg.get('use_node', False):
+    if base_cfg["robot"].get('use_node', False):
         robot_cls = build_robot_node(robot_cls)
-    robot = robot_cls(robot_config=robot_cfg)
+    robot = robot_cls(base_config=base_cfg)
     return robot

@@ -48,18 +48,26 @@ class OfflineEval:
         self.ptr += 1
     
 class Robot:
-    def __init__(self, robot_config) -> None:
-        self.robot_config = robot_config
+    def __init__(self, base_config) -> None:
+        self.robot_config = base_config["robot"]
 
         self.name = self.robot_config["type"]
         self.controllers = {}
         self.sensors = {}
+        collect_cfg = base_config["collect"]
 
-        self.collect_cfg = None
-        self.collector = None
+        if collect_cfg.get("task_name") is None:
+            debug_print(self.name, "task_name not set, you can ignore this warning if don't save data.", "WARNING")
+        else:
+            collect_cfg["save_dir"] = os.path.join(collect_cfg["save_dir"], collect_cfg["task_name"])
+        collect_cfg["floder_name"] = collect_cfg["type"]
+        self.collect_cfg = collect_cfg
+
+        debug_print(self.name, f"set collect_cfg: \n {collect_cfg}", "INFO")
+        self.collector = CollectAny(collect_cfg)
         
         self.last_controller_data = None
-        self.move_tolerance = robot_config.get("move_tolerance", 0.001)
+        self.move_tolerance = self.robot_config.get("move_tolerance", 0.001)
 
         self.bias = self.robot_config.get("bias", None)
 
@@ -98,12 +106,12 @@ class Robot:
 
         return [controller_data, sensor_data]
     
-    def collect_init(self, collect_cfg):
-        collect_cfg["save_dir"] = os.path.join(collect_cfg["save_dir"], collect_cfg["task_name"])
-        collect_cfg["floder_name"] = collect_cfg["type"] + "-" + self.name
-        self.collect_cfg = collect_cfg
-        debug_print(self.name, f"set collect_cfg: \n {collect_cfg}", "INFO")
-        self.collector = CollectAny(collect_cfg)
+    # def collect_init(self, collect_cfg):
+    #     collect_cfg["save_dir"] = os.path.join(collect_cfg["save_dir"], collect_cfg["task_name"])
+    #     collect_cfg["floder_name"] = collect_cfg["type"] + "-" + self.name
+    #     self.collect_cfg = collect_cfg
+    #     debug_print(self.name, f"set collect_cfg: \n {collect_cfg}", "INFO")
+    #     self.collector = CollectAny(collect_cfg)
 
     def collect(self, data):
         if self.collector is None:

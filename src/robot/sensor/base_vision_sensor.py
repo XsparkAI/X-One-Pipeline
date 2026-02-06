@@ -30,6 +30,8 @@ class BaseVisionSensor(Sensor):
                     jpeg_data = encoded_image.tobytes()
                     image["color"] = jpeg_data
                     if self.TEST:
+                        from skimage.metrics import structural_similarity as ssim
+
                         jpeg_bytes = jpeg_data.rstrip(b"\0")
                         nparr = np.frombuffer(jpeg_bytes, dtype=np.uint8)
                         img_dec = cv2.imdecode(nparr, 1)

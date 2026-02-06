@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # set -euo pipefail
 
-robot_cfg="x-one-master"
-port="10002"
+master_base_cfg="x-one-master"
+port="10001"
 shift 2
 
 python pipeline/collect_teleop_master.py \
-  --master_robot_cfg "${robot_cfg}" \
+  --master_base_cfg "${master_base_cfg}" \
   --port "${port}"
   "$@"

@@ -81,8 +81,8 @@ bash scripts/collect.sh ${task_name} ${collect_cfg} # 可选：--st_idx 100
 该操作需要`robot_cfg`中开启`use_node=True`, 然后选择主臂与从臂的配置文件(X-One已经提供了主臂的配置), 注意, 由于主臂不需要进行数据采集, 只需要高频通讯机械臂关节信息, 所以我们主臂中并未绑定摄像头等传感器. 然后根据运行参数, 执行`collect_teleop.sh`.
 
 ```bash
-bash scripts/collect_teleop.sh ${task_name} ${master_robot_cfg} ${slave_robot_cfg} ${collect_cfg} ${port}
-# bash scripts/collect_teleop.sh teleop_sample x-one-master x-one collect-30hz 10001
+bash scripts/collect_teleop.sh ${task_name} ${master_base_cfg} ${slave_base_cfg} ${port}
+# bash scripts/collect_teleop.sh teleop_sample x-one-master x-one 10001
 ```
 
 ### 2.4 重置机械臂位置
