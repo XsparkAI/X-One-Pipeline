@@ -1,10 +1,8 @@
-import time
-
-def get_model(usr_args):
+def get_model(deploy_cfg):
     # import packages and module here
     from policy_lab.replay_policy.your_policy import Your_Policy
-    # Initialize and return your policy_lab model here according to usr_args
-    model = Your_Policy(usr_args)
+    # Initialize and return your policy_lab model here according to deploy_cfg
+    model = Your_Policy(deploy_cfg)
     return model
 
 def eval_one_episode(TASK_ENV, model_client):

@@ -4,11 +4,12 @@ set -e  # 出错即退出
 # ==================== 参数定义 ====================
 policy_name=replay_policy
 task_name=${1}
-collect_cfg=${2}
+base_cfg=${2}
 ckpt_setting=${3}
 gpu_id=${4}
-policy_conda_env=${5} # Conda
-sim_conda_env=${6} # Conda
+seed=${5}
+policy_conda_env=${6} # Conda
+sim_conda_env=${7} # Conda
 
 export CUDA_VISIBLE_DEVICES=${gpu_id}
 echo -e "\033[33m[INFO] GPU ID (to use): ${gpu_id}\033[0m"
@@ -36,15 +37,15 @@ conda activate "${policy_conda_env}"
 echo -e "\033[32m[SERVER] Launching policy_model_server in background...\033[0m"
 PYTHONWARNINGS=ignore::UserWarning \
 python policy_lab/setup_policy_server.py \
-    --port ${FREE_PORT} \
-    --config_path ${yaml_file} \
-    --overrides \
-    --task_name ${task_name} \
-    --collect_cfg ${collect_cfg} \
-    --ckpt_setting ${ckpt_setting} \
-    --seed ${seed} \
-    --policy_name ${policy_name} &
-
+  --port "${FREE_PORT}" \
+  --config_path "${yaml_file}" \
+  --overrides \
+    task_name="${task_name}" \
+    base_cfg="${base_cfg}" \
+    ckpt_setting="${ckpt_setting}" \
+    seed="${seed}" \
+    policy_name="${policy_name}" \
+  &
 SERVER_PID=$!
 echo -e "\033[32m[SERVER] PID=${SERVER_PID} (running in background)\033[0m"
 
@@ -61,18 +62,7 @@ PYTHONWARNINGS=ignore::UserWarning \
 python pipeline/deploy.py \
     --task_name "${task_name}" \
     --policy_name "${policy_name}" \
-    --collect_cfg "${collect_cfg}" \
+    --base_cfg "${base_cfg}" \
     --port ${FREE_PORT}
-    # --port ${FREE_PORT} \
-    # --task_name ${task_name} \
-    # --config_path ${yaml_file} \
-    # --headless \
-    # --enable_cameras \
-    # --overrides \
-    # --task_name ${task_name} \
-    # --collect_cfg ${collect_cfg} \
-    # --ckpt_setting ${ckpt_setting} \
-    # --seed ${seed} \
-    # --policy_name ${policy_name} \
 
 echo -e "\033[33m[MAIN] eval_policy_client has finished; cleaning up server.\033[0m"

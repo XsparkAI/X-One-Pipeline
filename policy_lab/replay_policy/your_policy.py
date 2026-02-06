@@ -1,4 +1,5 @@
 import numpy as np
+import os
 from robot.utils.base.data_handler import debug_print, dict_to_list, hdf5_groups_to_dict
 import numpy as np
 
@@ -62,13 +63,12 @@ class REPLAY:
         self.ptr = 0
 
 class Your_Policy:
-    def __init__(self, usr_args=None):
+    def __init__(self, deploy_cfg=None):
         # Initialize your policy model here
-        self.usr_args = usr_args
-        self.model = REPLAY(self.usr_args["data_path"])
+        self.deploy_cfg = deploy_cfg
+        self.model = REPLAY(os.path.join('./data', deploy_cfg['task_name'], deploy_cfg['base_cfg'], f"{deploy_cfg['ckpt_setting']}.hdf5"))
         
     def update_obs(self, obs):
-        # 如果你后面要用历史窗口，可以存在这里
         self.last_obs = obs
 
     def get_action(self, obs=None):
