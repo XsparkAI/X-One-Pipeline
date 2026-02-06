@@ -18,7 +18,9 @@ def main():
     port = args_cli.port
     slave_robot_cfg = load_yaml(os.path.join(CONFIG_DIR, 'robot/',f"{args_cli.slave_robot_cfg}.yml"))
     collect_cfg = load_yaml(os.path.join(CONFIG_DIR, 'collect/',f"{args_cli.collect_cfg}.yml"))
-
+    task_name = args_cli.task_name if args_cli.task_name else collect_cfg.get("task_name")
+    collect_cfg["task_name"] = task_name
+    
     slave_robot = get_robot(slave_robot_cfg)
     slave_robot.set_up(teleop=False)
     

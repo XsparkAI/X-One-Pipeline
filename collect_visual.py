@@ -712,7 +712,7 @@ if __name__ == '__main__':
         from robot.robot import get_robot
         from robot.utils.base.load_file import load_yaml
         robot_cfg = load_yaml("config/robot/x-one.yml")
-        collect_cfg = load_yaml("config/collect/collect_sample.yml")
+        collect_cfg = load_yaml("config/collect/collect-30hz.yml")
         robot = get_robot(robot_cfg)
         robot.collect_init(collect_cfg)
     

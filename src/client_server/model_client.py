@@ -58,10 +58,8 @@ class ModelClient:
             # Send data length and data
             self.sock.sendall(len(json_data).to_bytes(4, "big"))
             self.sock.sendall(json_data)
-            print("0: ",time.monotonic() - st)
             # Receive and deserialize response
             response = self._recv_response()
-            print("2: ",time.monotonic() - st)
             return response
 
         except Exception as e:
@@ -89,7 +87,6 @@ class ModelClient:
                 raise ConnectionError("Incomplete response received")
             chunks.append(chunk)
             received += len(chunk)
-        print("1: ",time.monotonic() - st)
         # Deserialize with numpy reconstruction
         return json_to_numpy(b"".join(chunks).decode("utf-8"))
 

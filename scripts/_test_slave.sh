@@ -3,7 +3,7 @@
 
 task_name="test_teleop"
 robot_cfg="x-one"
-collect_cfg="collect_sample"
+collect_cfg="collect-30hz"
 port="10002"
 shift 4
 
