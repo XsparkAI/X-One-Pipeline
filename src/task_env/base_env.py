@@ -1,11 +1,11 @@
 from robot.robot import get_robot
 
 class BaseEnv:
-    def __init__(self, robot_cfg):
+    def __init__(self, base_cfg):
         self.episode_idx = None
         self.episode_step = 0
  
-        self.robot = get_robot(robot_cfg=robot_cfg)
+        self.robot = get_robot(robot_cfg=base_cfg['robot'])
     
     def set_up(self, teleop=False):
         self.robot.set_up(teleop=teleop)

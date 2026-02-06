@@ -146,9 +146,6 @@ def build_robot_node(base_robot_cls):
             for c in self.controller_schedulers.values():
                 c.start()
 
-        def collect_init(self, collect_cfg):
-            super().collect_init(collect_cfg)
-
         def get(self):
             controller_data = {}
 
