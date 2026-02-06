@@ -122,12 +122,13 @@ def build_map(sensor_nodes, controller_nodes):
 
 def build_robot_node(base_robot_cls):
     class RobotNode(base_robot_cls):
-        def __init__(self, robot_config):
-            super().__init__(robot_config=robot_config)
+        def __init__(self, base_config):
+            super().__init__(base_config=base_config)
             self.name = self.name + "_node"
         
         def set_up(self, teleop=False):
             super().set_up(teleop=teleop)
+            
             (
                 self.sensor_data_buffers,
                 self.sensor_nodes,

@@ -1,69 +1,73 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SESSION="teleop"
+
 ######################################
-# 参数读取（支持命令行 / 交互）
+# 读取参数（命令行 / 交互）
 ######################################
 
 task_name="${1:-}"
-master_robot_cfg="${2:-}"
-slave_robot_cfg="${3:-}"
-collect_cfg="${4:-}"
-port="${5:-}"
+master_base_cfg="${2:-}"
+slave_base_cfg="${3:-}"
+port="${4:-}"
 
-[ -z "${task_name}" ] && read -p "请输入 task_name: " task_name
-[ -z "${master_robot_cfg}" ] && read -p "请输入 master_robot_cfg: " master_robot_cfg
-[ -z "${slave_robot_cfg}" ] && read -p "请输入 slave_robot_cfg: " slave_robot_cfg
-[ -z "${collect_cfg}" ] && read -p "请输入 collect_cfg: " collect_cfg
-[ -z "${port}" ] && read -p "请输入端口 port: " port
-
-echo
-echo "================ 配置确认 ================"
-echo "task_name        : ${task_name}"
-echo "master_robot_cfg : ${master_robot_cfg}"
-echo "slave_robot_cfg  : ${slave_robot_cfg}"
-echo "collect_cfg      : ${collect_cfg}"
-echo "port             : ${port}"
-echo "========================================="
-echo
+[ -z "$task_name" ] && read -p "task_name: " task_name
+[ -z "$master_base_cfg" ] && read -p "master_base_cfg: " master_base_cfg
+[ -z "$slave_base_cfg" ] && read -p "slave_base_cfg: " slave_base_cfg
+[ -z "$port" ] && read -p "port: " port
 
 ######################################
-# 启动 slave（server，后台）
+# Conda 初始化（关键）
 ######################################
 
-echo "🚀 启动 Teleop Slave (server, 后台)..."
+# ⚠️ 必须是 conda.sh，不是 conda activate 直接写
+CONDA_SH="$HOME/miniconda3/etc/profile.d/conda.sh"
+CONDA_ENV="Xone"
 
+######################################
+# tmux 启动
+######################################
+
+tmux has-session -t "$SESSION" 2>/dev/null && {
+    echo "⚠️ tmux session $SESSION 已存在"
+    exit 1
+}
+
+tmux new-session -d -s "$SESSION"
+
+######################################
+# Pane 1：Slave（后台）
+######################################
+
+tmux send-keys -t "$SESSION":0.0 "
+source ${CONDA_SH} &&
+conda activate ${CONDA_ENV} &&
+echo '🚀 Slave started in conda ${CONDA_ENV}' &&
 python pipeline/collect_teleop_slave.py \
-    --task_name "${task_name}" \
-    --slave_robot_cfg "${slave_robot_cfg}" \
-    --collect_cfg "${collect_cfg}" \
-    --port "${port}" \
-    &
-
-SLAVE_PID=$!
-echo "✅ Slave PID: ${SLAVE_PID}"
-
-# 等 slave socket ready（经验值）
-sleep 2
+  --task_name ${task_name} \
+  --slave_base_cfg ${slave_base_cfg} \
+  --port ${port}
+" C-m
 
 ######################################
-# 启动 master（client，前台）
+# Pane 2：Master（前台）
 ######################################
 
-echo "🚀 启动 Teleop Master (client, 前台)..."
-echo "👉 Ctrl+C 将结束整个 Teleop"
+tmux split-window -h -t "$SESSION"
 
-python pipeline/collect_teleop_master.py \
-    --master_robot_cfg "${master_robot_cfg}" \
-    --port "${port}"
+tmux send-keys -t "$SESSION":0.1 "
+source ${CONDA_SH} &&
+conda activate ${CONDA_ENV} &&
+echo '🚀 Master started in conda ${CONDA_ENV}' &&
+exec python pipeline/collect_teleop_master.py \
+  --master_base_cfg ${master_base_cfg} \
+  --port ${port}
+" C-m
 
 ######################################
-# 清理（master 退出后自动执行）
+# 前台 attach（master 可直接操作）
 ######################################
 
-echo
-echo "🛑 Master 已退出，关闭 Slave..."
-kill "${SLAVE_PID}" 2>/dev/null || true
-wait "${SLAVE_PID}" 2>/dev/null || true
-
-echo "✅ Teleop 结束"
+tmux select-pane -t "$SESSION":0.1
+tmux attach -t "$SESSION"

@@ -5,8 +5,8 @@ from datetime import datetime
 import time
 
 class Dual_Test_Robot(Robot):
-    def __init__(self, robot_config):
-        super().__init__(robot_config=robot_config)
+    def __init__(self, base_config):
+        super().__init__(base_config=base_config)
         
         self.first_start = True
         self.controllers = {
