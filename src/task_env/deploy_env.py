@@ -14,7 +14,7 @@ class DeployEnv(BaseEnv):
         self.success_num, self.episode_num = 0, 0
         self.deploy_cfg = deploy_cfg
 
-        self.save_dir = os.path.join(deploy_cfg.get("result_dir"), deploy_cfg.get("policy_name"), task_name)
+        self.save_dir = os.path.join(deploy_cfg.get("result_dir"), task_name, deploy_cfg.get("policy_name"))
         self.task_info = load_yaml(os.path.join(ROOT_DIR, f"task_info/{task_name}.json"))
         self.episode_step_limit = self.task_info['step_lim']
         os.makedirs(self.save_dir, exist_ok=True)
@@ -60,7 +60,7 @@ class DeployEnv(BaseEnv):
             while self.robot.is_move():
                 time.sleep(POLLING_INTERVAL)
         else:
-            if 'save_freq' in self.base_cfg['collect'].keys() is not None:
+            if 'save_freq' in self.base_cfg['collect'].keys():
                 save_freq = 1 / self.base_cfg['collect']["save_freq"]
             else:
                 save_freq = 1 / 10
@@ -68,7 +68,6 @@ class DeployEnv(BaseEnv):
                 now = time.monotonic()
                 if now - self.last_time > save_freq:
                     break
-                
                 else:
                     time.sleep(POLLING_INTERVAL)
             self.last_time = now

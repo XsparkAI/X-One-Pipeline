@@ -77,8 +77,6 @@ class Dual_X_Arm(Robot):
     
     # ======================== EXTRA ======================== #
     def _change_mode(self, teleop):
-        if self.teleop_mode == teleop:
-            return
         time.sleep(1)
         self.controllers["arm"]["left_arm"].change_mode(teleop)
         time.sleep(1)

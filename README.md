@@ -119,8 +119,8 @@ bash scripts/replay.sh ${task_name} ${base_cfg} ${idx}
 
 #### 在 `deploy.py` 中需要实现两个函数
 
-1. `get_model(usr_args)`  
-   - 通过输入的 `usr_args` 实例化你的策略。
+1. `get_model(deploy_cfg)`  
+   - 通过输入的 `deploy_cfg` 实例化你的策略。
 
 2. `eval_one_episode(TASK_ENV, model_client)`  
    - 这个函数可以直接复制，不需要改动，除非你在推理阶段需要加入其他逻辑。

@@ -5,7 +5,7 @@ class BaseEnv:
         self.episode_idx = None
         self.episode_step = 0
         self.base_cfg = base_cfg
-        self.robot = get_robot(robot_cfg=base_cfg['robot'])
+        self.robot = get_robot(base_cfg=base_cfg)
     
     def set_up(self, teleop=False):
         self.robot.set_up(teleop=teleop)

@@ -56,10 +56,6 @@ class Robot:
         self.sensors = {}
         collect_cfg = base_config["collect"]
 
-        if collect_cfg.get("task_name") is None:
-            debug_print(self.name, "task_name not set, you can ignore this warning if don't save data.", "WARNING")
-        else:
-            collect_cfg["save_dir"] = os.path.join(collect_cfg["save_dir"], collect_cfg["task_name"])
         collect_cfg["floder_name"] = collect_cfg["type"]
         self.collect_cfg = collect_cfg
 
@@ -106,13 +102,6 @@ class Robot:
 
         return [controller_data, sensor_data]
     
-    # def collect_init(self, collect_cfg):
-    #     collect_cfg["save_dir"] = os.path.join(collect_cfg["save_dir"], collect_cfg["task_name"])
-    #     collect_cfg["floder_name"] = collect_cfg["type"] + "-" + self.name
-    #     self.collect_cfg = collect_cfg
-    #     debug_print(self.name, f"set collect_cfg: \n {collect_cfg}", "INFO")
-    #     self.collector = CollectAny(collect_cfg)
-
     def collect(self, data):
         if self.collector is None:
             raise ValueError("Should setup collector by running collect_init(collect_dfg) first!")

@@ -51,9 +51,9 @@ class RUN_POINT:
         self.ptr = 0
 
 class Your_Policy:
-    def __init__(self, usr_args=None):
+    def __init__(self, deploy_cfg=None):
         # Initialize your policy model here
-        self.usr_args = usr_args
+        self.deploy_cfg = deploy_cfg
         self.model = RUN_POINT(STATE_POINTS)
         
     def update_obs(self, obs):

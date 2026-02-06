@@ -19,7 +19,7 @@ KEY_BANNED = ["timestamp"]
 class CollectAny:
     def __init__(self, config=None, start_episode=0, resume=False):
         
-        self.config = config
+        self.collect_cfg = config
         self.episode = []
         self.move_check = config.get("move_check", False) if config is not None else False
         self.last_controller_data = None
@@ -37,7 +37,7 @@ class CollectAny:
         self.handler = handler
 
     def _get_next_episode_index(self):
-        save_dir = os.path.join(self.config["save_dir"], f"{self.config['floder_name']}")
+        save_dir = os.path.join(self.collect_cfg["save_dir"], self.collect_cfg["task_name"], self.collect_cfg['type'])
         if not os.path.exists(save_dir):
             debug_print("CollectAny", f"Save path {save_dir} does not exist, starting from episode 0", "INFO")
             return 0
@@ -102,7 +102,7 @@ class CollectAny:
         return data
         
     def add_extra_cfg_info(self, extra_info, repeat=True):
-        save_dir = os.path.join(self.config["save_dir"], f"{self.config['floder_name']}")
+        save_dir = os.path.join(self.collect_cfg["save_dir"], self.collect_cfg["task_name"], self.collect_cfg['type'])
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
         
@@ -110,29 +110,29 @@ class CollectAny:
         if os.path.exists(config_path):
             with open(config_path, 'r', encoding='utf-8') as f:
                 old_config = json.load(f)
-            self.config = merge_config(self.config, old_config)
+            self.collect_cfg = merge_config(self.collect_cfg, old_config)
 
             for key in extra_info.keys():
-                if key in self.config.keys():
-                    value = self.config[key]
+                if key in self.collect_cfg.keys():
+                    value = self.collect_cfg[key]
                     if not isinstance(value, list):
                         value = [value]
                     
                     if repeat:
                         value.append(extra_info[key])
                     
-                    self.config[key] = value
+                    self.collect_cfg[key] = value
                 else:
-                    self.config[key] = extra_info[key]
+                    self.collect_cfg[key] = extra_info[key]
         else:
             if len(self.episode) > 0:
                 for key in self.episode[0].keys():
-                    self.config[key] = list(self.episode[0][key].keys())
+                    self.collect_cfg[key] = list(self.episode[0][key].keys())
         with open(config_path, 'w', encoding='utf-8') as f:
-            json.dump(self.config, f, ensure_ascii=False, indent=4)
+            json.dump(self.collect_cfg, f, ensure_ascii=False, indent=4)
         
     def write(self, episode_id=None):
-        save_dir = os.path.join(self.config["save_dir"], f"{self.config['floder_name']}")
+        save_dir = os.path.join(self.collect_cfg["save_dir"], self.collect_cfg["task_name"], self.collect_cfg['type'])
         
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
@@ -141,10 +141,10 @@ class CollectAny:
         if not os.path.exists(config_path):
              if len(self.episode) > 0:
                 for key in self.episode[0].keys():
-                    self.config[key] = list(self.episode[0][key].keys())
+                    self.collect_cfg[key] = list(self.episode[0][key].keys())
 
              with open(config_path, 'w', encoding='utf-8') as f:
-                 json.dump(self.config, f, ensure_ascii=False, indent=4)
+                 json.dump(self.collect_cfg, f, ensure_ascii=False, indent=4)
         if not episode_id is None:
             hdf5_path = os.path.join(save_dir, f"{episode_id}.hdf5")
         else:
