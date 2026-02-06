@@ -1,6 +1,5 @@
 python pipeline/deploy.py \
-    --task_name tianxing \
-    --policy_name replay_policy \
-    --robot_cfg x-one \
+    --task_name demo_task \
+    --policy_name move_point_policy \
+    --base_cfg demo \
     --port 10001 \
-    --collect_cfg collect-30hz

@@ -125,6 +125,11 @@ def debug_print(name, info, level="INFO"):
     endc = colors["ENDC"]
     print(f"{color}[{level}][{name}] {info}{endc}")
 
+def flush_stdin():
+    """清空 stdin 缓冲区，避免之前按键影响"""
+    while select.select([sys.stdin], [], [], 0)[0]:
+        sys.stdin.read(1)
+
 def is_enter_pressed():
     return select.select([sys.stdin], [], [], 0)[0] and sys.stdin.read(1) == '\n'    
 

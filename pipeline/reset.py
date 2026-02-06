@@ -11,7 +11,7 @@ args_cli = parser.parse_args()
 if __name__ == "__main__":
     base_cfg = load_yaml(os.path.join(CONFIG_DIR, f'{args_cli.base_cfg}.yml'))
     os.environ["INFO_LEVEL"] = base_cfg.get("INFO_LEVEL", "INFO") # DEBUG, INFO, ERROR
-    robot = get_robot(base_cfg['robot'])
+    robot = get_robot(base_cfg)
     
     robot.set_up(teleop=False)
     robot.reset()

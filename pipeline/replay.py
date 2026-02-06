@@ -20,13 +20,13 @@ if __name__ == "__main__":
 
     task_name = args_cli.task_name if args_cli.task_name else base_cfg.get("task_name")
 
-    base_cfg["task_name"] = task_name
+    base_cfg["collect"]["task_name"] = task_name
 
-    robot = get_robot(base_cfg['robot'])
+    robot = get_robot(base_cfg)
 
     robot.set_up(teleop=False)
     robot.reset()
 
-    save_dir = os.path.join(base_cfg.get("save_dir"), robot.name, task_name)
+    save_dir = os.path.join(base_cfg["collect"].get("save_dir"), base_cfg["collect"]["type"])
     
     robot.replay(data_path=os.path.join(save_dir, f"{args_cli.idx}.hdf5"), key_banned=["qpos"], is_collect=args_cli.collect, episode_id=args_cli.collect_idx)

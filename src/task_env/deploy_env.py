@@ -11,7 +11,6 @@ import time
 class DeployEnv(BaseEnv):
     def __init__(self, base_cfg, deploy_cfg, task_name):
         super().__init__(base_cfg=base_cfg)
-    
         self.success_num, self.episode_num = 0, 0
         self.deploy_cfg = deploy_cfg
 

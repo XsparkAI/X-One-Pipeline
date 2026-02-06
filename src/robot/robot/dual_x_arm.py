@@ -5,8 +5,8 @@ from datetime import datetime
 import time
 
 class Dual_X_Arm(Robot):
-    def __init__(self, robot_config):
-        super().__init__(robot_config=robot_config)
+    def __init__(self, base_config):
+        super().__init__(base_config=base_config)
 
         self.first_start = True
         self.controllers = {
@@ -56,7 +56,7 @@ class Dual_X_Arm(Robot):
         super().reset()
         
         if self.teleop_mode:
-            self.change_mode(teleop=False)
+            self._change_mode(teleop=False)
         time.sleep(2) # TODO
         move_data = {
             "arm":{
@@ -73,11 +73,13 @@ class Dual_X_Arm(Robot):
         self.move(move_data)
         time.sleep(5) # TODO
         if self.teleop_mode:
-            self.change_mode(teleop=True)
+            self._change_mode(teleop=True)
     
     # ======================== EXTRA ======================== #
-    def change_mode(self, teleop):
-        time.sleep(1) # TODO
+    def _change_mode(self, teleop):
+        if self.teleop_mode == teleop:
+            return
+        time.sleep(1)
         self.controllers["arm"]["left_arm"].change_mode(teleop)
         time.sleep(1)
         self.controllers["arm"]["right_arm"].change_mode(teleop)
