@@ -4,12 +4,11 @@ import time
 import pickle
 
 class ModelClient:
-    def __init__(self, host="localhost", port=9999, timeout=30, recv=True):
+    def __init__(self, host="localhost", port=9999, timeout=30):
         self.host = host
         self.port = port
         self.timeout = timeout
         self.sock = None
-        self._recv = recv
         self._connect()
 
     def _connect(self):
