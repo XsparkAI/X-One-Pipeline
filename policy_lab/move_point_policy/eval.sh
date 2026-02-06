@@ -1,65 +1,68 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
+set -e  # 出错即退出
 
-# lib.sh is in parent directory of this deploy.sh
-# shellcheck disable=SC1091
-source "$(cd "$(dirname "$0")/.." && pwd)/lib.sh"
+# ==================== 参数定义 ====================
+policy_name=move_point_policy
+task_name=${1}
+base_cfg=${2}
+ckpt_setting=${3}
+gpu_id=${4}
+seed=${5}
+policy_conda_env=${6} # Conda
+sim_conda_env=${7} # Conda
 
-policy_name="move_point_policy"
-task_name="${1:?task_name required}"
-collect_cfg="${2:?collect_cfg required}"
-robot_cfg="${3:?robot_cfg required}"
-ckpt_setting="${4:?ckpt_setting required}"
-gpu_id="${5:?gpu_id required}"
-policy_conda_env="${6:?policy_conda_env required}"
-sim_conda_env="${7:?sim_conda_env required}"
-seed="${8:-0}"
+export CUDA_VISIBLE_DEVICES=${gpu_id}
+echo -e "\033[33m[INFO] GPU ID (to use): ${gpu_id}\033[0m"
 
-export CUDA_VISIBLE_DEVICES="$gpu_id"
-
-repo_root="$(cd "$(dirname "$0")/../.." && pwd)"
-cd "$repo_root"
+cd ../..
 
 yaml_file="policy_lab/${policy_name}/deploy.yml"
-port="$(get_free_port)"
+echo -e "\033[33m[INFO] Using config file: ${yaml_file}\033[0m"
 
-logi "GPU: $gpu_id"
-logi "YAML: $yaml_file"
-logi "PORT: $port"
+# ==================== 动态端口分配 ====================
+FREE_PORT=$(python3 - << 'EOF'
+import socket
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    s.bind(('', 0))
+    print(s.getsockname()[1])
+EOF
+)
+echo -e "\033[33m[INFO] Using socket port: ${FREE_PORT}\033[0m"
 
-conda_bootstrap
-setup_trap_cleanup
+# ==================== 启动 server ====================
+echo -e "\033[32m[SERVER] Activating Conda environment: ${policy_conda_env}\033[0m"
+source "$(conda info --base)/etc/profile.d/conda.sh"
+conda activate "${policy_conda_env}"
 
-# ---- server (background) ----
-logs "conda: ${policy_conda_env}"
-conda_on "$policy_conda_env"
-logs "start server..."
-server_pid="$(bg_run env PYTHONWARNINGS=ignore::UserWarning \
-  python policy_lab/setup_policy_server.py \
-    --port "$port" \
-    --config_path "$yaml_file" \
-    --overrides \
-    --task_name "$task_name" \
-    --collect_cfg "$collect_cfg" \
-    --robot_cfg "$robot_cfg" \
-    --ckpt_setting "$ckpt_setting" \
-    --seed "$seed" \
-    --policy_name "$policy_name"
-)"
-logs "PID=${server_pid}"
+echo -e "\033[32m[SERVER] Launching policy_model_server in background...\033[0m"
+PYTHONWARNINGS=ignore::UserWarning \
+python policy_lab/setup_policy_server.py \
+  --port "${FREE_PORT}" \
+  --config_path "${yaml_file}" \
+  --overrides \
+    task_name="${task_name}" \
+    base_cfg="${base_cfg}" \
+    ckpt_setting="${ckpt_setting}" \
+    seed="${seed}" \
+    policy_name="${policy_name}" \
+  &
+SERVER_PID=$!
+echo -e "\033[32m[SERVER] PID=${SERVER_PID} (running in background)\033[0m"
 
-# ---- client (foreground) ----
-conda_off
-logc "conda: ${sim_conda_env}"
-conda_on "$sim_conda_env"
-logc "connect :${port}"
+# ==================== 清理机制 ====================
+trap "echo -e '\033[31m[CLEANUP] Killing server PID=${SERVER_PID}\033[0m'; kill ${SERVER_PID} 2>/dev/null" EXIT
 
-env PYTHONWARNINGS=ignore::UserWarning \
+# # ==================== 启动 client ====================
+conda deactivate
+conda activate "${sim_conda_env}"
+echo -e "\033[34m[CLIENT] Activating Conda environment: ${sim_conda_env}\033[0m"
+echo -e "\033[34m[CLIENT] Connecting to server port ${FREE_PORT}...\033[0m"
+
+PYTHONWARNINGS=ignore::UserWarning \
 python pipeline/deploy.py \
-  --task_name "$task_name" \
-  --policy_name "$policy_name" \
-  --collect_cfg "$collect_cfg" \
-  --robot_cfg "$robot_cfg" \
-  --port "$port"
+    --task_name "${task_name}" \
+    --policy_name "${policy_name}" \
+    --base_cfg "${base_cfg}" \
+    --port ${FREE_PORT}
 
-logi "Done."
+echo -e "\033[33m[MAIN] eval_policy_client has finished; cleaning up server.\033[0m"

@@ -16,6 +16,7 @@ def eval_one_episode(TASK_ENV, model_client):
         
         for action_idx, action in enumerate(actions):
             TASK_ENV.take_action(action)
-
+            
             if action_idx != len(actions) - 1:
+                obs = TASK_ENV.get_obs() # Get Observation
                 model_client.call(func_name="update_obs", obs=obs)

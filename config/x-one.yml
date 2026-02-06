@@ -2,13 +2,13 @@ INFO_LEVEL: INFO # DEBUG, INFO, ERROR
 
 collect:
   task_name: null
-  type: demo
-  save_dir: ./data/
+  type: x-one
+  save_dir: ./data
   save_format: hdf5
   start_episode: 0
   num_episode: 100
   save_freq: 30  # in Hz
-  move_check: true
+  move_check: false
 
 robot:
   type: x-one

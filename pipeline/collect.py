@@ -20,7 +20,6 @@ if __name__ == "__main__":
 
     TASK_ENV = CollectEnv(base_cfg)
     TASK_ENV.set_up(teleop=True)
-    
     START = args_cli.st_idx
     END = base_cfg["collect"].get("num_episode")
 

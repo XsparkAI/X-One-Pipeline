@@ -6,10 +6,10 @@ from task_env.deploy_env import DeployEnv
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--task_name", required=True, type=str)
+parser.add_argument("--base_cfg", type=str, required=True)
 parser.add_argument("--policy_name", type=str, required=True, help="policy_lab module name for deployment")
 parser.add_argument("--port", type=int, required=True, help="number of evaluation episodes")
 parser.add_argument("--eval_episode_num", type=int, default=100, help="number of evaluation episodes")
-parser.add_argument("--base_cfg", type=str, required=True)
 args_cli = parser.parse_args()
 
 if __name__ == "__main__":
