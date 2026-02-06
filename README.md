@@ -82,7 +82,7 @@ bash scripts/collect.sh ${task_name} ${collect_cfg} # 可选：--st_idx 100
 
 ```bash
 bash scripts/collect_teleop.sh ${task_name} ${master_robot_cfg} ${slave_robot_cfg} ${collect_cfg} ${port}
-#bash scripts/collect_teleop.sh teleop_sample x-one-master x-one collect-30hz 10001
+# bash scripts/collect_teleop.sh teleop_sample x-one-master x-one collect-30hz 10001
 ```
 
 ### 2.4 重置机械臂位置
