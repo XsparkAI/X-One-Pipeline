@@ -1,8 +1,0 @@
-{
-    "step_lim": 2000,
-    "instructions": [
-        "Move to the red cube.",
-        "Go to the blue sphere.",
-        "Navigate to the green pyramid."
-    ]
-}
