@@ -10,7 +10,7 @@
 
 ### 2.1 环境安装
 ``` bash
-bash scripts/intall.sh
+bash scripts/install.sh
 ```
 执行脚本后请根据提示选择你电脑配置所要安装的脚本, 注意, 如果电脑没有安装ros环境, 则需要先选择(3)配置ros环境.
 
@@ -76,7 +76,9 @@ bash scripts/collect.sh ${task_name} ${base_cfg} # 可选：--st_idx 100
 # bash scripts/collect.sh demo x-one
 ```
 
-#### 基于http通讯的遥操数采
+#### 基于HTTP通讯的遥操数采
+
+> 当你拥有两套X-One平台并希望使用主从遥操时，请关注此指令
 
 该操作需要`robot_cfg`中开启`use_node=True`, 然后选择主臂与从臂的配置文件(X-One已经提供了主臂的配置), 注意, 由于主臂不需要进行数据采集, 只需要高频通讯机械臂关节信息, 所以我们主臂中并未绑定摄像头等传感器. 然后根据运行参数, 执行`collect_teleop.sh`.
 
