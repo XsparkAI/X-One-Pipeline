@@ -105,6 +105,8 @@ class WujiController(DexHandController):
                     controller: {self.controller}"
         else:
             return super().__repr__()
+    
+
 
 if __name__ == "__main__":
     import time
@@ -127,4 +129,5 @@ if __name__ == "__main__":
     
     time.sleep(2)
     left_wuji.controller.write_joint_enabled(False)
+    
     # right_wuji.controller.write_joint_enabled(False)
