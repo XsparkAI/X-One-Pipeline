@@ -8,7 +8,6 @@ import time
 class Dual_X_Arm_hand(Robot):
     def __init__(self, base_config):
         super().__init__(base_config=base_config)
-
         self.first_start = True
         self.controllers = {
             "arm":{
@@ -16,7 +15,8 @@ class Dual_X_Arm_hand(Robot):
                 "right_arm": Y1Controller("right_arm"),
             },
             "hand": {
-                "right_hand": WujiController("right_hand"),
+                "left_hand": WujiController("left_hand"),
+                # "right_hand": WujiController("right_hand"),
             }
         }
         self.sensors = {
@@ -30,10 +30,10 @@ class Dual_X_Arm_hand(Robot):
 
         self.controllers["arm"]["left_arm"].set_up(self.robot_config['ROBOT_CAN']['left_arm'], teleop=teleop)
         self.controllers["arm"]["right_arm"].set_up(self.robot_config['ROBOT_CAN']['right_arm'], teleop=teleop)
-
-        self.controllers["hand"]["right_hand"].set_up("right", self.robot_config["RIGHT_HAND_CFG_PATH"])
+        self.controllers["hand"]["left_hand"].set_up("left", self.robot_config["LEFT_HAND_CFG_PATH"])
+        # self.controllers["hand"]["right_hand"].set_up("right", self.robot_config["RIGHT_HAND_CFG_PATH"])
         
-        self.set_collect_type({"arm": ["joint", "qpos", "gripper"], "hand": ["joint"]})
+        self.set_collect_type({"arm": ["joint", "qpos"], "hand": ["joint"]})
         print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}] ✅ Setup complete.")
 
     def reset(self):
@@ -43,14 +43,19 @@ class Dual_X_Arm_hand(Robot):
             self._change_mode(teleop=False)
         time.sleep(2) # TODO
         move_data = {
-            "arm":{
+            "arm": {
                 "left_arm":{
                     "joint": self.robot_config['init_qpos']['left_arm'],
-                    "gripper":  self.robot_config['init_qpos']['left_gripper'],
+                    # "gripper":  self.robot_config['init_qpos']['left_gripper'],
                 },
                 "right_arm":{
                     "joint": self.robot_config['init_qpos']['right_arm'],
-                    "gripper":  self.robot_config['init_qpos']['right_gripper'],
+                    # "gripper":  self.robot_config['init_qpos']['right_gripper'],
+                }
+            },
+            "hand": {
+                "left_hand": {
+                    "joint": self.robot_config['init_qpos']['left_hand'],
                 }
             }
         }

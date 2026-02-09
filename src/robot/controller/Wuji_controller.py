@@ -9,6 +9,7 @@ import numpy as np
 from robot.utils.base.data_manager import UDPDataManager
 import threading
 import time
+import os
 
 class WujiController(DexHandController):
     def __init__(self, name):
@@ -59,9 +60,9 @@ class WujiController(DexHandController):
                 def format_hand(data):
                     return " ".join([f"[{' '.join([f'{x:3.0f}' for x in finger])}]" for finger in data])
 
-                sys.stdout.write(f"\rERR%:{format_hand(error_pct)} | EFF%:{format_hand(effort_pct)}")
-                sys.stdout.flush()
-
+                if os.getenv("INFO_LEVEL", "INFO").upper() == "DEBUG":
+                    sys.stdout.write(f"\rERR%:{format_hand(error_pct)} | EFF%:{format_hand(effort_pct)}")
+                    sys.stdout.flush()
 
                 # 保持控制频率
                 elapsed = time.perf_counter() - loop_start
@@ -89,8 +90,8 @@ class WujiController(DexHandController):
         self.pos_upper = self.controller.read_joint_upper_limit()
         self.pos_range = np.maximum(self.pos_upper - self.pos_lower, 0.01) # 防止除零
 
-        # thread = threading.Thread(target=self.run, daemon=True)
-        # thread.start()
+        thread = threading.Thread(target=self.run, daemon=True)
+        thread.start()
 
     def get_joint(self):
         positions = self.controller.read_joint_actual_position()
@@ -110,22 +111,23 @@ class WujiController(DexHandController):
 
 if __name__ == "__main__":
     import time
-    wuji = WujiController(name='wuji')
-    wuji.set_up("right", "/home/xspark-ai/project/merge/hand_setting.yml")
-    wuji.set_collect_info(["joint"])
-    while True:
-        print(wuji.get())
-        time.sleep(1)
+    left_wuji = WujiController("left_hand")
+    right_wuji =  WujiController("right_hand")
+    left_wuji.set_up("left", "third_party/wuji_hand/hand_setting.yml")
+
     move_data = {
                 "joint": np.array([
                     # J1   J2   J3   J4
-                    [0.05, 0.0, 0.0, 0.0],  # F1
-                    [0.1, 0.0, 0.0, 0.0],  # F2
-                    [0.1, 0.0, 0.0, 0.0],  # F3
-                    [0.0, 0.0, 0.0, 0.0],  # F4
-                    [0.0, -0.5, 0.0, 0.0],  # F5
+                    [0.5, 0.0, 0.0, 0.0],  # F1
+                    [0.5, 0.0, 0.0, 0.0],  # F2
+                    [0.5, 0.0, 0.0, 0.0],  # F3
+                    [0.5, 0.0, 0.0, 0.0],  # F4
+                    [0.5, 0.0, 0.0, 0.0],  # F5
                 ],dtype=np.float64,)}
     
-    wuji.move(move_data)
+    left_wuji.move(move_data)
+    # right_wuji.move(move_data)
     
-    time.sleep(1)
+    time.sleep(2)
+    left_wuji.controller.write_joint_enabled(True)
+    # right_wuji.controller.write_joint_enabled(False)

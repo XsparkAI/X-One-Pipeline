@@ -3,9 +3,88 @@ import threading
 import time
 from typing import Optional, Tuple
 
-from .network import UDPClient
-from .data_parser import parse_hand_data, extract_response_data
+import json
+import socket
+from typing import Any, Dict, Optional
 
+class UDPClient:
+    def __init__(self, port: int, timeout: float = 0.05, bufsize: int = 4096):
+        self.port = int(port)
+        self.bufsize = bufsize
+        self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._sock.settimeout(timeout)
+        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self._sock.bind(("", self.port))
+
+    def recv_once(self) -> Optional[Dict[str, Any]]:
+        """接收一帧 JSON 数据，超时返回 None。"""
+        try:
+            data, _addr = self._sock.recvfrom(self.bufsize)
+            return json.loads(data.decode("utf-8"))
+        except socket.timeout:
+            return None
+        except Exception:
+            return None
+
+    def close(self):
+        try:
+            self._sock.close()
+        except Exception:
+            pass
+
+    @property
+    def socket(self) -> socket.socket:
+        return self._sock
+
+import numpy as np
+from typing import Dict, Any, Tuple
+
+
+def parse_hand_data(data: Dict[str, Any]) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    解析手部关节数据
+    
+    将字典格式的关节数据转换为 (5, 4) 的 numpy 数组。
+    
+    Args:
+        data: 包含关节数据的字典，键名格式为 "left_finger{1-5}_joint{1-4}"
+              或 "right_finger{1-5}_joint{1-4}"
+    
+    Returns:
+        (left_array, right_array): 左右手的关节数据，shape=(5, 4)
+        
+    数组布局:
+        - 行: 5个手指 (F1-F5)
+        - 列: 4个关节 (J1-J4)
+    """
+    left = np.zeros((5, 4), dtype=np.float64)
+    right = np.zeros((5, 4), dtype=np.float64)
+    
+    for finger in range(1, 6):
+        for joint in range(1, 5):
+            left_key = f"left_finger{finger}_joint{joint}"
+            right_key = f"right_finger{finger}_joint{joint}"
+            
+            if left_key in data:
+                left[finger - 1, joint - 1] = float(data[left_key])
+            if right_key in data:
+                right[finger - 1, joint - 1] = float(data[right_key])
+    
+    return left, right
+
+
+def extract_response_data(response: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    提取响应中的数据部分
+    
+    Args:
+        response: 服务器原始响应
+        
+    Returns:
+        提取的数据字典
+    """
+    return response.get("res", response)
 
 class UDPDataManager:
     """极简 UDP 数据管理器：绑定端口、接收、更新缓存"""

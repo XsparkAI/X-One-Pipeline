@@ -8,7 +8,7 @@ import random
 import numpy as np
 
 # add your controller/sensor type here
-ALLOW_TYPES = ["arm", "mobile","image", "tactile", "teleop"]
+ALLOW_TYPES = ["arm", "mobile", "image", "tactile", "teleop"]
 KEY_BANNED = ["timestamp", "qpos"]
 class ReplaySampler:
     def __init__(self, replay_paths):
@@ -135,7 +135,6 @@ class Robot:
                     if controller_name in self.bias.keys():
                         for k in self.bias[controller_name].keys():
                             controller_action[k] += self.bias[controller_name][k]
-                
                 if key_banned is None:        
                     self.controllers[controller_type_name][controller_name].move(controller_action, is_delta=False)
                 else:

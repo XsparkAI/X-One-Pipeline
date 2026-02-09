@@ -31,7 +31,7 @@ class Y1Controller(ArmController):
             urdf_path = os.path.join(package_path, f"urdf/y1_gripper_g.urdf")
         elif arm_end_type == 3:
             urdf_path = os.path.join(package_path, f"urdf/y1_with_gripper.urdf")
-
+        
         self.controller = Y1SDKInterface(
             can_id=can,
             urdf_path=urdf_path,
@@ -94,11 +94,11 @@ if __name__=="__main__":
     # left_controller.set_up("can1", 3, False)
     right_controller.set_up("can1", 3, True)
 
-    # move_data = {
-    #         "joint": [0, 0, 0, 0, 0, 0],
-    #     }
+    move_data = {
+            "joint": [0, 0, 0, 0, 0, 0],
+        }
     
-    # right_controller.move(move_data)
+    right_controller.move(move_data)
     # time.sleep(3)
     while True:
         print(right_controller.get_state()["gripper"])
