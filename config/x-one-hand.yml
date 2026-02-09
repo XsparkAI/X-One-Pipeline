@@ -28,8 +28,8 @@ robot:
   ROBOT_CAN:
     left_arm: can0
     right_arm: can1
-  LEFT_HAND_CFG_PATH: "/home/xspark-ai/project/X-One-NT/third_party/wuji_hand/hand_setting.yml"
-  RIGHT_HAND_CFG_PATH: "/home/xspark-ai/project/X-One-NT/third_party/wuji_hand/hand_setting.yml"
+  LEFT_HAND_CFG_PATH: "/home/xspark-ai/project/merge/X-One-NT/third_party/wuji_hand/hand_setting.yml"
+  RIGHT_HAND_CFG_PATH: "/home/xspark-ai/project/merge/X-One-NT/third_party/wuji_hand/hand_setting.yml"
 
   # bias:
     # left_arm:

@@ -1,6 +1,3 @@
-import sys
-sys.path.append("./")
-
 from robot.controller.dexhand_controller import DexHandController
 from typing import Dict, Any
 import wujihandpy
@@ -118,16 +115,16 @@ if __name__ == "__main__":
     move_data = {
                 "joint": np.array([
                     # J1   J2   J3   J4
-                    [0.5, 0.0, 0.0, 0.0],  # F1
-                    [0.5, 0.0, 0.0, 0.0],  # F2
-                    [0.5, 0.0, 0.0, 0.0],  # F3
-                    [0.5, 0.0, 0.0, 0.0],  # F4
-                    [0.5, 0.0, 0.0, 0.0],  # F5
+                    [0.0, 0.0, 0.0, 0.0],  # F1
+                    [0.0, 0.0, 0.0, 0.0],  # F2
+                    [0.0, 0.0, 0.0, 0.0],  # F3
+                    [0.0, 0.0, 0.0, 0.0],  # F4
+                    [0.0, 0.0, 0.0, 0.0],  # F5
                 ],dtype=np.float64,)}
     
     left_wuji.move(move_data)
     # right_wuji.move(move_data)
     
     time.sleep(2)
-    left_wuji.controller.write_joint_enabled(True)
+    left_wuji.controller.write_joint_enabled(False)
     # right_wuji.controller.write_joint_enabled(False)

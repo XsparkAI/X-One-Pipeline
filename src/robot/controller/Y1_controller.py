@@ -24,7 +24,7 @@ class Y1Controller(ArmController):
     def set_up(self, can:str, arm_end_type=3, teleop=False):
         self.arm_end_type = arm_end_type
         if arm_end_type == 0:
-            urdf_path = os.path.join(package_path, f"urdf/y10804.urdf")
+            urdf_path = os.path.join(package_path, f"urdf/y1_no_gripper.urdf")
         elif arm_end_type == 1:
             urdf_path = os.path.join(package_path, f"urdf/y1_gripper_t.urdf")
         elif arm_end_type == 2:
