@@ -1,6 +1,3 @@
-import sys
-sys.path.append('./')
-
 from robot.utils.base.data_handler import debug_print
 import subprocess
 import h5py

@@ -1,6 +1,3 @@
-import sys
-sys.path.append("./")
-
 from typing import List
 import numpy as np
 import time
