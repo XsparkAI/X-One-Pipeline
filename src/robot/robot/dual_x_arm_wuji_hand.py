@@ -16,7 +16,7 @@ class Dual_X_Arm_hand(Robot):
             },
             "hand": {
                 "left_hand": WujiController("left_hand"),
-                # "right_hand": WujiController("right_hand"),
+                "right_hand": WujiController("right_hand"),
             }
         }
         self.sensors = {
@@ -31,7 +31,7 @@ class Dual_X_Arm_hand(Robot):
         self.controllers["arm"]["left_arm"].set_up(self.robot_config['ROBOT_CAN']['left_arm'], arm_end_type=0, teleop=teleop)
         self.controllers["arm"]["right_arm"].set_up(self.robot_config['ROBOT_CAN']['right_arm'], arm_end_type=0, teleop=teleop)
         self.controllers["hand"]["left_hand"].set_up("left", self.robot_config["LEFT_HAND_CFG_PATH"])
-        # self.controllers["hand"]["right_hand"].set_up("right", self.robot_config["RIGHT_HAND_CFG_PATH"])
+        self.controllers["hand"]["right_hand"].set_up("right", self.robot_config["RIGHT_HAND_CFG_PATH"])
         
         self.set_collect_type({"arm": ["joint", "qpos"], "hand": ["joint"]})
         print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}] ✅ Setup complete.")
@@ -56,6 +56,9 @@ class Dual_X_Arm_hand(Robot):
             "hand": {
                 "left_hand": {
                     "joint": self.robot_config['init_qpos']['left_hand'],
+                },
+                "right_hand": {
+                    "joint": self.robot_config['init_qpos']['right_hand']
                 }
             }
         }

@@ -170,7 +170,7 @@ class Robot:
             return False
 
     def replay(self, data_path, key_banned=None, is_collect=False, episode_id=None):
-        time_interval = 1 / 20
+        time_interval = 1 / 30
         episode_data = dict_to_list(hdf5_groups_to_dict(data_path))
         
         now_time = last_time = time.monotonic()
