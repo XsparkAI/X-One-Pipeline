@@ -9,8 +9,7 @@ from robot.utils.base.data_handler import hdf5_groups_to_dict
 # Config
 # ==========================
 # DATA_PATH = "./0.hdf5"
-DATA_PATH = "./data/dual_x_arm/test/0.hdf5"
-import pdb;pdb.set_trace()
+DATA_PATH = "data/mobile_test/x-one-mobile-30hz/0.hdf5"
 # DATA_PATH = "save_xxx/new/0.hdf5"
 # DATA_PATH = "/mnt/nas/y1_real_data/redbao_stage1/10.hdf5"
 SAVE_DIR = "save/timestamp_analysis"
@@ -25,7 +24,7 @@ TIME_UNIT = 1e6           # ns → ms
 # Load data
 # ==========================
 episode = hdf5_groups_to_dict(DATA_PATH)
-# import pdb;pdb.set_trace()
+import pdb;pdb.set_trace()
 
 os.makedirs(SAVE_DIR, exist_ok=True)
 
