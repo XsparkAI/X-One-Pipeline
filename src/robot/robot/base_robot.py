@@ -8,63 +8,34 @@ import random
 import numpy as np
 
 # add your controller/sensor type here
-ALLOW_TYPES = ["arm", "mobile","image", "tactile", "teleop"]
+ALLOW_TYPES = ["arm", "mobile", "image", "tactile", "teleop"]
 KEY_BANNED = ["timestamp", "qpos"]
-class ReplaySampler:
-    def __init__(self, replay_paths):
-        self.replay_paths = list(replay_paths)   # 原始全集
-        self._pool = []                           # 当前可抽取池
-        self._reset_pool()
-
-    def _reset_pool(self):
-        """重新填充并打乱"""
-        self._pool = self.replay_paths.copy()
-        random.shuffle(self._pool)
-
-    def sample(self) -> str:
-        """
-        每次随机取一个不重复的元素
-        如果用完，自动重置
-        """
-        if not self._pool:
-            self._reset_pool()
-
-        return self._pool.pop()
-    
-class OfflineEval:
-    def __init__(self, hdf5_path) -> None:
-        debug_print("OfflineEval", f"Replay data: {hdf5_path}.", "INFO")
-        self.ptr = 0
-        self.episode = dict_to_list(hdf5_groups_to_dict(hdf5_path))
-    
-    def get_data(self):
-        try:
-            data = self.episode[self.ptr], self.episode[self.ptr]
-        except:
-            return None
-        return data
-
-    def move_once(self):
-        self.ptr += 1
     
 class Robot:
     def __init__(self, base_config) -> None:
+        if "robot" not in base_config:
+            debug_print("ROBOT", "Missing 'robot' section in config!", "ERROR")
+            raise KeyError("Config missing 'robot' section")
+            
         self.robot_config = base_config["robot"]
-
-        self.name = self.robot_config["type"]
+        self.name = self.robot_config.get("type", "unknown_robot")
+        
         self.controllers = {}
         self.sensors = {}
-        collect_cfg = base_config["collect"]
 
-        collect_cfg["floder_name"] = collect_cfg["type"]
-        self.collect_cfg = collect_cfg
-
-        debug_print(self.name, f"set collect_cfg: \n {collect_cfg}", "INFO")
-        self.collector = CollectAny(collect_cfg)
+        if "collect" not in base_config:
+            debug_print(self.name, "Missing 'collect' section in config, collector will be disabled.", "WARNING")
+            self.collect_cfg = {}
+            self.collector = None
+        else:
+            collect_cfg = base_config["collect"]
+            collect_cfg["floder_name"] = collect_cfg.get("type", "default")
+            self.collect_cfg = collect_cfg
+            debug_print(self.name, f"set collect_cfg: \n {collect_cfg}", "INFO")
+            self.collector = CollectAny(collect_cfg)
         
         self.last_controller_data = None
         self.move_tolerance = self.robot_config.get("move_tolerance", 0.001)
-
         self.bias = self.robot_config.get("bias", None)
 
     def set_up(self):
@@ -135,7 +106,6 @@ class Robot:
                     if controller_name in self.bias.keys():
                         for k in self.bias[controller_name].keys():
                             controller_action[k] += self.bias[controller_name][k]
-                
                 if key_banned is None:        
                     self.controllers[controller_type_name][controller_name].move(controller_action, is_delta=False)
                 else:
