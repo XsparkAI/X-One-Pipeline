@@ -1,6 +1,3 @@
-import sys
-sys.path.append("./")
-
 import numpy as np
 
 from robot.controller.controller import Controller

@@ -20,6 +20,8 @@ dependencies = [
   "keyboard",
   "pyyaml",
   "seaborn",
+  "wujihandpy",
+  "omegaconf"
 ]
 
 [project.urls]
