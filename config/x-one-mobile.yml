@@ -1,0 +1,36 @@
+INFO_LEVEL: INFO # DEBUG, INFO, ERROR
+
+collect:
+  task_name: null
+  type: x-one-mobile-30hz
+  save_dir: ./data
+  save_format: hdf5
+  start_episode: 0
+  num_episode: 100
+  save_freq: 30  # in Hz
+  move_check: false
+
+robot:
+  type: x-one-mobile
+  use_node: true
+  init_qpos:
+    left_arm: [0, 0, 0, 0, 0, 0]
+    left_gripper: 1.0
+    right_arm: [0, 0, 0, 0, 0, 0]
+    right_gripper: 1.0
+  control_mode: position
+  ROBOT_CAN:
+    left_arm: can0
+    right_arm: can1
+  SLAMWARE:
+    robot_ip: "192.168.11.1"
+    port: "1448"
+  CAMERA_SERIALS:
+    head: "/dev/video0"
+    left_wrist: "/dev/video2"
+    right_wrist: "/dev/video4"
+  bias:
+    left_arm:
+      gripper: -0.01
+    right_arm:
+      gripper: -0.01
