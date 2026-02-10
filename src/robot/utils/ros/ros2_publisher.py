@@ -6,7 +6,7 @@ import time
 
 
 class ROS2Publisher(Node):
-    def __init__(self, topic_name, msg_type, continuous=True):
+    def __init__(self, topic_name, msg_type, continuous=True, max_continuous_time=0.1):
         """
         初始化 ROS2 发布者
         :param topic_name: 发布的 topic 名称
@@ -17,9 +17,11 @@ class ROS2Publisher(Node):
         self.topic_name = topic_name
         self.msg_type = msg_type
         self.continuous = continuous
+        self.max_continuous_time = max_continuous_time
         self.publisher = self.create_publisher(msg_type, topic_name, 10)
         self.pub_msg = None
         self.shutdown_event = Event()
+        self.last_update = None
 
     def publish_once(self):
         if self.pub_msg:
@@ -28,11 +30,21 @@ class ROS2Publisher(Node):
     def continuous_publish(self, interval_sec=0.01):
         while not self.shutdown_event.is_set():
             if self.pub_msg:
+                now = time.monotonic()
+                if self.last_update is not None and self.max_continuous_time is not None:
+                    if now - self.last_update > self.max_continuous_time:
+                        self.pub_msg = None
+                        continue
+
                 self.publisher.publish(self.pub_msg)
+                if not self.continuous:
+                    self.pub_msg = None  # 发布一次后清空消息
+            
             time.sleep(interval_sec)
 
     def update_msg(self, msg):
         self.pub_msg = msg
+        self.last_update = time.monotonic()
 
     def stop(self):
         self.shutdown_event.set()

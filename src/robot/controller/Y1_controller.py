@@ -72,7 +72,7 @@ class Y1Controller(ArmController):
         self.controller.SetArmEndPose(list(position))
     
     def set_joint(self, joint):
-        debug_print("Y1_controller", f"\033[92m{self.name:<10}\033[0m: "f"[{', '.join(f'{x:9.3f}' for x in joint)}]", "INFO")
+        debug_print("Y1_controller", f"\033[92m{self.name:<10}\033[0m: "f"[{', '.join(f'{x:9.3f}' for x in joint)}]", "DEBUG")
         self.controller.SetArmJointPosition(list(joint), 5)
 
     # The input gripper value is in the range [0, 1], representing the degree of opening.
