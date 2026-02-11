@@ -17,4 +17,4 @@ control:
   # SDK 内置滤波器会将用户输入平滑至 16kHz
   lowpass_cutoff: 5.0
 
-RETARGET_CFG_PATH: "third_party/wuji_hand/wuji-retargeting/example/config/adaptive_analytical_avp.yaml"
+RETARGET_CFG_PATH: "third_party/wuji-retargeting/example/config/adaptive_analytical_avp.yaml"
