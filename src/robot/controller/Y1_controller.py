@@ -21,6 +21,9 @@ class Y1Controller(ArmController):
         self.controller_type = "user_controller"
         self.controller = None
     
+
+    
+
     def set_up(self, can:str, arm_end_type=3, teleop=False):
         self.arm_end_type = arm_end_type
         if arm_end_type == 0:

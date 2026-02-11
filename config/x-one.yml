@@ -8,7 +8,7 @@ collect:
   start_episode: 0
   num_episode: 100
   save_freq: 30  # in Hz
-  move_check: false
+  move_check: true
 
 robot:
   type: x-one

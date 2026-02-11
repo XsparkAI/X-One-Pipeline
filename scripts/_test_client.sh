@@ -1,5 +1,5 @@
 python pipeline/deploy.py \
-    --task_name demo_task \
-    --policy_name move_point_policy \
-    --base_cfg demo \
+    --task_name meituanbox \
+    --policy_name openpi_policy \
+    --base_cfg x-one \
     --port 10001 \

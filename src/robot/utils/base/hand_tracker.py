@@ -195,8 +195,10 @@ class HandTracker:
         self.host = host
         self.port = port
         
+        print(f"[HandTracker] Initialized for {self.side} hand on {host}:{port}...")
         # 确保后台线程已启动（单例模式）
         self._ensure_listener_started()
+        print(f"[HandTracker] Ready to receive data for {self.side} hand.")
 
     def _ensure_listener_started(self):
         global _BG_THREAD, _IS_LISTENING

@@ -74,7 +74,7 @@ if [[ "$install_wuji" == "y" || "$install_wuji" == "Y" ]]; then
         echo "ℹ️ wuji-retargeting 已存在，跳过 clone"
     else
         echo "👉 正在 clone wuji-retargeting..."
-        git clone https://github.com/wuji-technology/wuji-retargeting.git
+        git clone --recurse-submodules https://github.com/wuji-technology/wuji-retargeting.git
     fi
 
     echo "👉 正在安装 wuji-retargeting (editable mode)..."
