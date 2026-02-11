@@ -46,3 +46,4 @@ data/
 .vscode/
 src/robot/config
 third_party/*
+tools/*
