@@ -1,0 +1,18 @@
+# 硬件配置
+hardware:
+  left_hand_serial: "3554375D3533"
+  right_hand_serial: "3554375F3533"
+
+# 网络配置
+network:
+  host: "0.0.0.0"
+  port: 6001
+
+# 控制参数
+control:
+  # 实时控制频率 (Hz)
+  # SDK 内部会以 1kHz 与硬件通信，此处为while-loop循环频率
+  freq: 100
+  # 低通滤波器截止频率 (Hz)
+  # SDK 内置滤波器会将用户输入平滑至 16kHz
+  lowpass_cutoff: 5.0

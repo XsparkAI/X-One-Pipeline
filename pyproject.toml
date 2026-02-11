@@ -19,7 +19,7 @@ dependencies = [
   "keyboard",
   "pyyaml",
   "seaborn",
-  "omegaconf"
+  "omegaconf",
   "pyrealsense2",
   "wujihandpy",
 ]

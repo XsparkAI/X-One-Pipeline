@@ -8,6 +8,9 @@ SDK_DIR="third_party/y1_sdk_python"
 
 cd third_party
 
+# ================================
+# 安装 y1_sdk_python
+# ================================
 if [ -d "y1_sdk_python/.git" ]; then
     echo "ℹ️ y1_sdk_python 已存在，跳过 clone"
 else
@@ -56,5 +59,34 @@ cd y1_sdk_python/y1_sdk
 pip install -e .
 cd ../..
 
+echo "✅ y1_sdk_python 安装完成"
+
+
+# ================================
+# 可选安装 wuji-retargeting
+# ================================
 echo
-echo "🎉 安装完成"
+read -p "是否安装 Wuji Retargeting? (y/N): " install_wuji
+
+if [[ "$install_wuji" == "y" || "$install_wuji" == "Y" ]]; then
+
+    if [ -d "wuji-retargeting/.git" ]; then
+        echo "ℹ️ wuji-retargeting 已存在，跳过 clone"
+    else
+        echo "👉 正在 clone wuji-retargeting..."
+        git clone https://github.com/wuji-technology/wuji-retargeting.git
+    fi
+
+    echo "👉 正在安装 wuji-retargeting (editable mode)..."
+    cd wuji-retargeting
+    pip install -e .
+    cd ..
+
+    echo "✅ wuji-retargeting 安装完成"
+else
+    echo "⏭️ 跳过 wuji-retargeting 安装"
+fi
+
+
+echo
+echo "🎉 所有安装流程完成"

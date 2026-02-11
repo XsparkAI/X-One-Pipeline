@@ -12,7 +12,7 @@ collect:
 
 robot:
   use_node: true
-
+  
   type: dual_x_arm_hand
   init_qpos: 
     left_arm: [0, 0, 0, 0, 0, 0]

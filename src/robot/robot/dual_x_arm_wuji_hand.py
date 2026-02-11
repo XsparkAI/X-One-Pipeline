@@ -45,6 +45,7 @@ class Dual_X_Arm_hand(Robot):
 
         if self.teleop_mode:
             self._change_mode(teleop=False)
+        
         time.sleep(2) # TODO
         move_data = {
             "arm": {

@@ -8,7 +8,7 @@ from robot.utils.base.hand_tracker import HandTracker
 import threading
 import time
 import os
-
+import sys
 from wuji_retargeting import Retargeter
 
 class WujiController(DexHandController):
@@ -38,16 +38,11 @@ class WujiController(DexHandController):
             print(f"进入{self.hand_side}手控制循环 (Ctrl+C 退出)")
             while True:
                 loop_start = time.perf_counter()
-
-                # 获取最新目标数据
-                # left_data, right_data, has_new = self.dm.get_hand_data()
-                # data = left_data if self.hand_type == "left" else right_data
+                
                 finger_data = self.tracker.get_hand_data()
                 hand_qpos = self.retargeter.retarget(finger_data, self.hand_side).reshape(5, 4)
                 if np.isnan(hand_qpos).any():
-                    hand_qpos = np.zeros_like(hand_qpos)   
-                # if has_new and not np.all(data == 0):
-                    # current_target = data
+                    hand_qpos = np.zeros_like(hand_qpos) 
 
                 # Realtime API 不阻塞
                 controller.set_joint_target_position(hand_qpos)
@@ -77,10 +72,8 @@ class WujiController(DexHandController):
         
     def set_up(self, hand_side, cfg_path: str, teleop=False):
         self.cfg = OmegaConf.load(cfg_path)
-        # self.dm = UDPDataManager(port=self.cfg.network.udp_port)
-        # self.dm.start()
+
         self.tracker = HandTracker(hand_side=hand_side, host=self.cfg.network.host, port=self.cfg.network.port)
-        self.retargeter = Retargeter.from_yaml(self.cfg.RETARGET_CFG_PATH, hand_side)
         self.hand_side = hand_side
 
         if hand_side == "left":
@@ -97,7 +90,9 @@ class WujiController(DexHandController):
         self.pos_lower = self.controller.read_joint_lower_limit()
         self.pos_upper = self.controller.read_joint_upper_limit()
         self.pos_range = np.maximum(self.pos_upper - self.pos_lower, 0.01) # 防止除零
+
         if teleop:
+            self.retargeter = Retargeter.from_yaml(self.cfg.RETARGET_CFG_PATH, hand_side)
             thread = threading.Thread(target=self.run, daemon=True)
             thread.start()
 
@@ -107,7 +102,7 @@ class WujiController(DexHandController):
 
     def set_joint(self, joint):
         self.controller.write_joint_target_position(np.array(joint, dtype=np.float64))
-        print("Set joint command sent.")
+        # print("Set joint command sent.")
 
         
     def __repr__(self):
