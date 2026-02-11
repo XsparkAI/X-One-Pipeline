@@ -10,7 +10,7 @@ parser.add_argument("--task_name", type=str, required=True)
 parser.add_argument("--base_cfg", type=str, required=True)
 parser.add_argument("--idx", type=int, required=True, help="config file name for data collection")
 parser.add_argument("--save_path", type=str, help="path to save the video")
-parser.add_argument("--picture_key", type=str, default="cam_right_wrist", help="the key of the picture to be shown")
+parser.add_argument("--picture_key", type=str, default="cam_head", help="the key of the picture to be shown")
 args_cli = parser.parse_args()
 
 if __name__ == "__main__":

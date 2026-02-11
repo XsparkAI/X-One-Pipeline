@@ -5,6 +5,10 @@ from robot.sensor.V4l2_sensor import V4l2Sensor
 from datetime import datetime
 import time
 
+import sys, os
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+from utils.base.hand_tracker import HandTracker
+
 class Dual_X_Arm_hand(Robot):
     def __init__(self, base_config):
         super().__init__(base_config=base_config)
@@ -30,8 +34,8 @@ class Dual_X_Arm_hand(Robot):
 
         self.controllers["arm"]["left_arm"].set_up(self.robot_config['ROBOT_CAN']['left_arm'], arm_end_type=0, teleop=teleop)
         self.controllers["arm"]["right_arm"].set_up(self.robot_config['ROBOT_CAN']['right_arm'], arm_end_type=0, teleop=teleop)
-        self.controllers["hand"]["left_hand"].set_up("left", self.robot_config["LEFT_HAND_CFG_PATH"])
-        self.controllers["hand"]["right_hand"].set_up("right", self.robot_config["RIGHT_HAND_CFG_PATH"])
+        self.controllers["hand"]["left_hand"].set_up("left", self.robot_config["LEFT_HAND_CFG_PATH"], teleop=teleop)
+        self.controllers["hand"]["right_hand"].set_up("right", self.robot_config["RIGHT_HAND_CFG_PATH"], teleop=teleop)
         
         self.set_collect_type({"arm": ["joint", "qpos"], "hand": ["joint"]})
         print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}] ✅ Setup complete.")

@@ -28,4 +28,4 @@ if __name__ == "__main__":
 
     save_dir = os.path.join(base_cfg["collect"].get("save_dir"), base_cfg["collect"]["task_name"], base_cfg["collect"]["type"])
     
-    robot.replay(data_path=os.path.join(save_dir, f"{args_cli.idx}.hdf5"), key_banned=["qpos"], is_collect=args_cli.collect, episode_id=args_cli.collect_idx)
+    robot.replay(data_path=os.path.join(save_dir, f"{args_cli.idx}.hdf5"), fps= base_cfg["collect"].get("save_freq", 30), key_banned=["qpos"], is_collect=args_cli.collect, episode_id=args_cli.collect_idx)
