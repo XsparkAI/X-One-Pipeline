@@ -6,7 +6,7 @@ hardware:
 # 网络配置
 network:
   host: "0.0.0.0"
-  port: 6001
+  port: 9000
 
 # 控制参数
 control:
@@ -16,3 +16,5 @@ control:
   # 低通滤波器截止频率 (Hz)
   # SDK 内置滤波器会将用户输入平滑至 16kHz
   lowpass_cutoff: 5.0
+
+RETARGET_CFG_PATH: "third_party/wuji_hand/wuji-retargeting/example/config/adaptive_analytical_avp.yaml"
