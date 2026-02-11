@@ -43,7 +43,7 @@ checkpoints/
 
 eval_results/
 data/
+!src/robot/data/
 .vscode/
-src/robot/config
 third_party/*
 tools/*

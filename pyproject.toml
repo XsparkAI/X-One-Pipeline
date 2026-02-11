@@ -15,13 +15,13 @@ dependencies = [
   "scipy",
   "numpy",
   "h5py",
-  "pyrealsense2",
   "opencv-python",
   "keyboard",
   "pyyaml",
   "seaborn",
-  "wujihandpy",
   "omegaconf"
+  "pyrealsense2",
+  "wujihandpy",
 ]
 
 [project.urls]
