@@ -43,6 +43,8 @@ checkpoints/
 
 eval_results/
 data/
+!src/robot/data/
 .vscode/
-src/robot/config
-third_party/*
+third_party/y1_sdk_python/
+third_party/wuji-retargeting/
+tools/*

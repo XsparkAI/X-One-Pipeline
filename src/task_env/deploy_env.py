@@ -15,8 +15,19 @@ class DeployEnv(BaseEnv):
         self.deploy_cfg = deploy_cfg
 
         self.save_dir = os.path.join(deploy_cfg.get("result_dir"), task_name, deploy_cfg.get("policy_name"))
-        self.task_info = load_yaml(os.path.join(ROOT_DIR, f"task_info/{task_name}.json"))
-        self.episode_step_limit = self.task_info['step_lim']
+        
+        task_info_path = os.path.join(ROOT_DIR, f"task_info/{task_name}.json")
+        if not os.path.exists(task_info_path):
+            debug_print("DEPLOY", f"Task info file not found: {task_info_path}", "ERROR")
+            raise FileNotFoundError(f"Missing task configuration: {task_info_path}")
+            
+        self.task_info = load_yaml(task_info_path)
+        if 'step_lim' not in self.task_info:
+            debug_print("DEPLOY", f"'step_lim' missing in {task_info_path}, using default 500", "WARNING")
+            self.episode_step_limit = 500
+        else:
+            self.episode_step_limit = self.task_info['step_lim']
+            
         os.makedirs(self.save_dir, exist_ok=True)
         self.model_client = ModelClient(port=deploy_cfg['port'])
         self.robot.set_up(teleop=False)
@@ -33,7 +44,16 @@ class DeployEnv(BaseEnv):
 
     def eval_one_episode(self):
         policy_name = self.deploy_cfg['policy_name']
-        eval_module = __import__(f'policy_lab.{policy_name}.deploy', fromlist=['eval_one_episode'])
+        try:
+            eval_module = __import__(f'policy_lab.{policy_name}.deploy', fromlist=['eval_one_episode'])
+        except ImportError as e:
+            debug_print("DEPLOY", f"Failed to import policy module: policy_lab.{policy_name}.deploy. Error: {e}", "ERROR")
+            raise e
+            
+        if not hasattr(eval_module, 'eval_one_episode'):
+            debug_print("DEPLOY", f"Module 'policy_lab.{policy_name}.deploy' does not have 'eval_one_episode' function", "ERROR")
+            raise AttributeError(f"Missing eval_one_episode in policy module")
+            
         eval_module.eval_one_episode(TASK_ENV=self, model_client=self.model_client)
 
     def reset(self):
@@ -60,13 +80,19 @@ class DeployEnv(BaseEnv):
             while self.robot.is_move():
                 time.sleep(POLLING_INTERVAL)
         else:
-            if 'save_freq' in self.base_cfg['collect'].keys():
-                save_freq = 1 / self.base_cfg['collect']["save_freq"]
-            else:
-                save_freq = 1 / 10
+            # Safe freq check
+            try:
+                raw_freq = self.base_cfg.get('collect', {}).get('save_freq', 10)
+                if raw_freq <= 0:
+                    raw_freq = 10
+                    debug_print("DEPLOY", "Invalid save_freq <= 0, defaulting to 10Hz", "WARNING")
+                save_period = 1 / raw_freq
+            except (KeyError, ZeroDivisionError):
+                save_period = 1 / 10
+                
             while True:
                 now = time.monotonic()
-                if now - self.last_time > save_freq:
+                if now - self.last_time > save_period:
                     break
                 else:
                     time.sleep(POLLING_INTERVAL)
