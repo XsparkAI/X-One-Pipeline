@@ -1,7 +1,7 @@
 from robot.controller.arm_controller import ArmController
 from robot.utils.base.data_handler import debug_print
 
-from y1_sdk import Y1SDKInterface, ControlMode
+from y1_sdk import Y1SDKInterface, ControlMode, MitControlCommand
 import os
 import time
 from robot.config._GLOBAL_CONFIG import THIRD_PARTY_PATH
@@ -95,7 +95,7 @@ class Y1Controller(ArmController):
         except Exception as e:
             debug_print(self.name, f"set_joint_torque to: {torque}", "ERROR")
             debug_print(self.name, f"set_joint_torque error: {e}", "ERROR")
-    
+
     def __del__(self):
         try:
             if hasattr(self, 'controller'):
@@ -261,4 +261,4 @@ if __name__=="__main__":
 
         tau = regressor @ beta
 
-        robot.set_joint_torque(tau.ravel().tolist())
+        robot.send_tau(tau.ravel().tolist())

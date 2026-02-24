@@ -5,6 +5,7 @@ from y1_sdk import Y1SDKInterface, ControlMode
 import os
 import time
 from robot.config._GLOBAL_CONFIG import THIRD_PARTY_PATH
+
 '''
 Piper base code from:
 https://github.com/agilexrobotics/piper_sdk.git
@@ -21,9 +22,6 @@ class Y1Controller(ArmController):
         self.controller_type = "user_controller"
         self.controller = None
     
-
-    
-
     def set_up(self, can:str, arm_end_type=3, teleop=False):
         self.arm_end_type = arm_end_type
         if arm_end_type == 0:
@@ -97,14 +95,14 @@ if __name__=="__main__":
     # left_controller.set_up("can1", 3, False)
     right_controller.set_up("can1", 3, True)
 
-    move_data = {
-            "joint": [0, 0, 0, 0, 0, 0],
-        }
+    # move_data = {
+    #         "joint": [0, 0, 0, 0, 0, 0],
+    #     }
     
-    right_controller.move(move_data)
+    # right_controller.move(move_data)
     # time.sleep(3)
     while True:
-        print(right_controller.get_state()["gripper"])
+        print(right_controller.get_state()["joint"])
         time.sleep(0.1)
 
     # print(right_controller.get_state()["joint"])
