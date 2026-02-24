@@ -9,6 +9,8 @@ collect:
   num_episode: 100
   save_freq: 30  # in Hz
   move_check: true
+  use_footpedal: true
+  footpedal_serial: "/dev/hidraw4" # only read if use_footpedal is true, default to "/dev/hidraw4"
 
 robot:
   type: x-one
