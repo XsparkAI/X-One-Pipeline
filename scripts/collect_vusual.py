@@ -19,7 +19,7 @@ import glob
 import json
 from datetime import datetime
 # os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = '/usr/lib/x86_64-linux-gnu/qt5/plugins/platforms'
-os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = "/home/xspark-ai/miniconda3/envs/Xone/lib/qt5/plugins/platforms"
+os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = "/home/xspark-ai/miniconda3/envs/test/lib/qt5/plugins/platforms"
 
 class StopWorker(QtCore.QThread):
     finished = QtCore.pyqtSignal()
@@ -342,7 +342,7 @@ class DataCollectorUI(QtWidgets.QWidget):
     
     def set_worker(self):
         """Set the worker name from a list"""
-        workers = ["Fan Jinming", "Lu Lian", "Tan Xu"]
+        workers = ["Default Worker"]
         worker, ok = QtWidgets.QInputDialog.getItem(
             self, "Set Worker", "Select Worker:", workers, 0, False
         )
