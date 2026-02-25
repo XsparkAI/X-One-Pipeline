@@ -43,6 +43,8 @@ checkpoints/
 
 eval_results/
 data/
+data_bak/
+data_bak2/
 !src/robot/data/
 .vscode/
 third_party/y1_sdk_python/

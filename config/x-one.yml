@@ -1,14 +1,14 @@
 INFO_LEVEL: INFO # DEBUG, INFO, ERROR
 
 collect:
-  task_name: null
+  task_name: cover_blocks
   type: x-one
   save_dir: ./data
   save_format: hdf5
   start_episode: 0
   num_episode: 100
   save_freq: 30  # in Hz
-  move_check: true
+  move_check: false
 
 robot:
   type: x-one
@@ -23,9 +23,9 @@ robot:
     left_arm: can0
     right_arm: can1
   CAMERA_SERIALS:
-    head: "/dev/video0"
-    left_wrist: "/dev/video2"
-    right_wrist: "/dev/video4"
+    head: "/dev/video7"
+    left_wrist: "/dev/video5"
+    right_wrist: "/dev/video1"
   bias:
     left_arm:
       gripper: -0.01
