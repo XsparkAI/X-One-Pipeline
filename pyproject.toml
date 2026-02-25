@@ -15,6 +15,7 @@ dependencies = [
   "scipy",
   "numpy",
   "h5py",
+  "v4l2-python3",
   "opencv-python",
   "keyboard",
   "pyyaml",

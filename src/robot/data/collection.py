@@ -182,9 +182,9 @@ class collection:
                 obs = f.create_group('observations')
                 image = obs.create_group('images')
                 if self.condition["state_is_joint"]:
-                    obs.create_dataset('qpos', data=state_joint)
+                    obs.create_dataset('eef', data=state_joint)
                 else:
-                    obs.create_dataset('qpos', data=state_pose)
+                    obs.create_dataset('eef', data=state_pose)
                 obs.create_dataset('state_pose', data=state_pose)
                 obs.create_dataset('state_joint', data=state_joint)
                 for key in enc_images_dict.keys():

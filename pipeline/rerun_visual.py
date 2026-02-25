@@ -296,8 +296,8 @@ def visualize_act_format(f, verbose=False):
                 left_arm_data['joints'] = left_arm_group['joint'][:]
             if 'gripper' in left_arm_group and len(left_arm_group['gripper']) > 0:
                 left_arm_data['gripper'] = left_arm_group['gripper'][:]
-            if 'qpos' in left_arm_group and len(left_arm_group['qpos']) > 0:
-                left_arm_data['eefort'] = left_arm_group['qpos'][:]
+            if 'eef' in left_arm_group and len(left_arm_group['eef']) > 0:
+                left_arm_data['eefort'] = left_arm_group['eef'][:]
             break
     
     # 读取右臂数据
@@ -310,8 +310,8 @@ def visualize_act_format(f, verbose=False):
                 right_arm_data['joints'] = right_arm_group['joint'][:]
             if 'gripper' in right_arm_group and len(right_arm_group['gripper']) > 0:
                 right_arm_data['gripper'] = right_arm_group['gripper'][:]
-            if 'qpos' in right_arm_group and len(right_arm_group['qpos']) > 0:
-                right_arm_data['eefort'] = right_arm_group['qpos'][:]
+            if 'eef' in right_arm_group and len(right_arm_group['eef']) > 0:
+                right_arm_data['eefort'] = right_arm_group['eef'][:]
             break
     
     # 读取相机数据
@@ -394,9 +394,9 @@ def visualize_openpi_format(f, verbose=False):
         obs_group = f['observations']
         
         # 处理qpos（关节位置）
-        if 'qpos' in obs_group and len(obs_group['qpos']) > 0:
-            robot_data['qpos'] = obs_group['qpos'][:]
-            max_frames = max(max_frames, len(robot_data['qpos']))
+        if 'eef' in obs_group and len(obs_group['eef']) > 0:
+            robot_data['eef'] = obs_group['eef'][:]
+            max_frames = max(max_frames, len(robot_data['eef']))
         
         # 处理qvel（关节速度）
         if 'qvel' in obs_group and len(obs_group['qvel']) > 0:
