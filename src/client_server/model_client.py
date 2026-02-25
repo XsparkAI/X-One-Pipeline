@@ -110,5 +110,5 @@ class ModelClient:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
-if __name__ == "__main__": 
+if __name__ == "__main__":
     ModelClient()

@@ -219,7 +219,7 @@ def X_one_format_pipeline(collection, save_path, episode_id, mapping):
     with open(info_path, "w", encoding="utf-8") as f:
         json.dump(info, f, indent=2)
 
-    debug_print("X_one_format_pipeline", f"save data success at: {output_path} !", "INFO")
+    debug_print("X_spark_format_pipeline", f"save data success at: {output_path} !", "INFO")
 
 
 def diff_freq_pipeline(collection, save_path, episode_id, mapping):
@@ -398,3 +398,72 @@ def diff_freq_pipeline(collection, save_path, episode_id, mapping):
         f"save data success at: {hdf5_path}",
         "INFO"
     )
+
+def X_spark_format_pipeline(collection, save_path, episode_id, mapping):
+    output_path = save_path
+    debug_print("X_spark_format_pipeline", f"save to: {output_path}/ start!", "INFO")
+    left_eef, left_joint, left_gripper, left_timestamp = collection.get_item("left_arm", "qpos"), collection.get_item("left_arm", "joint"), \
+                                                        collection.get_item("left_arm", "gripper"), collection.get_item("left_arm", "timestamp")
+    right_eef, right_joint, right_gripper, right_timestamp = collection.get_item("right_arm", "qpos"), collection.get_item("right_arm", "joint"),\
+                                                        collection.get_item("right_arm", "gripper"), collection.get_item("right_arm", "timestamp")
+
+    cam_head_color, cam_head_timestamp = collection.get_item("cam_head", "color"), collection.get_item("cam_head", "timestamp")
+    cam_left_wrist_color, cam_left_wrist_timestamp = collection.get_item("cam_left_wrist", "color"), collection.get_item("cam_left_wrist", "timestamp")
+    cam_right_wrist_color, cam_right_wrist_timestamp = collection.get_item("cam_right_wrist", "color"), collection.get_item("cam_right_wrist", "timestamp")
+
+    hdf5_path = os.path.join(save_path, f"{episode_id}.hdf5")
+    '''
+    vision:
+        head:
+            colors:
+            depths:    
+            intrinsic_matrix:
+            extrinsics_matrix:
+            shape:
+        left_wrist:
+        right_wrist:
+        (单臂)wrist:
+        (optional)third_view:
+    state:
+        left_arm_joint_states:
+        left_ee_joint_states: # 末端执行器关节状态（比如手的关节角）
+        left_ee_poses: # 世界坐标系pose（xyz,qw,qx,qy,qz）
+        left_tcp_poses:
+        left_delta_ee_poses:   
+        right_arm_joint_states:
+        right_ee_joint_states:
+        right_ee_poses:
+        right_tcp_poses:
+        right_delta_ee_poses:
+    '''
+    def get_cam_shape(img_bytes):
+        jpeg_bytes = img_bytes.rstrip(b"\0")
+        nparr = np.frombuffer(jpeg_bytes, dtype=np.uint8)
+        shape = cv2.imdecode(nparr, 1).shape
+        return shape
+
+    with h5py.File(hdf5_path, "w") as f:
+        vision = f.create_group("vision")
+        state = f.create_group("state")
+        cam_head = vision.create_group("cam_head")
+        cam_head.create_dataset("color", data=cam_head_color)
+        
+        cam_head.create_dataset("shape", data=get_cam_shape(cam_head_color[0]))
+
+        cam_left_wrist = vision.create_group("cam_left_wrist")
+        cam_left_wrist.create_dataset("color", data=cam_left_wrist_color)
+        cam_left_wrist.create_dataset("shape", data=get_cam_shape(cam_left_wrist_color[0])) # 固定分辨率
+
+        cam_right_wrist = vision.create_group("cam_right_wrist")
+        cam_right_wrist.create_dataset("color", data=cam_right_wrist_color)
+        cam_right_wrist.create_dataset("shape", data=get_cam_shape(cam_right_wrist_color[0])) # 固定分辨率
+        
+        left_joint_states = np.concatenate([left_joint, np.array(left_gripper).reshape(-1, 1)], axis=1)
+        right_joint_states = np.concatenate([right_joint, np.array(right_gripper).reshape(-1, 1)], axis=1)
+
+        state.create_dataset("left_arm_joint_states", data=left_joint_states)
+        state.create_dataset("left_ee_poses", data=left_eef)
+        state.create_dataset("right_arm_joint_states", data=right_joint_states)
+        state.create_dataset("right_ee_poses", data=right_eef)
+
+    debug_print("X_one_format_pipeline", f"save data success at: {output_path} !", "INFO")

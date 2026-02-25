@@ -24,7 +24,6 @@ class CollectEnv(BaseEnv):
                 save_freq = 30
 
         while not self.robot.is_start():
-            # block and wait
             debug_print("COLLECT", "Robot not started yet, verify hardware connection.", "WARNING")
             time.sleep(1)
         
@@ -35,7 +34,6 @@ class CollectEnv(BaseEnv):
         debug_print("COLLECT", "Recording... Press Enter again to finish.", "INFO")
 
         avg_collect_time, collect_num = 0.0, 0
-        # main loop
         while True:
             last_time = time.monotonic()
 
@@ -43,13 +41,11 @@ class CollectEnv(BaseEnv):
             self.robot.collect(data)
             
             if is_enter_pressed():
-                # press "Enter" again -> finish
                 self.robot.finish(self.episode_idx)
                 break
                 
             collect_num += 1
 
-            # control the saving rate
             while True:
                 current_time = time.monotonic()
                 if current_time - last_time > 1 / save_freq:

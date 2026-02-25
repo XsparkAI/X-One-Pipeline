@@ -7,12 +7,18 @@ from .dual_x_arm_master import Dual_X_Arm_master
 # from .dual_x_arm_mobile import Dual_X_Arm_Mobile
 # from .dual_x_arm_wuji_hand import Dual_X_Arm_hand
 
+from robot.utils.base.data_transform_pipeline import X_one_format_pipeline, X_spark_format_pipeline
 ROBOT_REGISTRY = {
     "x-one": Dual_X_Arm,
     "dual_test_robot": Dual_Test_Robot,
     "dual_x_arm_master": Dual_X_Arm_master,
     # "x-one-mobile": Dual_X_Arm_Mobile,
     # "dual_x_arm_hand": Dual_X_Arm_hand,
+}
+
+DATA_TRANSFORM_PIPELINE_REGISTRY = {
+    "x-old": X_one_format_pipeline,
+    "x-one": X_spark_format_pipeline,
 }
 
 def get_robot(base_cfg):
@@ -32,5 +38,13 @@ def get_robot(base_cfg):
     # 3. 实例化前置处理
     if base_cfg["robot"].get('use_node', False):
         robot_cls = build_robot_node(robot_cls)
-        
+    
+    transform_pipeline = base_cfg["robot"].get('data_transform_pipeline', False)
+    if transform_pipeline:
+        try:
+            pipeline_function = DATA_TRANSFORM_PIPELINE_REGISTRY[transform_pipeline]
+            robot_cls.collector._add_data_transform_pipeline(pipeline_function)
+        except ImportError as e:
+            raise ImportError("Failed to import data_transform_pipeline module. Please ensure it exists.") from e
+    
     return robot_cls(base_config=base_cfg)
