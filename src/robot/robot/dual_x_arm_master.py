@@ -27,7 +27,7 @@ class Dual_X_Arm_master(Robot):
         self.controllers["arm"]["left_arm"].set_up(self.robot_config['ROBOT_CAN']['left_arm'], teleop=teleop)
         self.controllers["arm"]["right_arm"].set_up(self.robot_config['ROBOT_CAN']['right_arm'], teleop=teleop)
         
-        self.set_collect_type({"arm": ["joint", "qpos", "gripper"]})
+        self.set_collect_type({"arm": ["joint", "eef", "gripper"]})
         print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}] ✅ Setup complete.")
 
     def reset(self):

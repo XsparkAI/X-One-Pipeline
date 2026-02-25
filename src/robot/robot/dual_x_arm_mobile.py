@@ -38,7 +38,7 @@ class Dual_X_Arm_Mobile(Robot):
         self.sensors["image"]["cam_left_wrist"].set_up(self.robot_config['CAMERA_SERIALS']['left_wrist'], is_depth=False, is_jpeg=True)
         self.sensors["image"]["cam_right_wrist"].set_up(self.robot_config['CAMERA_SERIALS']['right_wrist'], is_depth=False, is_jpeg=True)
         
-        self.set_collect_type({"arm": ["joint", "qpos", "gripper"], "image": ["color"], "mobile": ["move_velocity"]})
+        self.set_collect_type({"arm": ["joint", "eef", "gripper"], "image": ["color"], "mobile": ["move_velocity"]})
         print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}] ✅ Setup complete.")
 
     def reload_cameras(self):

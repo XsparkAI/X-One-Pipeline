@@ -37,7 +37,7 @@ class Dual_X_Arm_hand(Robot):
         # self.controllers["hand"]["left_hand"].set_up("left", self.robot_config["LEFT_HAND_CFG_PATH"], teleop=teleop)
         self.controllers["hand"]["right_hand"].set_up("right", self.robot_config["RIGHT_HAND_CFG_PATH"], teleop=False)
         
-        self.set_collect_type({"arm": ["joint", "qpos"], "hand": ["joint"]})
+        self.set_collect_type({"arm": ["joint", "eef"], "hand": ["joint"]})
         print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}] ✅ Setup complete.")
 
     def reset(self):

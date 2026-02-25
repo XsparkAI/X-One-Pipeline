@@ -33,7 +33,7 @@ class Dual_Test_Robot(Robot):
         self.sensors["image"]["cam_left_wrist"].set_up(is_depth=False, is_jpeg=True)
         self.sensors["image"]["cam_right_wrist"].set_up(is_depth=False, is_jpeg=True)
         
-        self.set_collect_type({"arm": ["joint", "qpos", "gripper"], "image": ["color"]})
+        self.set_collect_type({"arm": ["joint", "eef", "gripper"], "image": ["color"]})
         print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}] ✅ Setup complete.")
 
     def reset(self):

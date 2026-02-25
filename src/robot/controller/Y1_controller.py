@@ -61,7 +61,7 @@ class Y1Controller(ArmController):
         joint = self.controller.GetJointPosition()
         vel = self.controller.GetJointVelocity()
 
-        state["qpos"] = eef
+        state["eef"] = eef
         state["joint"] = joint[:6]
         if self.arm_end_type != 0:
             state["gripper"] = joint[6] / 100
@@ -109,10 +109,10 @@ if __name__=="__main__":
     exit()
 
     # while True:
-    #     print(right_controller.get_state()["qpos"])
+    #     print(right_controller.get_state()["eef"])
     #     time.sleep(0.1)
 
-    # move_data = {"qpos": [0.039362965487455576, -0.0001585010972597902, 0.19092359541622742, -3.04687070405715, -1.5548993674145568, -0.09090050481295406],
+    # move_data = {"eef": [0.039362965487455576, -0.0001585010972597902, 0.19092359541622742, -3.04687070405715, -1.5548993674145568, -0.09090050481295406],
     #                       }
 
     move_data = {
@@ -122,7 +122,7 @@ if __name__=="__main__":
     right_controller.move(move_data)
     time.sleep(1)
     print(right_controller.get_state()["joint"])
-    print(right_controller.get_state()["qpos"])
+    print(right_controller.get_state()["eef"])
 
     # time.sleep(2)
 
