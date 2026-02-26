@@ -446,24 +446,26 @@ def X_spark_format_pipeline(collection, save_path, episode_id, mapping):
         vision = f.create_group("vision")
         state = f.create_group("state")
         cam_head = vision.create_group("cam_head")
-        cam_head.create_dataset("color", data=cam_head_color)
+        cam_head.create_dataset("colors", data=cam_head_color)
         
         cam_head.create_dataset("shape", data=get_cam_shape(cam_head_color[0]))
 
         cam_left_wrist = vision.create_group("cam_left_wrist")
-        cam_left_wrist.create_dataset("color", data=cam_left_wrist_color)
+        cam_left_wrist.create_dataset("colors", data=cam_left_wrist_color)
         cam_left_wrist.create_dataset("shape", data=get_cam_shape(cam_left_wrist_color[0])) # 固定分辨率
 
         cam_right_wrist = vision.create_group("cam_right_wrist")
-        cam_right_wrist.create_dataset("color", data=cam_right_wrist_color)
+        cam_right_wrist.create_dataset("colors", data=cam_right_wrist_color)
         cam_right_wrist.create_dataset("shape", data=get_cam_shape(cam_right_wrist_color[0])) # 固定分辨率
         
-        left_joint_states = np.concatenate([left_joint, np.array(left_gripper).reshape(-1, 1)], axis=1)
-        right_joint_states = np.concatenate([right_joint, np.array(right_gripper).reshape(-1, 1)], axis=1)
+        # left_joint_states = np.concatenate([left_joint, np.array(left_gripper).reshape(-1, 1)], axis=1)
+        # right_joint_states = np.concatenate([right_joint, np.array(right_gripper).reshape(-1, 1)], axis=1)
 
-        state.create_dataset("left_arm_joint_states", data=left_joint_states)
+        state.create_dataset("left_arm_joint_states", data=left_joint)
+        state.create_dataset("left_ee_joint_states", data=left_gripper)
         state.create_dataset("left_ee_poses", data=left_eef)
-        state.create_dataset("right_arm_joint_states", data=right_joint_states)
+        state.create_dataset("right_arm_joint_states", data=right_joint)
+        state.create_dataset("right_ee_joint_states", data=right_gripper)
         state.create_dataset("right_ee_poses", data=right_eef)
 
     debug_print("X_one_format_pipeline", f"save data success at: {output_path} !", "INFO")
