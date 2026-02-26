@@ -154,3 +154,27 @@ bash scripts/replay.sh ${task_name} ${base_cfg} ${idx}
 4. `set_language(self, instruction)`  
    - 可不实现，仅在 `eval_one_episode()` 中选择性调用。  
    - 可类似实现其他函数，用来实现完整推理流程。
+
+### 2.7 mit控制使用
+***注意!***
+
+mit控制需要更新y1_sdk,并且目前只能在ros1 noetic上使用, 可以手动卸载third_party/y1_sdk_python/后重新运行:
+```bash
+bash scripts/install.sh
+```
+
+mit协议使用需要使用Y1mit_controller替换掉Y1_controller, 增加了返回数据中的关节力矩信息, 支持通过力矩控制机械臂.
+
+本项目已经给出了基于mit的重力补偿控制示例, 注意, 该示例可以适配所有不同质心与重量的末端:
+```bash
+# 编译third_party/y1_mit/y1_cal.cpp成为.so文件
+g++ -O3 -fPIC -shared y1_cal.cpp -o libregressor.so
+# 移动到src/robot/controller/下
+cp libregressor.so ../../src/robot/controller/
+# 采集轨迹用于之后计算对应点的力矩, 需要修改src/robot/controller/Y1mit_controller的main函数, 开启teleop模式,只执行collect_tarj(robot)
+python -m src.robot.controller.Y1mit_controller
+# 回放轨迹, 计算参数, 开启nrt模式, 执行run_tarj(robot)与is_ld(calc)
+python -m src.robot.controller.Y1mit_controller
+# 测试mit重力补偿, 将上面三者注释即可.
+python -m src.robot.controller.Y1mit_controller
+```

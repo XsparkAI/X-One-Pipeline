@@ -254,31 +254,31 @@ def is_ld(calc):
     plt.show()
 
 if __name__=="__main__":
-    robot = Y1Controller("test_y1_right")
-    robot.set_up("can3", 0, "nrt") # nrt or mit or teleop
-    time.sleep(1)
-    robot.set_joint([0., 0., 0., 0., 0, 0])
-    time.sleep(2)
+    # robot = Y1Controller("test_y1_right")
+    # robot.set_up("can3", 0, "nrt") # nrt or mit or teleop
+    # time.sleep(1)
+    # robot.set_joint([0., 0., 0., 0., 0, 0])
+    # time.sleep(2)
     
     from .calc_dynamics import CalcDynamics
     calc = CalcDynamics()
 
     # collect_tarj(robot)
     # run_tarj(robot)
-    # is_ld(calc)
+    is_ld(calc)
 
-    robot.change_mode("mit")
-    time.sleep(1)
+    # robot.change_mode("mit")
+    # time.sleep(1)
 
-    beta = np.load("ls_id_beta.npy")
-    dynamics_regressor = CalcDynamics()
-    while True:
-        data = robot.get_state()
-        positions = data["joint_position"]
-        velocities = data["joint_velocity"]
+    # beta = np.load("ls_id_beta.npy")
+    # dynamics_regressor = CalcDynamics()
+    # while True:
+    #     data = robot.get_state()
+    #     positions = data["joint_position"]
+    #     velocities = data["joint_velocity"]
 
-        regressor = dynamics_regressor.calc(positions, velocities * 0, np.zeros(6))
+    #     regressor = dynamics_regressor.calc(positions, velocities * 0, np.zeros(6))
 
-        tau = regressor @ beta
+    #     tau = regressor @ beta
 
-        robot.send_tau(tau.ravel().tolist())
+    #     robot.send_tau(tau.ravel().tolist())
