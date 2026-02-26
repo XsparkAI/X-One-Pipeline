@@ -88,13 +88,33 @@ class Y1Controller(ArmController):
         gripper = gripper * 100
         self.controller.SetGripperStroke(gripper)
 
-    def set_joint_torque(self, torque):
-        try:
-            debug_print("Y1_controller", f"\033[92m{self.name:<10}\033[0m: "f"[{', '.join(f'{x:9.3f}' for x in torque)}]", "DEBUG")
-            self.controller.MitControlArm(list(torque))
-        except Exception as e:
-            debug_print(self.name, f"set_joint_torque to: {torque}", "ERROR")
-            debug_print(self.name, f"set_joint_torque error: {e}", "ERROR")
+    # def set_joint_torque(self, torque):
+    #     try:
+    #         debug_print("Y1_controller", f"\033[92m{self.name:<10}\033[0m: "f"[{', '.join(f'{x:9.3f}' for x in torque)}]", "DEBUG")
+    #         self.controller.MitControlArm(list(torque))
+    #     except Exception as e:
+    #         debug_print(self.name, f"set_joint_torque to: {torque}", "ERROR")
+    #         debug_print(self.name, f"set_joint_torque error: {e}", "ERROR")
+
+    def send_tau(self, tau):
+        assert len(tau) == 6
+
+        cmds = []
+        for t in tau:
+            c = MitControlCommand()
+
+            # 纯 torque → impedance 必须关掉
+            c.kp = 0.0
+            c.kd = 0.0
+
+            c.joint_position = 0.0
+            c.joint_velocity = 0.0
+
+            c.torque = float(t)
+
+            cmds.append(c)
+
+        self.controller.MitControlArm(cmds)
 
     def __del__(self):
         try:
@@ -113,7 +133,6 @@ from scipy.signal import butter, filtfilt
 def collect_tarj(robot):
     # 采集时长（秒）
     FREQ = 100  # Hz
-    DURATION = 2  # 采集10秒，可自行修改
     PERIOD = 1.0 / FREQ
     # CSV 文件名
     csv_filename = f"data/traj_p.csv"
@@ -171,8 +190,8 @@ def run_tarj(robot):
 
     print(f"轨迹执行完成，已保存到 {new_csv_filename}")
 
-
-    robot.set_joint(np.array([0] * 7))
+    time.sleep(2)
+    robot.set_joint(np.array([0.] * 6))
 
     time.sleep(5)
 
@@ -185,7 +204,7 @@ def is_ld(calc):
         return y
 
     points = np.loadtxt("data/executed_traj_pvt.csv", delimiter=",")
-    import pdb;pdb.set_trace()
+    # import pdb;pdb.set_trace()
     points = points[1200:, :]
 
     # 你存的格式不确定 列数可能有偏差，这里要改成你的实际格式
@@ -236,19 +255,20 @@ def is_ld(calc):
 
 if __name__=="__main__":
     robot = Y1Controller("test_y1_right")
-    robot.set_up("can2", 0, "nrt")
-    robot.set_joint([0., 0., 0., 0., 0, 0])
-    time.sleep(3)
-
-    robot.change_mode("mit")
+    robot.set_up("can3", 0, "nrt") # nrt or mit or teleop
     time.sleep(1)
+    robot.set_joint([0., 0., 0., 0., 0, 0])
+    time.sleep(2)
     
     from .calc_dynamics import CalcDynamics
-    # calc = CalcDynamics()
+    calc = CalcDynamics()
 
     # collect_tarj(robot)
     # run_tarj(robot)
     # is_ld(calc)
+
+    robot.change_mode("mit")
+    time.sleep(1)
 
     beta = np.load("ls_id_beta.npy")
     dynamics_regressor = CalcDynamics()
