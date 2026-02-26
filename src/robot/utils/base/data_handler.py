@@ -7,6 +7,7 @@ import fnmatch
 import sys
 import select
 from typing import Dict, Any, List
+from skimage.metrics import structural_similarity as ssim
 
 def get_item(Dict_data: Dict, item):
     if isinstance(item, str):
@@ -166,6 +167,20 @@ def vis_video(data_path, picture_key, save_path=None, fps=30):
         video_writer.release()
         debug_print("vis_video", f"save video at: {save_path} .", "INFO")
 
+def jpeg_test(img_raw, jpeg_data):
+    jpeg_bytes = jpeg_data.rstrip(b"\0")
+    nparr = np.frombuffer(jpeg_bytes, dtype=np.uint8)
+    img_dec = cv2.imdecode(nparr, 1)
+
+    def mse(img1, img2):
+        return np.mean((img1.astype(np.float32) - img2.astype(np.float32)) ** 2)
+    
+    result = {}
+    result["PSNR"] = cv2.PSNR(img_raw, img_dec)
+    result["MSE"] = mse(img_raw, img_dec)
+    result["SSIM"] = ssim(img_raw, img_dec, channel_axis=-1, data_range=255)
+
+    return result
 
 class DataBuffer:
     '''

@@ -25,9 +25,9 @@ robot:
     left_arm: can0
     right_arm: can1
   CAMERA_SERIALS:
-    head: "/dev/video7"
-    left_wrist: "/dev/video5"
-    right_wrist: "/dev/video1"
+    head: "/dev/video0"
+    left_wrist: "/dev/video2"
+    right_wrist: "/dev/video4"
   bias:
     left_arm:
       gripper: -0.01

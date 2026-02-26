@@ -16,8 +16,8 @@ class ArmController(Controller):
         state = self.get_state()
         if "joint" in self.collect_info:
             arm_info["joint"] = state["joint"]
-        if "qpos" in self.collect_info:
-            arm_info["qpos"] = state["qpos"]
+        if "eef" in self.collect_info:
+            arm_info["eef"] = state["eef"]
         if "gripper" in self.collect_info:
             arm_info["gripper"] = state["gripper"]
         if "action" in self.collect_info:
@@ -34,13 +34,13 @@ class ArmController(Controller):
             for key, value in move_data.items():
                 if key == "joint":
                     self.set_joint(np.array(now_state["joint"] + value))
-                elif key == "qpos":
-                    self.set_position(np.array(now_state["qpos"] + value))
+                elif key == "eef":
+                    self.set_position(np.array(now_state["eef"] + value))
         else:
             for key, value in move_data.items():
                 if key == "joint":
                     self.set_joint(np.array(value))
-                elif key == "qpos":
+                elif key == "eef":
                     self.set_position(np.array(value))
         
         # For action and gripper, use absolute values instead of deltas

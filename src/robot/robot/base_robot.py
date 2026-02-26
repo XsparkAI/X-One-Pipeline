@@ -9,7 +9,7 @@ import numpy as np
 
 # add your controller/sensor type here
 ALLOW_TYPES = ["arm", "mobile", "image", "tactile", "teleop"]
-KEY_BANNED = ["timestamp", "qpos"]
+KEY_BANNED = ["timestamp", "eef"]
     
 class Robot:
     def __init__(self, base_config) -> None:

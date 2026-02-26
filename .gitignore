@@ -47,7 +47,6 @@ data/
 .vscode/
 third_party/y1_sdk_python/
 third_party/wuji-retargeting/
-tools/*
 
 # task info
 task_info/
