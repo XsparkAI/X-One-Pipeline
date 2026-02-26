@@ -69,6 +69,10 @@ can0 启动成功
 
 ### 2.3 数据采集
 
+***注意!***
+
+在每次数据采集前, 你需要确认你当前绑定的usb摄像头被正确绑定了, 执行`tools/scan_camera.py`, 来查看当前设备连接的所有摄像头,与对应编号, 进行校准, 将校准后的结果放置到`config/x-one.yml``对应的CAMERA_SERIALS`中.
+
 `task_name`定义了当前的任务名。`collect_cfg`索引至`config/${collect_cfg}.yml`文件，配置了与数据采集、机械臂控制、终端使用等相关功能的参数，关于参数的细节内容可以通过【[参数文档](./config/README.md)】了解，当前我们使用`x-one`本体作为默认本体，此系统也可以支持不同本体的数据采集。`--st_idx`是可选参数，后面跟上开始采集的索引，默认是`0`。数据默认会保存在`data/${collect_cfg}/${task_name}`中。
 
 ``` bash

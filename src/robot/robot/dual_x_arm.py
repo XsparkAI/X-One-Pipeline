@@ -71,7 +71,9 @@ class Dual_X_Arm(Robot):
             }
         }
         self.move(move_data)
-        time.sleep(5) # TODO
+        
+        while True:
+            state = self.get_obs()
         if self.teleop_mode:
             self._change_mode(teleop=True)
     

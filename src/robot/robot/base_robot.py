@@ -105,12 +105,30 @@ class Robot:
                 if self.bias:
                     if controller_name in self.bias.keys():
                         for k in self.bias[controller_name].keys():
-                            controller_action[k] += self.bias[controller_name][k]
+                            if k in controller_action.keys():
+                                controller_action[k] += self.bias[controller_name][k]
                 if key_banned is None:        
                     self.controllers[controller_type_name][controller_name].move(controller_action, is_delta=False)
                 else:
                     controller_action = remove_duplicate_keys(controller_action, key_banned)
                     self.controllers[controller_type_name][controller_name].move(controller_action, is_delta=False)
+
+    def move_blocking(self, move_data, check_freq=100, key_banned=None):
+        self.move(move_data, key_banned=key_banned)
+
+        def state_is_close(move_data, tolerance):
+            for controller_type_name, controller_type in move_data.items():
+                for controller_name, controller_action in controller_type.items():
+                    controller_data = self.controllers[controller_type_name][controller_name].get()
+                    for control_type in controller_action.keys():
+                        if np.any(np.abs(np.array(controller_data[control_type]) - np.array(controller_action[control_type])) > 0.01):
+                            return False
+            return True
+        
+        while True:
+            time.sleep(check_freq / 1000)
+            if not self.is_move() and state_is_close(move_data, self.move_tolerance):
+                break
 
     def is_start(self):
         debug_print(self.name, "your are using is_start(), this will return True.", "DEBUG")
