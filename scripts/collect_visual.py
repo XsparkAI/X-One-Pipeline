@@ -19,7 +19,7 @@ import glob
 import json
 from datetime import datetime
 # os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = '/usr/lib/x86_64-linux-gnu/qt5/plugins/platforms'
-os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = "/home/xspark-ai/miniconda3/envs/test/lib/qt5/plugins/platforms"
+os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = "/home/xspark-ai/miniconda3/envs/Xone/lib/qt5/plugins/platforms"
 
 class StopWorker(QtCore.QThread):
     finished = QtCore.pyqtSignal()
@@ -342,7 +342,7 @@ class DataCollectorUI(QtWidgets.QWidget):
     
     def set_worker(self):
         """Set the worker name from a list"""
-        workers = ["Default Worker"]
+        workers = ["Default Worker", "Alice", "Bob", "Charlie", "David"]
         worker, ok = QtWidgets.QInputDialog.getItem(
             self, "Set Worker", "Select Worker:", workers, 0, False
         )
@@ -359,26 +359,8 @@ class DataCollectorUI(QtWidgets.QWidget):
         if ok and text:
             # Update robot condition
             self.robot.collector.collect_cfg["task_name"] = text
+            self.robot.collector.episode_index = self.robot.collector._get_next_episode_index()
             
-            # Ensure directory exists
-            save_dir = self.robot.collector.collect_cfg["save_dir"]
-            dataset_path = os.path.join(save_dir, text)
-            if not os.path.exists(dataset_path):
-                os.makedirs(dataset_path, exist_ok=True)
-            
-            # Find next episode index
-            files = glob.glob(os.path.join(dataset_path, "*.hdf5"))
-            max_idx = -1
-            for f in files:
-                try:
-                    base = os.path.basename(f)
-                    idx = int(os.path.splitext(base)[0])
-                    if idx > max_idx:
-                        max_idx = idx
-                except ValueError:
-                    pass
-            
-            self.robot.collector.episode_index = max_idx + 1
             print(f"Dataset set to: {text}, Next Episode ID: {self.robot.collector.episode_index}")
             
             self.update_stats()
@@ -521,7 +503,8 @@ class DataCollectorUI(QtWidgets.QWidget):
             
             save_dir = self.robot.collector.collect_cfg["save_dir"]
             task_name = self.robot.collector.collect_cfg["task_name"]
-            file_path = os.path.join(save_dir, task_name, f"{idx}.hdf5")
+            collect_type = self.robot.collector.collect_cfg["type"]
+            file_path = os.path.join(save_dir, task_name,collect_type, f"{idx}.hdf5")
             
             if os.path.exists(file_path):
                 try:
