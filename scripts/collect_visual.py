@@ -342,7 +342,11 @@ class DataCollectorUI(QtWidgets.QWidget):
     
     def set_worker(self):
         """Set the worker name from a list"""
+<<<<<<< HEAD
+        workers = ["Lin Jiangying"]
+=======
         workers = ["Default Worker", "Alice", "Bob", "Charlie", "David"]
+>>>>>>> d7819f1dca15fa7262cd2b26b8940d823dc76ddb
         worker, ok = QtWidgets.QInputDialog.getItem(
             self, "Set Worker", "Select Worker:", workers, 0, False
         )
