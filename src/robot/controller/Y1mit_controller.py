@@ -265,23 +265,24 @@ if __name__=="__main__":
 
     # collect_tarj(robot)
     # run_tarj(robot)
-    is_ld(calc)
+    # is_ld(calc)
 
-    # robot.change_mode("mit")
-    # time.sleep(1)
+    robot.change_mode("mit")
+    time.sleep(1)
 
     robot.change_mode("mit")
     time.sleep(1)
 
     beta = np.load("ls_id_beta.npy")
     dynamics_regressor = CalcDynamics()
+
     while True:
         data = robot.get_state()
         positions = data["joint_position"]
         velocities = data["joint_velocity"]
 
-    #     regressor = dynamics_regressor.calc(positions, velocities * 0, np.zeros(6))
+        regressor = dynamics_regressor.calc(positions, velocities * 0, np.zeros(6))
 
-    #     tau = regressor @ beta
+        tau = regressor @ beta
 
-    #     robot.send_tau(tau.ravel().tolist())
+        robot.send_tau(tau.ravel().tolist())

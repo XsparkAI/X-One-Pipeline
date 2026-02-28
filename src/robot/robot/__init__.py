@@ -6,6 +6,7 @@ from .dual_test_robot import Dual_Test_Robot
 from .dual_x_arm_master import Dual_X_Arm_master
 # from .dual_x_arm_mobile import Dual_X_Arm_Mobile
 # from .dual_x_arm_wuji_hand import Dual_X_Arm_hand
+from .dual_x_arm_no_camera import Dual_X_Arm_No_Camera
 
 from robot.utils.base.data_transform_pipeline import X_one_format_pipeline, X_spark_format_pipeline
 ROBOT_REGISTRY = {
@@ -14,6 +15,7 @@ ROBOT_REGISTRY = {
     "dual_x_arm_master": Dual_X_Arm_master,
     # "x-one-mobile": Dual_X_Arm_Mobile,
     # "dual_x_arm_hand": Dual_X_Arm_hand,
+    "x-one-no-camera": Dual_X_Arm_No_Camera,
 }
 
 DATA_TRANSFORM_PIPELINE_REGISTRY = {

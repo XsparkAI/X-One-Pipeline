@@ -2,7 +2,7 @@ INFO_LEVEL: INFO # DEBUG, INFO, ERROR
 
 collect:
   task_name: null
-  type: x-one
+  type: x-one-no-camera
   save_dir: ./data
   save_format: hdf5
   start_episode: 0
@@ -13,7 +13,7 @@ collect:
   footpedal_serial: "/dev/hidraw4" # only read if use_footpedal is true, default to "/dev/hidraw4"
 
 robot:
-  type: x-one
+  type: x-one-no-camera
   use_node: true
   init_qpos:
     left_arm: [0, 0, 0, 0, 0, 0]
@@ -25,9 +25,9 @@ robot:
     left_arm: can0
     right_arm: can1
   CAMERA_SERIALS:
-    head: "/dev/video0"
-    left_wrist: "/dev/video2"
-    right_wrist: "/dev/video4"
+    head: "/dev/video12"
+    left_wrist: "/dev/video14"
+    right_wrist: "/dev/video16"
   bias:
     left_arm:
       gripper: -0.01
