@@ -1,3 +1,5 @@
+''' 将真机数据转换为 x-one 格式 '''
+
 from robot.utils.base.data_handler import debug_print
 import subprocess
 import h5py
@@ -402,9 +404,9 @@ def diff_freq_pipeline(collection, save_path, episode_id, mapping):
 def X_spark_format_pipeline(collection, save_path, episode_id, mapping):
     output_path = save_path
     debug_print("X_spark_format_pipeline", f"save to: {output_path}/ start!", "INFO")
-    left_eef, left_joint, left_gripper, left_timestamp = collection.get_item("left_arm", "qpos"), collection.get_item("left_arm", "joint"), \
+    left_eef, left_joint, left_gripper, left_timestamp = collection.get_item("left_arm", "eef"), collection.get_item("left_arm", "joint"), \
                                                         collection.get_item("left_arm", "gripper"), collection.get_item("left_arm", "timestamp")
-    right_eef, right_joint, right_gripper, right_timestamp = collection.get_item("right_arm", "qpos"), collection.get_item("right_arm", "joint"),\
+    right_eef, right_joint, right_gripper, right_timestamp = collection.get_item("right_arm", "eef"), collection.get_item("right_arm", "joint"),\
                                                         collection.get_item("right_arm", "gripper"), collection.get_item("right_arm", "timestamp")
 
     cam_head_color, cam_head_timestamp = collection.get_item("cam_head", "color"), collection.get_item("cam_head", "timestamp")

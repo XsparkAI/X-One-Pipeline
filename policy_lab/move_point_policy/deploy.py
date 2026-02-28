@@ -1,3 +1,4 @@
+import time
 def get_model(deploy_cfg):
     # import packages and module here
     from policy_lab.move_point_policy.your_policy import Your_Policy
@@ -12,8 +13,7 @@ def eval_one_episode(TASK_ENV, model_client):
     while not TASK_ENV.is_episode_end(): # Check whether the episode ends
 
         obs = TASK_ENV.get_obs() # Get Observation
-        model_client.call(func_name="update_obs", obs=obs)  # Update Observation, `update_obs` here can be modified
-        actions = model_client.call(func_name="get_action") # Get Action according to observation chunk
+        actions = model_client.call(func_name="get_action",obs=obs) # Get Action according to observation chunk. CAUTION: `update_obs` is included in `get_action`
         
         for action_idx, action in enumerate(actions):
             TASK_ENV.take_action(action)

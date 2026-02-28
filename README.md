@@ -66,43 +66,6 @@ can0 启动成功
 can0 启动成功
 can0 启动成功
 ```
-<<<<<<< HEAD
-
-### 2.3 数据采集
-
-`task_name`定义了当前的任务名。`collect_cfg`索引至`config/${collect_cfg}.yml`文件，配置了与数据采集、机械臂控制、终端使用等相关功能的参数，关于参数的细节内容可以通过【[参数文档](./config/README.md)】了解，当前我们使用`x-one`本体作为默认本体，此系统也可以支持不同本体的数据采集。`--st_idx`是可选参数，后面跟上开始采集的索引，默认是`0`。数据默认会保存在`data/${collect_cfg}/${task_name}`中。
-
-``` bash
-bash scripts/collect.sh ${task_name} ${base_cfg} # 可选：--st_idx 100
-# bash scripts/collect.sh demo x-one
-```
-
-#### 可视化窗口数据采集
-
-目前已经支持了可视化采集, 通过可接触显示屏的简单按键交互, 实现了基础的可视化采集需求. 需要额外安装函数库:
-``` bash
-pip install pyQt5 pyqtgraph
-```
-并且修改`scripts/collect_vusual.py`中的参数`os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"]`为你当前虚拟环境的`pyQt5`路径.
-
-然后执行命令:
-``` bash
-python scripts/collect_vusual.py
-```
-
-***使用步骤***
-
-1. set_dataset设置数据集名称
-2. set_worker设置采集人员名称(如果需要添加采集者, 请直接修改`scripts/collect_vusual.py`的workers参数)
-3. 按下START开始, 需要等到跳出一个info框后才是正式开始采集, 再未开始采集下, 下面的按键为全部灰色不可选种状态
-4. 按下STOP结束采集, 进行数据保存, 需要注意, STOP后机械臂会缓慢回到零位, 请注意双手离开机械臂
-5. 如果在采集开始时候按下RESET, 会直接丢弃当前采集的结果, 可以重新START开始采集; 如果已经STOP则会丢弃最新一条轨迹.
-
-#### 基于HTTP通讯的遥操数采
-
-> 当你拥有两套X-One平台并希望使用主从遥操时，请关注此指令
-
-=======
 
 ### 2.3 数据采集
 
@@ -121,13 +84,11 @@ bash scripts/collect.sh ${task_name} ${base_cfg} # 可选：--st_idx 100
 
 > 当你拥有两套X-One平台并希望使用主从遥操时，请关注此指令
 
->>>>>>> upstream/main
 该操作需要`robot_cfg`中开启`use_node=True`, 然后选择主臂与从臂的配置文件(X-One已经提供了主臂的配置), 注意, 由于主臂不需要进行数据采集, 只需要高频通讯机械臂关节信息, 所以我们主臂中并未绑定摄像头等传感器. 然后根据运行参数, 执行`collect_teleop.sh`.
 
 ```bash
 bash scripts/collect_teleop.sh ${task_name} ${master_base_cfg} ${slave_base_cfg} ${port}
 # bash scripts/collect_teleop.sh teleop_sample x-one-master x-one 10001
-<<<<<<< HEAD
 ```
 
 ### 2.4 重置机械臂位置
@@ -139,19 +100,6 @@ bash scripts/reset.sh ${base_cfg}
 # bash scripts/reset.sh x-one
 ```
 
-=======
-```
-
-### 2.4 重置机械臂位置
-
-当前我们使用`x-one`本体作为默认本体，运行脚本会驱动机械臂运动至`config/${collect_cfg}.yml:['robot']['init_qpos']`的关节位置，默认为关机全0，夹爪张开.
-
-``` bash
-bash scripts/reset.sh ${base_cfg} 
-# bash scripts/reset.sh x-one
-```
-
->>>>>>> upstream/main
 ### 2.5 回放数据轨迹
 
 运行此脚本将会回放特定任务、特定本体的特定轨迹。
