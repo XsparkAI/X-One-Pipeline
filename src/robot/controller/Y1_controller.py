@@ -70,11 +70,9 @@ class Y1Controller(ArmController):
 
     # All returned values are expressed in meters,if the value represents an angle, it is returned in radians
     def set_position(self, position):
-        ''' set the pose of end effector '''
         self.controller.SetArmEndPose(list(position))
     
     def set_joint(self, joint):
-        ''' set the pose of joints '''
         debug_print("Y1_controller", f"\033[92m{self.name:<10}\033[0m: "f"[{', '.join(f'{x:9.3f}' for x in joint)}]", "DEBUG")
         self.controller.SetArmJointPosition(list(joint), 5)
 

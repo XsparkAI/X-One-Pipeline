@@ -4,14 +4,14 @@
 # Ignore __pycache__ directory
 __pycache__/
 
+# Ignore .zip
+*.zip
+
 # Ignore other Python cache files
 *.pyo
 *.pyd
 *.egg-info
 uv.lock
-
-# Ignore zip
-*.zip
 
 # datasets
 datasets/
@@ -50,7 +50,6 @@ data/
 .vscode/
 third_party/y1_sdk_python/
 third_party/wuji-retargeting/
-tools/*
 
 # task info
 task_info/

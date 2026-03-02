@@ -124,10 +124,6 @@ def build_map(sensor_nodes, controller_nodes):
     return sensor_schedulers, controller_schedulers
 
 def build_robot_node(base_robot_cls):
-    '''
-    传入一个类 base_robot_cls,
-    返回继承它的一个类 RobotNode
-    '''
     class RobotNode(base_robot_cls):
         def __init__(self, base_config):
             super().__init__(base_config=base_config)
@@ -136,15 +132,13 @@ def build_robot_node(base_robot_cls):
         def set_up(self, teleop=False):
             super().set_up(teleop=teleop)
             
-            # 一次性创建并返回：传感器节点、控制节点、对应数据缓冲区，以及一个启动同步事件。
-            # 然后把这些对象挂到当前机器人实例上
             (
                 self.sensor_data_buffers,
                 self.sensor_nodes,
                 self.controller_data_buffers,
                 self.controller_nodes,
                 self.start_event,
-            ) = init(self) 
+            ) = init(self)
 
             self.sensor_schedulers, self.controller_schedulers = build_map(
                 self.sensor_nodes,
