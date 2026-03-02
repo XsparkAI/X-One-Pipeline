@@ -1,23 +1,19 @@
 INFO_LEVEL: INFO # DEBUG, INFO, ERROR
 
 collect:
-  task_name: cover_blocks
-  type: x-one
+  task_name: null
+  type: x-one-no-camera
   save_dir: ./data
   save_format: hdf5
   start_episode: 0
   num_episode: 100
   save_freq: 30  # in Hz
-<<<<<<< HEAD
-  move_check: false
-=======
   move_check: true
   use_footpedal: false
   footpedal_serial: "/dev/hidraw4" # only read if use_footpedal is true, default to "/dev/hidraw4"
->>>>>>> 51e6e6f2f7560c461e3ab529d59da4d77f5d1418
 
 robot:
-  type: x-one
+  type: x-one-no-camera
   use_node: true
   init_qpos:
     left_arm: [0, 0, 0, 0, 0, 0]
@@ -29,9 +25,9 @@ robot:
     left_arm: can0
     right_arm: can1
   CAMERA_SERIALS:
-    head: "/dev/video0"
-    left_wrist: "/dev/video2"
-    right_wrist: "/dev/video4"
+    head: "/dev/video12"
+    left_wrist: "/dev/video14"
+    right_wrist: "/dev/video16"
   bias:
     left_arm:
       gripper: -0.01

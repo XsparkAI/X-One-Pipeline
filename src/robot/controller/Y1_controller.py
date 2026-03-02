@@ -95,17 +95,17 @@ if __name__=="__main__":
     # left_controller = Y1Controller("test_y1_left")
     right_controller = Y1Controller("test_y1_right")
     # left_controller.set_up("can1", 3, False)
-    right_controller.set_up("can1", 3, True)
+    right_controller.set_up("can2", 0, False)
 
-    # move_data = {
-    #         "joint": [0, 0, 0, 0, 0, 0],
-    #     }
+    move_data = {
+            "joint": [0, 0, 0, 0, 0, 0],
+        }
     
-    # right_controller.move(move_data)
-    # time.sleep(3)
-    while True:
-        print(right_controller.get_state()["joint"])
-        time.sleep(0.1)
+    right_controller.move(move_data)
+    time.sleep(3)
+    # while True:
+    #     print(right_controller.get_state()["joint"])
+    #     time.sleep(0.1)
 
     # print(right_controller.get_state()["joint"])
     exit()

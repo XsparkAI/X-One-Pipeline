@@ -19,10 +19,12 @@ dependencies = [
   "opencv-python",
   "keyboard",
   "pyyaml",
+  "scikit-image",
   "seaborn",
   "omegaconf",
   "pyrealsense2",
   "wujihandpy",
+  "pyserial",
 ]
 
 [project.urls]

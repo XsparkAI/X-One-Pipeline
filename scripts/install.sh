@@ -25,7 +25,7 @@ else
         case "${ros_choice}" in
             1)
                 echo "👉 使用 noetic 分支"
-                git clone https://github.com/IMETA-Robotics/y1_sdk_python.git
+                git clone -b noetic_mit_control https://github.com/IMETA-Robotics/y1_sdk_python.git
                 break
                 ;;
             2)

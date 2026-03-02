@@ -4,7 +4,7 @@ from robot.sensor.V4l2_sensor import V4l2Sensor
 from datetime import datetime
 import time
 
-class Dual_X_Arm(Robot):
+class Dual_X_Arm_No_Camera(Robot):
     def __init__(self, base_config):
         super().__init__(base_config=base_config)
 
@@ -16,11 +16,6 @@ class Dual_X_Arm(Robot):
             },
         }
         self.sensors = {
-            "image": {
-                "cam_head": V4l2Sensor("cam_head"),
-                "cam_left_wrist": V4l2Sensor("cam_left_wrist"),
-                "cam_right_wrist": V4l2Sensor("cam_right_wrist"),
-            },
         }
 
     def set_up(self, teleop=False):
@@ -29,11 +24,7 @@ class Dual_X_Arm(Robot):
         self.controllers["arm"]["left_arm"].set_up(self.robot_config['ROBOT_CAN']['left_arm'], teleop=teleop)
         self.controllers["arm"]["right_arm"].set_up(self.robot_config['ROBOT_CAN']['right_arm'], teleop=teleop)
 
-        self.sensors["image"]["cam_head"].set_up(self.robot_config['CAMERA_SERIALS']['head'], is_depth=False, is_jpeg=True)
-        self.sensors["image"]["cam_left_wrist"].set_up(self.robot_config['CAMERA_SERIALS']['left_wrist'], is_depth=False, is_jpeg=True)
-        self.sensors["image"]["cam_right_wrist"].set_up(self.robot_config['CAMERA_SERIALS']['right_wrist'], is_depth=False, is_jpeg=True)
-        
-        self.set_collect_type({"arm": ["joint", "eef", "gripper"], "image": ["color"]})
+        self.set_collect_type({"arm": ["joint", "eef", "gripper"]})
         print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}] ✅ Setup complete.")
 
     def reload_cameras(self):
@@ -82,6 +73,3 @@ class Dual_X_Arm(Robot):
         time.sleep(1)
         self.controllers["arm"]["right_arm"].change_mode(teleop)
         time.sleep(1)
-    
-    def set_map(self, map_path):
-        self.controllers["mobile"]["slamware"].set_map(map_path)
