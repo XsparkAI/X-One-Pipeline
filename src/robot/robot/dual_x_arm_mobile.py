@@ -30,8 +30,9 @@ class Dual_X_Arm_Mobile(Robot):
     def set_up(self, teleop=False):
         super().set_up()
         self.teleop_mode = teleop
-        self.controllers["arm"]["left_arm"].set_up(self.robot_config['ROBOT_CAN']['left_arm'], teleop=teleop)
-        self.controllers["arm"]["right_arm"].set_up(self.robot_config['ROBOT_CAN']['right_arm'], teleop=teleop)
+        self.teleop = False
+        self.controllers["arm"]["left_arm"].set_up(self.robot_config['ROBOT_CAN']['left_arm'], teleop=self.teleop)
+        self.controllers["arm"]["right_arm"].set_up(self.robot_config['ROBOT_CAN']['right_arm'], teleop=self.teleop)
         self.controllers["mobile"]["slamware"].set_up(self.robot_config['SLAMWARE']['robot_ip'], self.robot_config['SLAMWARE']['port'])
 
         self.sensors["image"]["cam_head"].set_up(self.robot_config['CAMERA_SERIALS']['head'], is_depth=False, is_jpeg=True)
@@ -60,7 +61,7 @@ class Dual_X_Arm_Mobile(Robot):
     def reset(self):
         super().reset()
         
-        if self.teleop_mode:
+        if self.teleop:
             self._change_mode(teleop=False)
         time.sleep(2) # TODO
         move_data = {
@@ -87,6 +88,7 @@ class Dual_X_Arm_Mobile(Robot):
         time.sleep(1)
         self.controllers["arm"]["right_arm"].change_mode(teleop)
         time.sleep(1)
+        self.teleop = teleop
     
     def set_map(self, map_path):
         self.controllers["mobile"]["slamware"].set_map(map_path)
