@@ -21,6 +21,7 @@ class CollectAny:
         
         self.collect_cfg = config
         self.episode = []
+        self.extra_episode_info = {}
         self.move_check = config.get("move_check", False) if config is not None else False
         self.last_controller_data = None
         self.resume = resume
@@ -207,6 +208,8 @@ class CollectAny:
 
         return False
 
+    def add_extra_episode_info(self, extra_info):
+        self.extra_episode_info.update(extra_info)
 
 def merge_config(base, incoming, prefix: str = ""):
     conflicts = []
