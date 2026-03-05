@@ -4,178 +4,151 @@ import subprocess
 import sys
 
 def get_device_info():
-    """获取当前所有 USB 设备的属性"""
+    """获取所有 HIDRAW, TTY, VIDEO 设备及其 USB 属性"""
     devices = []
     try:
-        # 扫描 block, char, video4linux, tty 等各种设备
-        # 我们通过 udevadm 直接枚举所有 USB 相关的父设备
-        output = subprocess.check_output("find -L /sys/bus/usb/devices/ -maxdepth 2 -name \"idVendor\"", shell=True).decode().split()
+        # 获取所有具有 devname 的节点，如果没有文件则返回空列表而不是报错
+        import glob
+        dev_nodes = []
+        for pattern in ["/dev/hidraw*", "/dev/video*", "/dev/ttyUSB*", "/dev/ttyACM*"]:
+            dev_nodes.extend(glob.glob(pattern))
         
-        seen_serials = set()
-        for vendor_file in output:
+        seen_keys = set()
+        for node in dev_nodes:
             try:
-                # 获取设备路径
-                dev_path = os.path.dirname(vendor_file)
+                # 获取该节点的属性
+                info = subprocess.check_output(f"udevadm info -a -n {node}", shell=True).decode()
                 
-                # 获取属性
-                with open(os.path.join(dev_path, "idVendor"), 'r') as f:
-                    vendor_id = f.read().strip()
-                with open(os.path.join(dev_path, "idProduct"), 'r') as f:
-                    model_id = f.read().strip()
-                
-                serial = ""
-                serial_path = os.path.join(dev_path, "serial")
-                if os.path.exists(serial_path):
-                    with open(serial_path, 'r') as f:
-                        serial = f.read().strip()
-                
-                # 寻找对应的 /dev/ 节点
-                # 这有点复杂，因为一个 USB 设备可能有多个接口和端点
-                # 我们尝试通过 udevadm 找该路径下的所有 devname
-                dev_list = []
-                try:
-                    udev_info = subprocess.check_output(f"udevadm info --export-db", shell=True).decode()
-                    # 这里通过解析 udev 数据库来找到属于该 USB 拓扑路径的所有设备节点
-                    # 简化处理：直接看该路径下的子目录是否有 video*, tty*, hidraw* 等
-                    for root, dirs, files in os.walk(dev_path):
-                        for d in dirs:
-                            # 典型的设备节点模式
-                            if any(d.startswith(prefix) for prefix in ['video', 'tty', 'hidraw', 'ttyACM', 'ttyUSB', 'i2c-']):
-                                dev_list.append(d)
-                except:
-                    pass
+                # 获取该节点的环境变量 (包含 ID_PATH)
+                env_info = subprocess.check_output(f"udevadm info --query=property --name={node}", shell=True).decode()
+                id_path = ""
+                name = ""
+                for line in env_info.splitlines():
+                    if "ID_PATH=" in line or "DEVPATH=" in line and not id_path:
+                        id_path = line.split("=")[1].strip()
+                    if "HID_NAME" in line or "ID_MODEL_FROM_DATABASE" in line:
+                        name = line.split("=")[1].strip()
 
-                if serial and serial not in seen_serials:
+                # 如果 ID_PATH 包含 pci 或 usb，通常是可靠的物理路径
+                # 如果没有 ID_PATH，我们将无法稳定绑定到位置
+                
+                # 解析属性
+                import re
+                v_match = re.search(r'ATTRS{idVendor}=="([^"]+)"', info)
+                m_match = re.search(r'ATTRS{idProduct}=="([^"]+)"', info)
+                s_match = re.search(r'ATTRS{serial}=="([^"]+)"', info)
+                # 新增：获取接口编号，用于区分同一设备下的多个 hidraw
+                i_match = re.search(r'ATTRS{bInterfaceNumber}=="([^"]+)"', info)
+                
+                vendor = v_match.group(1) if v_match else ""
+                model = m_match.group(1) if m_match else ""
+                serial = s_match.group(1) if s_match else ""
+                iface = i_match.group(1) if i_match else ""
+                
+                if not vendor or vendor == "1d6b": continue # 跳过 Hub
+
+                # 唯一键包含接口号，以区分同一设备的不同功能口
+                key = f"{vendor}:{model}:{serial or id_path}:{iface}"
+                if key not in seen_keys:
                     devices.append({
-                        'dev_list': list(set(dev_list)),
-                        'vendor': vendor_id,
-                        'model': model_id,
+                        'dev_list': [node],
+                        'vendor': vendor,
+                        'model': model,
                         'serial': serial,
-                        'path': dev_path
+                        'id_path': id_path,
+                        'iface': iface,
+                        'name': name or f"USB Device {vendor}:{model}"
                     })
-                    seen_serials.add(serial)
+                    seen_keys.add(key)
+                else:
+                    for d in devices:
+                        current_key = f"{d['vendor']}:{d['model']}:{d['serial'] or d['id_path']}:{d['iface']}"
+                        if current_key == key:
+                            if node not in d['dev_list']: d['dev_list'].append(node)
             except:
                 continue
     except Exception as e:
-        print(f"扫描设备失败: {e}")
-    
+        print(f"扫描失败: {e}")
     return devices
 
 def main():
     if os.getuid() != 0:
-        print("错误: 请使用 sudo 运行此程序以生成 udev 规则！")
-        print("用法: sudo python3 tools/set_usb_rules.py")
+        print("错误: 请使用 sudo 运行！")
         sys.exit(1)
 
-    print("正在扫描已连接的 USB 设备...")
+    print("正在扫描设备...")
     devices = get_device_info()
-    
     if not devices:
-        print("未能识别到有效的 USB 设备。")
+        print("未发现设备。")
         return
 
-    print(f"找到 {len(devices)} 个设备:")
     for i, dev in enumerate(devices):
-        dev_nodes = ", ".join(dev['dev_list']) or "不支持识别"
-        print(f"[{i}] 设备节点: {dev_nodes}, VendorID: {dev['vendor']}, ModelID: {dev['model']}, Serial: {dev['serial']}")
+        nodes = ",".join(dev['dev_list'])
+        # 显示接口号以便用户选择正确的子设备
+        iface_hint = f"| Iface: {dev['iface']}" if dev['iface'] else ""
+        print(f"[{i}] {dev['name'][:30]:<30} | 节点: {nodes:<20} | ID: {dev['vendor']}:{dev['model']} {iface_hint}")
 
-    mappings = [] # 改为列表以支持任意数量的分配
+    choice = input("\n选择要烧录的索引: ").strip()
+    if not choice: return
+    idx = int(choice)
+    target_dev = devices[idx]
+    alias = input("输入别名 (如 pedal): ").strip()
+    
+    # 规则生成逻辑：
+    # 1. 如果有 serial，使用 serial。如果没有 serial，降级使用 ID_PATH (物理位置绑定)
+    # 2. 对于 hidraw/video 设备，配合接口信息锁定
+    
+    # 基础匹配项
+    base_parts = [
+        f'ATTRS{{idVendor}}=="{target_dev["vendor"]}"',
+        f'ATTRS{{idProduct}}=="{target_dev["model"]}"'
+    ]
+    
+    if target_dev['serial']:
+        base_parts.append(f'ATTRS{{serial}}=="{target_dev["serial"]}"')
+    else:
+        base_parts.append(f'ENV{{ID_PATH}}=="{target_dev["id_path"]}"')
 
-    print("\n请按提示分配设备角色 (输入索引号 或 直接输入 /dev/ 路径，例如 /dev/hidraw7):")
-    while True:
-        choice = input(f"请输入要命名的设备索引或路径 (完成按回车): ").strip()
-        if not choice:
-            break
-        
-        target_device = None
-        
-        # 尝试作为 /dev/ 路径处理
-        if choice.startswith("/dev/"):
-            dev_node = choice[5:]
-            # 查找哪个设备包含这个节点
-            for d in devices:
-                if dev_node in d['dev_list']:
-                    target_device = d
-                    break
-            if not target_device:
-                print(f"错误: 未在扫描结果中找到使用 {choice} 的 USB 设备。")
-                continue
-        else:
-            # 尝试作为索引处理
-            try:
-                idx = int(choice)
-                if 0 <= idx < len(devices):
-                    target_device = devices[idx]
-                else:
-                    print("无效的索引，请重试。")
-                    continue
-            except ValueError:
-                print("输入不是有效的数字或 /dev/ 路径。")
-                continue
-
-        if target_device:
-            target_name = input(f"请输入为该设备设置的别名 (例如 pedal): ").strip()
-            if target_name:
-                # 提取内核节点的前缀 (例如 hidraw, video, ttyUSB)
-                kernel_pattern = "*"
-                if choice.startswith("/dev/"):
-                    import re
-                    match = re.search(r'([a-zA-Z]+)\d+', choice[5:])
-                    if match:
-                        kernel_pattern = match.group(1) + "*"
-                elif target_device['dev_list']:
-                    # 从索引选定时，尝试从其第一个节点提取前缀
-                    import re
-                    match = re.search(r'([a-zA-Z]+)\d+', target_device['dev_list'][0])
-                    if match:
-                        kernel_pattern = match.group(1) + "*"
-                
-                mappings.append({
-                    'device': target_device,
-                    'symlink': target_name,
-                    'kernel': kernel_pattern
-                })
-            else:
-                print("名称不能为空，已跳过。")
-
-    # 生成 udev 规则
-    rule_content = ""
-    assigned = False
-    for map_item in mappings:
-        dev = map_item['device']
-        symlink = map_item['symlink']
-        kernel = map_item.get('kernel', '*')
-        
-        # 动态匹配内核节点类型 (如 KERNEL=="video*" 或 KERNEL=="hidraw*")
-        line = (
-            f'KERNEL=="{kernel}", SUBSYSTEMS=="usb", ATTRS{{idVendor}}=="{dev["vendor"]}", '
-            f'ATTRS{{idProduct}}=="{dev["model"]}", ATTRS{{serial}}=="{dev["serial"]}", '
-            f'SYMLINK+="{symlink}"\n'
-        )
-        rule_content += line
-        assigned = True
-
-    if not assigned:
-        print("未进行任何分配。")
-        return
-
+    # 针对不同子系统的特殊过滤
+    if "hidraw" in target_dev['dev_list'][0]:
+        # 踏板类：移除复杂的 KERNELS 匹配，直接使用属性路径
+        rule = f'SUBSYSTEM=="hidraw", {", ".join(base_parts)}, SYMLINK+="{alias}", MODE="0666"\n'
+    elif "video" in target_dev['dev_list'][0]:
+        # 摄像头：锁定 index 0
+        rule = f'SUBSYSTEM=="video4linux", {", ".join(base_parts)}, ATTR{{index}}=="0", SYMLINK+="{alias}", MODE="0666"\n'
+    elif "ttyUSB" in target_dev['dev_list'][0] or "ttyACM" in target_dev['dev_list'][0]:
+        # 串口设备
+        rule = f'SUBSYSTEM=="tty", {", ".join(base_parts)}, SYMLINK+="{alias}", MODE="0666"\n'
+    else:
+        # 其他设备兜底
+        rule = f'{", ".join(base_parts)}, SYMLINK+="{alias}", MODE="0666"\n'
+    
+    # 强制每条规则占一行，去除多余空白
+    rule = rule.strip() + "\n"
+    
+    # 确保规则文件中不会出现同一别名的多条冲突规则
     rule_path = "/etc/udev/rules.d/99-usb-custom.rules"
     try:
-        with open(rule_path, "w") as f:
-            f.write(rule_content)
+        # 先读取现有内容
+        existing_content = ""
+        if os.path.exists(rule_path):
+            existing_content = subprocess.check_output(["sudo", "cat", rule_path]).decode()
         
-        print(f"\n规则已写入 {rule_path}")
-        print("正在重载 udev 规则...")
-        subprocess.run(["udevadm", "control", "--reload-rules"], check=True)
-        subprocess.run(["udevadm", "trigger"], check=True)
-        print("\n成功！您现在可以使用定义的别名访问设备:")
-        for map_item in mappings:
-            dev = map_item['device']
-            symlink = map_item['symlink']
-            print(f"  - /dev/{symlink} -> (Vendor:{dev['vendor']}, Serial:{dev['serial']})")
-        print("\n注意: 如果符号链接未立即生效，请尝试重新拔插设备。")
+        # 过滤并添加新规则
+        lines = [line.strip() for line in existing_content.splitlines() if line.strip() and f'SYMLINK+="{alias}"' not in line]
+        lines.append(rule.strip())
+        final_rules = "\n".join(lines) + "\n"
+        
+        # 使用 sudo tee 写入整个文件（确保格式完整）
+        subprocess.run(["sudo", "tee", rule_path], input=final_rules.encode(), check=True, capture_output=True)
+        print(f"规则已同步到 {rule_path}")
     except Exception as e:
-        print(f"写入规则失败: {e}")
+        print(f"写入失败: {e}")
+        sys.exit(1)
+    
+    subprocess.run(["sudo", "udevadm", "control", "--reload-rules"], check=True)
+    subprocess.run(["sudo", "udevadm", "trigger"], check=True)
+    print(f"成功！现在应可通过 /dev/{alias} 访问。")
 
 if __name__ == "__main__":
     main()
