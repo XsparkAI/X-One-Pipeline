@@ -455,19 +455,45 @@ def X_spark_format_pipeline(collection, save_path, episode_id, mapping):
         cam_left_wrist = vision.create_group("cam_left_wrist")
         cam_left_wrist.create_dataset("colors", data=cam_left_wrist_color)
         cam_left_wrist.create_dataset("shape", data=get_cam_shape(cam_left_wrist_color[0])) # 固定分辨率
-
+    
         cam_right_wrist = vision.create_group("cam_right_wrist")
         cam_right_wrist.create_dataset("colors", data=cam_right_wrist_color)
         cam_right_wrist.create_dataset("shape", data=get_cam_shape(cam_right_wrist_color[0])) # 固定分辨率
-        
-        # left_joint_states = np.concatenate([left_joint, np.array(left_gripper).reshape(-1, 1)], axis=1)
-        # right_joint_states = np.concatenate([right_joint, np.array(right_gripper).reshape(-1, 1)], axis=1)
 
+        def rpy2quat(xyzrpy):
+            xyzrpy = np.asarray(xyzrpy)
+
+            if xyzrpy.ndim == 1:
+                xyzrpy = xyzrpy.reshape(1, -1)
+
+            if xyzrpy.ndim != 2 or xyzrpy.shape[1] != 6:
+                raise ValueError(f"Expected input shape (N, 6), got {xyzrpy.shape}")
+
+            xyz = xyzrpy[:, :3]
+            roll = xyzrpy[:, 3]
+            pitch = xyzrpy[:, 4]
+            yaw = xyzrpy[:, 5]
+
+            cy = np.cos(yaw * 0.5)
+            sy = np.sin(yaw * 0.5)
+            cp = np.cos(pitch * 0.5)
+            sp = np.sin(pitch * 0.5)
+            cr = np.cos(roll * 0.5)
+            sr = np.sin(roll * 0.5)
+
+            qw = cr * cp * cy + sr * sp * sy
+            qx = sr * cp * cy - cr * sp * sy
+            qy = cr * sp * cy + sr * cp * sy
+            qz = cr * cp * sy - sr * sp * cy
+
+            quat = np.stack([qw, qx, qy, qz], axis=1)
+            return np.concatenate([xyz, quat], axis=1)
+        
         state.create_dataset("left_arm_joint_states", data=left_joint)
         state.create_dataset("left_ee_joint_states", data=left_gripper)
-        state.create_dataset("left_ee_poses", data=left_eef)
+        state.create_dataset("left_ee_poses", data=rpy2quat(left_eef))
         state.create_dataset("right_arm_joint_states", data=right_joint)
         state.create_dataset("right_ee_joint_states", data=right_gripper)
-        state.create_dataset("right_ee_poses", data=right_eef)
+        state.create_dataset("right_ee_poses", data=rpy2quat(right_eef))
 
     debug_print("X_one_format_pipeline", f"save data success at: {output_path} !", "INFO")
