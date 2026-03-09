@@ -215,6 +215,12 @@ class DataCollectorUI(QtWidgets.QWidget):
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.update_views)
 
+        # Pedal device placeholder
+        self.pedal = self.init_pedal()
+        self.pedal_timer = QtCore.QTimer()
+        self.pedal_timer.timeout.connect(self.check_pedal)
+        self.pedal_timer.start(50) # check every 50ms
+
         # Initial State: Only Set Dataset enabled
         self.set_initial_state(dataset_set=False)
         
@@ -342,11 +348,7 @@ class DataCollectorUI(QtWidgets.QWidget):
     
     def set_worker(self):
         """Set the worker name from a list"""
-<<<<<<< HEAD
-        workers = ["Lin Jiangying"]
-=======
         workers = ["Default Worker", "Alice", "Bob", "Charlie", "David"]
->>>>>>> d7819f1dca15fa7262cd2b26b8940d823dc76ddb
         worker, ok = QtWidgets.QInputDialog.getItem(
             self, "Set Worker", "Select Worker:", workers, 0, False
         )
@@ -374,14 +376,15 @@ class DataCollectorUI(QtWidgets.QWidget):
         if self.is_running:
             return
         
-        self.robot.collector.episode = []
-        
-        # Disable all during save
+        # 立即锁定 UI
         self.btn_start.setEnabled(False)
         self.btn_stop.setEnabled(False)
         self.btn_abort.setEnabled(False)
         self.btn_set_dataset.setEnabled(False)
         self.btn_set_worker.setEnabled(False)
+
+        self.robot.collector.episode = []
+        
         self.stop_worker = StopWorker(self.robot, is_save=False)
         self.stop_worker.finished.connect(self.on_start_finished)
         self.stop_worker.start()
@@ -389,32 +392,32 @@ class DataCollectorUI(QtWidgets.QWidget):
 
     def on_start_finished(self):
         self.is_running = True
+        self.robot._change_mode(teleop=True)
         self.set_capture_state()
         self.show_message("Info", "Start processing finished!", 2000)
-        self.robot._change_mode(teleop=True)
 
     def stop_capture(self):
         if not self.is_running:
             return
         self.is_running = False
-        # self.timer.stop()
-        
-        # Store frame count before saving/clearing
-        self.last_episode_frames = len(self.robot.collector.episode)
-        
-        # Disable all during save
+
+        # 立即锁定 UI，防止重复触发且给用户即时反馈
         self.btn_start.setEnabled(False)
         self.btn_stop.setEnabled(False)
         self.btn_abort.setEnabled(False)
         self.btn_set_dataset.setEnabled(False)
         self.btn_set_worker.setEnabled(False)
+        QtWidgets.QApplication.processEvents() # 强制 UI 线程立即重绘按钮状态
 
-        self.robot._change_mode(teleop=False)
+        # Store frame count before saving/clearing
+        self.last_episode_frames = len(self.robot.collector.episode)
+
         self.stop_worker = StopWorker(self.robot, is_save=True)
         self.stop_worker.finished.connect(self.on_stop_finished)
         self.stop_worker.start()
 
     def on_stop_finished(self):
+        self.robot._change_mode(teleop=False) # 将可能的耗时操作放在后台线程完成之后或之中
         # Save metadata to ratings.json
         self.save_ratings_json()
         self.update_stats()
@@ -578,6 +581,42 @@ class DataCollectorUI(QtWidgets.QWidget):
         """Reload camera devices"""
         self.robot.reload_cameras()
         self.show_message("Info", "Cameras reloaded!", 1000)
+
+    def init_pedal(self):
+        """
+        初始化并返回踏板设备对象。
+        请在此处实现具体的踏板获取逻辑。
+        """
+        try:
+            from robot.utils.base.footpedal import FootPedal
+            self.pedal = FootPedal("/dev/pedal")
+            print("pedal init sussess.")
+        except:
+            self.pedal = None
+            print("pedal init failed.")
+        return self.pedal
+
+    def check_pedal(self):
+        """定期检查踏板状态并触发逻辑"""
+        if self.pedal is not None:
+            try:
+                if self.pedal.was_pressed():
+                    self.on_pedal_pressed()
+            except Exception as e:
+                print(f"Pedal check error: {e}")
+
+    def on_pedal_pressed(self):
+        """根据当前 UI 状态决定触发 Start 还是 Stop"""
+        # 如果当前正在运行，且 Stop 按钮当前可用（未在处理中），则触发 Stop
+        if self.is_running:
+            if self.btn_stop.isEnabled():
+                print("Pedal triggered: STOP")
+                self.stop_capture()
+        # 如果当前未运行，且 Start 按钮可用，踏板触发 Start
+        else:
+            if self.btn_start.isEnabled():
+                print("Pedal triggered: START")
+                self.start_capture()
 
 # ------------ Mock Robot for Testing ------------
 class MockCollection:
