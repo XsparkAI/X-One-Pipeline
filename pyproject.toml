@@ -25,6 +25,8 @@ dependencies = [
   "pyrealsense2",
   "wujihandpy",
   "pyserial",
+  "pyQt5",
+  "pyqtgraph"
 ]
 
 [project.urls]
