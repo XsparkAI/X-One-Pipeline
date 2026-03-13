@@ -59,8 +59,8 @@ class CvSensor(BaseVisionSensor):
 
             # 设置分辨率和帧率
             self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
-            self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-            self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+            self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+            self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
             self.cap.set(cv2.CAP_PROP_FPS, 30)
             self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 

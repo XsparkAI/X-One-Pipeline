@@ -9,7 +9,7 @@ collect:
   num_episode: 100
   save_freq: 30  # in Hz
   move_check: true
-  use_footpedal: true
+  use_footpedal: false
   footpedal_serial: "/dev/pedal" # only read if use_footpedal is true, default to "/dev/pedal"
 
 robot:
@@ -22,8 +22,8 @@ robot:
     right_gripper: 1.0
   control_mode: position
   ROBOT_CAN:
-    left_arm: can2
-    right_arm: can3
+    left_arm: can0
+    right_arm: can1
   CAMERA_SERIALS:
     head: "/dev/head_camera"
     left_wrist: "/dev/left_wrist_camera"
