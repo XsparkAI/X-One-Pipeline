@@ -6,8 +6,18 @@ import os
 import fnmatch
 import sys
 import select
+import datetime
 from typing import Dict, Any, List
 from skimage.metrics import structural_similarity as ssim
+
+from robot.config._GLOBAL_CONFIG import LOG_PATH
+
+def _get_log_file():
+    log_dir = LOG_PATH
+    os.makedirs(log_dir, exist_ok=True)
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    _LOG_FILE = os.path.join(log_dir, f"log_{timestamp}.txt")
+    return _LOG_FILE
 
 def get_item(Dict_data: Dict, item):
     if isinstance(item, str):
@@ -124,7 +134,19 @@ def debug_print(name, info, level="INFO"):
     }
     color = colors.get(level.upper(), "")
     endc = colors["ENDC"]
-    print(f"{color}[{level}][{name}] {info}{endc}")
+    msg = f"[{level}][{name}] {info}"
+    print(f"{color}{msg}{endc}")
+
+    # 写入日志文件 (INFO及以上级别)
+    if msg_level_value >= 20:  # 20 is INFO
+        log_file_path = _get_log_file()
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+        try:
+            with open(log_file_path, "a", encoding="utf-8") as f:
+                f.write(f"[{timestamp}]{msg}\n")
+        except Exception as e:
+            # 避免递归调用
+            print(f"\033[91m[ERROR][DEBUG_PRINT] Failed to write log to file: {e}\033[0m")
 
 def flush_stdin():
     """清空 stdin 缓冲区，避免之前按键影响"""

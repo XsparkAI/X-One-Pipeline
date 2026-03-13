@@ -52,3 +52,5 @@ third_party/wuji-retargeting/
 task_info/*
 !task_info/demo_task.json
 test_sample/
+
+logs/

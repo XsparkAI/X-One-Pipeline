@@ -134,8 +134,18 @@ def main():
         if os.path.exists(rule_path):
             existing_content = subprocess.check_output(["sudo", "cat", rule_path]).decode()
         
-        # 过滤并添加新规则
-        lines = [line.strip() for line in existing_content.splitlines() if line.strip() and f'SYMLINK+="{alias}"' not in line]
+        # 过滤掉包含 SYMLINK+="{alias}" 或 SYMLINK=="{alias}" 的旧规则（不分单双引号和等号）
+        import re
+        alias_pattern = re.compile(f'SYMLINK[+=]="?{re.escape(alias)}"?')
+        
+        lines = []
+        for line in existing_content.splitlines():
+            line = line.strip()
+            if not line: continue
+            if alias_pattern.search(line):
+                continue
+            lines.append(line)
+            
         lines.append(rule.strip())
         final_rules = "\n".join(lines) + "\n"
         

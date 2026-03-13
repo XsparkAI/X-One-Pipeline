@@ -71,16 +71,22 @@ if __name__ == "__main__":
                         help='output path for transformed data')
     parser.add_argument('--num_workers', type=int, default=12,
                         help='number of parallel workers.')
+    parser.add_argument('--save_dir', type=str, default=None,
+                        help='directory to save transformed data.')
     args = parser.parse_args()
 
     base_cfg_path = os.path.join(CONFIG_DIR, f"{args.base_cfg}.yml")
     base_cfg = load_yaml(base_cfg_path)
-
+    
     task_name = args.task_name
     data_path = os.path.join(base_cfg["collect"]["save_dir"], task_name, base_cfg["collect"]["type"])
+    
     new_task_name = args.new_task_name
 
     hdf5_paths = get_files(data_path, "*.hdf5")
+
+    if args.save_dir is not None:
+        base_cfg["collect"]["save_dir"] = args.save_dir
 
     base_cfg["collect"]["task_name"] = new_task_name
     

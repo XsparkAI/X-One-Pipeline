@@ -10,5 +10,6 @@ ROBOTS_PATH = os.path.join(ROOT_DIR, "assets/robots")
 DATA_PATH = os.path.join(ROOT_DIR, "data")
 COLLECT_CONFIG_PATH = os.path.join(ROOT_DIR, "collect_cfg")
 THIRD_PARTY_PATH = os.path.join(ROOT_DIR, "third_party")
+LOG_PATH = os.path.join(ROOT_DIR, "logs")
 
 POLLING_INTERVAL = 0.0001

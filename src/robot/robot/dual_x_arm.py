@@ -4,12 +4,13 @@ from robot.sensor.V4l2_sensor import V4l2Sensor
 from datetime import datetime
 import time
 
+from robot.utils.base.data_transform_pipeline import X_spark_format_pipeline
 class Dual_X_Arm(Robot):
     def __init__(self, base_config):
         super().__init__(base_config=base_config)
 
         self.first_start = True
-        self.controllers = {
+        self.controllers = { 
             "arm":{
                 "left_arm": Y1Controller("left_arm"),
                 "right_arm": Y1Controller("right_arm"),
@@ -22,6 +23,7 @@ class Dual_X_Arm(Robot):
                 "cam_right_wrist": V4l2Sensor("cam_right_wrist"),
             },
         }
+        # self.collector._add_data_transform_pipeline(X_spark_format_pipeline)
 
     def set_up(self, teleop=False):
         super().set_up()
@@ -58,7 +60,7 @@ class Dual_X_Arm(Robot):
         
         if self.teleop:
             self._change_mode(teleop=False)
-        time.sleep(2) # TODO
+
         move_data = {
             "arm":{
                 "left_arm":{
@@ -78,11 +80,12 @@ class Dual_X_Arm(Robot):
     
     # ======================== EXTRA ======================== #
     def _change_mode(self, teleop):
-        time.sleep(1)
+        if self.teleop == teleop:
+            return 
+        
         self.controllers["arm"]["left_arm"].change_mode(teleop)
-        time.sleep(1)
         self.controllers["arm"]["right_arm"].change_mode(teleop)
-        time.sleep(1)
+
         self.teleop = teleop
     
     def set_map(self, map_path):

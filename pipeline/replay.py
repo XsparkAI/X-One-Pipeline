@@ -24,6 +24,7 @@ if __name__ == "__main__":
 
     robot = get_robot(base_cfg)
     robot.set_up(teleop=False)
+
     robot.reset()
 
     save_dir = os.path.join(base_cfg["collect"].get("save_dir"), base_cfg["collect"]["task_name"], base_cfg["collect"]["type"])
