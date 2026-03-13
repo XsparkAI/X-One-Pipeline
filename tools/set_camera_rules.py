@@ -20,7 +20,7 @@ def get_camera_info():
                     # 只保留 ID_USB_INTERFACE_NUM=00 (主数据流) 或无此属性的 (非USB)
                     if current_dev.get('interface_num', '00') == '00':
                         all_found.append(current_dev)
-                current_dev = {'dev_node': None, 'vendor': None, 'model': None, 'serial': '', 'name': '', 'subsystem': '', 'interface_num': '', 'id_path': ''}
+                current_dev = {'dev_node': None, 'vendor': None, 'model': None, 'serial': '', 'name': '', 'subsystem': '', 'interface_num': '', 'id_path': '', 'v4l_caps': ''}
             elif line.startswith("N: "):
                 current_dev['dev_node'] = "/dev/" + line[3:].strip()
             elif line.startswith("E: SUBSYSTEM="):
@@ -37,13 +37,18 @@ def get_camera_info():
                 current_dev['interface_num'] = line.split("=")[1].strip()
             elif line.startswith("E: ID_PATH="):
                 current_dev['id_path'] = line.split("=")[1].strip()
+            elif line.startswith("E: ID_V4L_CAPABILITIES="):
+                current_dev['v4l_caps'] = line.split("=")[1].strip()
 
         # 排除 1d6b (Hub)
         all_found = [d for d in all_found if d.get('vendor') != "1d6b"]
 
-        # 处理完全相同的相机 (Serial 相同但 ID_PATH 不同)
-        # 我们使用 ID_PATH 作为区分主键，因为即使 Serial 相同，物理位置也是不同的
         for dev in all_found:
+            # 过滤掉不具备视频采集能力的节点 (metadata/extension 节点通常没有 :capture:)
+            # ID_V4L_CAPABILITIES 包含 ":capture:" 的才是真正的视频流
+            if ":capture:" not in dev.get('v4l_caps', ''):
+                continue
+
             cameras.append({
                 'dev': dev['dev_node'],
                 'vendor': dev['vendor'],
@@ -111,7 +116,8 @@ def main():
             
             line = (
                 f'SUBSYSTEM=="video4linux", ENV{{ID_PATH}}=="{cam["id_path"]}", '
-                f'ATTR{{index}}=="0", SYMLINK+="{role}", MODE="0666"\n'
+                f'ENV{{ID_V4L_CAPABILITIES}}=="*:capture:*", '
+                f'SYMLINK+="{role}", MODE="0666"\n'
             )
             rule_content += line
             assigned = True
@@ -119,8 +125,14 @@ def main():
     if not assigned: return
 
     rule_path = "/etc/udev/rules.d/99-usb-cameras.rules"
+    conflict_path = "/etc/udev/rules.d/xspark_camera.rules"
     try:
-        # 使用追加模式，或者你也可以保持 w 模式（因为这个脚本是一次性分配三个相机的）
+        # 如果存在冲突的规则文件，先将其重命名（备份）
+        if os.path.exists(conflict_path):
+            backup_path = conflict_path + ".bak"
+            print(f"发现冲突规则文件: {conflict_path}，已备份为 {backup_path}")
+            os.rename(conflict_path, backup_path)
+
         with open(rule_path, "w") as f:
             f.write(rule_content)
         print(f"\n规则已写入 {rule_path}")
