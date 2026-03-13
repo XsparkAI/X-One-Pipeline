@@ -189,12 +189,17 @@ def build_robot_node(base_robot_cls):
 
             debug_print("collect_node", "Collect data start!", "INFO")
 
-        def finish(self, episode_id=None):
+        def finish(self, episode_id=None, to_zero=False):
+            if to_zero:
+                super().reset()
+            
             if self.start_event.is_set():
                 self.start_event.clear()
 
                 controller_episode, sensor_episode = self.collect_node.get()
                 assert len(controller_episode) == len(sensor_episode)
+
+                print(f"本次采集到 {len(controller_episode)} 条数据。")
 
                 for controller_obs, sensor_obs in zip(controller_episode, sensor_episode):
                     self.collect((controller_obs, sensor_obs))
@@ -202,9 +207,9 @@ def build_robot_node(base_robot_cls):
             super().finish(episode_id=episode_id)
 
         def reset(self):
+            super().reset()
+
             if hasattr(self, "collect_node"):
                 self.collect_node._cleanup()
-            
-            super().reset()
 
     return RobotNode

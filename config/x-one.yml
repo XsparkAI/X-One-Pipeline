@@ -3,7 +3,7 @@ INFO_LEVEL: INFO # DEBUG, INFO, ERROR
 collect:
   task_name: null
   type: x-one
-  save_dir: /mnt/nas/y1_real_data/
+  save_dir: ./data/
   save_format: hdf5
   start_episode: 0
   num_episode: 100

@@ -113,28 +113,19 @@ class Robot:
                     controller_action = remove_duplicate_keys(controller_action, key_banned)
                     self.controllers[controller_type_name][controller_name].move(controller_action, is_delta=False)
 
-    def move_blocking(self, move_data, check_freq=100, key_banned=None):
+    def move_blocking(self, move_data, check_freq=30, key_banned=None):
         stop_num =0
         self.move(move_data, key_banned=key_banned)
 
-        def state_is_close(move_data, tolerance):
-            for controller_type_name, controller_type in move_data.items():
-                for controller_name, controller_action in controller_type.items():
-                    controller_data = self.controllers[controller_type_name][controller_name].get()
-                    for control_type in controller_action.keys():
-                        if np.any(np.abs(np.array(controller_data[control_type]) - np.array(controller_action[control_type])) > 0.01):
-                            return False
-            return True
-        
         while True:
             time.sleep(1 / check_freq)
-            # print(self.is_move())
-            if not self.is_move(): #and state_is_close(move_data, self.move_tolerance):
+                
+            if not self.is_move():
                 stop_num += 1
             else:
                 stop_num = 0
             
-            if stop_num > 50:
+            if stop_num > 20:
                 break
 
     def is_start(self):
@@ -143,6 +134,7 @@ class Robot:
 
     def reset(self):
         debug_print(self.name, "your are using reset(), this will return True.", "DEBUG")
+
         return True
     
     def is_move(self):

@@ -31,11 +31,14 @@ class RestWorker(QtCore.QThread):
 
     def run(self):
         if self.is_save:
-            self.robot.reset(collect=True)
-            self.robot.finish()
-        elif self.robot.first_start:
-            self.robot.first_start = False
+            self.robot.finish(to_zero=True)
             self.robot.reset()
+        else:
+            if self.robot.first_start:
+                self.robot.first_start = False
+                self.robot.reset()
+            self.robot.start()
+        
         self.finished.emit()
 
 class DataCollectorUI(QtWidgets.QWidget):
@@ -384,7 +387,7 @@ class DataCollectorUI(QtWidgets.QWidget):
         self.btn_set_worker.setEnabled(False)
 
         self.robot.collector.episode = []
-        
+
         self.stop_worker = RestWorker(self.robot, is_save=False)
         self.stop_worker.finished.connect(self.on_start_finished)
         self.stop_worker.start()
@@ -532,11 +535,10 @@ class DataCollectorUI(QtWidgets.QWidget):
 
     def update_views(self):
         data = self.robot.get_obs()
-        if self.is_running:
-            self.robot.collect(data)
+        # if self.is_running:
+        #     self.robot.collect(data)
 
         self.update_images(data[1])
-        # self.update_3d(data[0])
 
     # ------------ UI Update ------------
     def update_images(self, data):
