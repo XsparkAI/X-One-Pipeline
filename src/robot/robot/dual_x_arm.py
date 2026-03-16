@@ -82,12 +82,9 @@ class Dual_X_Arm(Robot):
     def _change_mode(self, teleop):
         if self.teleop == teleop:
             return 
-        time.sleep(1)
+        
         self.controllers["arm"]["left_arm"].change_mode(teleop)
-        time.sleep(1)
         self.controllers["arm"]["right_arm"].change_mode(teleop)
-        time.sleep(2)
-
         self.teleop = teleop
     
     def set_map(self, map_path):
