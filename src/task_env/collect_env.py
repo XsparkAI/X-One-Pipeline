@@ -2,7 +2,7 @@
 from robot.utils.base.data_handler import is_enter_pressed, debug_print
 import time
 from .base_env import BaseEnv
-from robot.utils.base.footpedal import FootPedal
+from robot.utils.extra.footpedal import FootPedal
 
 class CollectEnv(BaseEnv):
     def __init__(self, base_cfg):

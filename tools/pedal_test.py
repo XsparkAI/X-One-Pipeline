@@ -1,5 +1,5 @@
 import sys
-from robot.utils.base.footpedal import FootPedal
+from robot.utils.extra.footpedal import FootPedal
 import time
 
 device_path = sys.argv[1] if len(sys.argv) > 1 else "/dev/pedal"

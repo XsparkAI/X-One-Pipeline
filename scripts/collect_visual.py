@@ -590,7 +590,7 @@ class DataCollectorUI(QtWidgets.QWidget):
         请在此处实现具体的踏板获取逻辑。
         """
         try:
-            from robot.utils.base.footpedal import FootPedal
+            from robot.utils.extra.footpedal import FootPedal
             self.pedal = FootPedal("/dev/pedal")
             print("pedal init sussess.")
         except:

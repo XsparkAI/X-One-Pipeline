@@ -4,7 +4,7 @@ import wujihandpy
 from omegaconf import DictConfig, OmegaConf
 import numpy as np
 from robot.utils.base.data_manager import UDPDataManager
-from robot.utils.base.hand_tracker import HandTracker
+from robot.utils.extra.hand_tracker import HandTracker
 import threading
 import time
 import os

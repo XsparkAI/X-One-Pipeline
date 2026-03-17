@@ -8,7 +8,6 @@ class BaseVisionSensor(Sensor):
         self.name = "vision_sensor"
         self.type = "vision_sensor"
         self.collect_info = None
-        self.encode_rgb = False
         self.TEST = TEST
 
     def get_information(self):
