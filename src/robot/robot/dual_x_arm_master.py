@@ -1,6 +1,5 @@
 from robot.robot.base_robot import Robot
 from robot.controller.Y1_controller import Y1Controller
-from robot.sensor.V4l2_sensor import V4l2Sensor
 from datetime import datetime
 import time
 

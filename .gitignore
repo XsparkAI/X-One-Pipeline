@@ -18,6 +18,9 @@ save_xxx/
 # third_party
 third_party/3D-ViTac_Tactile_Hardware
 third_party/dr/
+# Local clones (git sub-repos); install via scripts, do not commit
+third_party/pyAgxArm/
+third_party/pyorbbecsdk/
 
 execution_logs/
 output/

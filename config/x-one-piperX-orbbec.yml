@@ -1,0 +1,35 @@
+INFO_LEVEL: INFO # DEBUG, INFO, ERROR
+
+collect:
+  task_name: null
+  type: x-one-piperX-orbbec
+  save_dir: ./data/
+  save_format: hdf5
+  start_episode: 0
+  num_episode: 100
+  save_freq: 30  # in Hz
+  move_check: true
+  use_footpedal: false
+  footpedal_serial: "/dev/pedal" # only read if use_footpedal is true, default to "/dev/pedal"
+
+robot:
+  type: x-one-piperX-orbbec
+  use_node: true
+  init_qpos:
+    left_arm: [0, 0., 0., 0, 0, 0]
+    left_gripper: 1.0
+    right_arm: [0, 0, 0, 0, 0, 0]
+    right_gripper: 1.0
+  control_mode: position
+  ROBOT_CAN:
+    left_arm: can_left
+    right_arm: can_right
+  CAMERA_SERIALS:
+    head: "CP2N1630005K"
+    left_wrist: "CV2L360000DP"
+    right_wrist: "CV2L360000DM"
+  bias:
+    left_arm:
+      gripper: -0.08
+    right_arm:
+      gripper: -0.08
