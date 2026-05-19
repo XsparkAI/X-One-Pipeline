@@ -50,7 +50,7 @@ class Robot:
                             ALLOW_TYPES:{ALLOW_TYPES}", "WARNING")
 
     def set_collect_type(self,INFO_NAMES: Dict[str, Any]):
-        for key,value in INFO_NAMES.items():
+        for key, value in INFO_NAMES.items():
             if key in self.controllers:
                 for controller in self.controllers[key].values():
                     controller.set_collect_info(value)

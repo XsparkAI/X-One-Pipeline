@@ -8,6 +8,8 @@ from .dual_piperX_master import Dual_PiperX_Master
 from .dual_piper_master import Dual_Piper_Master
 from .dual_piper_orbbec import Dual_Piper_Orbbec
 from .dual_piperX_orbbec import Dual_PiperX_Orbbec
+from .dual_ArxX5_master import Dual_ArxX5_Master
+from .dual_ArxX5_orbbec import Dual_ArxX5_Orbbec
 
 from robot.utils.base.data_transform_pipeline import X_one_format_pipeline, X_spark_format_pipeline
 ROBOT_REGISTRY = {
@@ -18,6 +20,8 @@ ROBOT_REGISTRY = {
     "x-one-piperX-master": Dual_PiperX_Master,
     "x-one-piper-orbbec": Dual_Piper_Orbbec,
     "x-one-piperX-orbbec": Dual_PiperX_Orbbec,
+    "x-one-x5-master": Dual_ArxX5_Master,
+    "x-one-x5-orbbec": Dual_ArxX5_Orbbec,
 }
 
 DATA_TRANSFORM_PIPELINE_REGISTRY = {
