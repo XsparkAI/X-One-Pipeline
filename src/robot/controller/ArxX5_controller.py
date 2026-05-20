@@ -100,15 +100,17 @@ class ArxX5Controller(ArmController):
 
         # wait for the arm to be ready
         print(f"Waiting for {self.name} to be ready...")
-        while time.time() < time.time() + 10:
+        start_time = time.time()
+        while time.time() < start_time + 10:
             time.sleep(0.01)
             if np.all(np.abs(self.controller.get_joint_velocities()) < 0.05):
                 break
-        time.sleep(5)
+        time.sleep(3)
+        self.change_mode(teleop=False) # set control mode to enable gripper control
         print(f"-----------------{self.name} set up done-----------------")
 
         if teleop:
-            self.controller.gravity_compensation()
+            self.change_mode(teleop=True)
 
 
     def change_mode(self, teleop):
