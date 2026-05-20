@@ -20,16 +20,36 @@ ROBOT_MAP = {
 }
 
 class DataBuffer:
+    # def __init__(self):
+    #     self._buffer = {}
+    #     self.show_buffer = {}
+    #     self.lock = Lock()
+
+    # def update(self, name, data):
+    #     self.show_buffer[name] = data
+    
+    # def get_latest(self):
+    #     return self.show_buffer
+
     def __init__(self):
-        self._buffer = {}
-        self.show_buffer = {}
+        self._bufferA = {}
+        self._bufferB = {}
+
+        self.read_buffer = self._bufferA
+        self.write_buffer = self._bufferB
+
         self.lock = Lock()
 
     def update(self, name, data):
-        self.show_buffer[name] = data
-    
+        with self.lock:
+            self.write_buffer[name] = data
+
     def get_latest(self):
-        return self.show_buffer
+        with self.lock:
+            # Swap the read and write buffers
+            self.read_buffer, self.write_buffer = self.write_buffer, self.read_buffer
+            
+        return self.read_buffer.copy()
 
 class ComponentNode(TaskNode):
     def task_init(self, component, data_buffer: DataBuffer):
