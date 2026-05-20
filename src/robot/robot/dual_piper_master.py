@@ -66,6 +66,11 @@ class Dual_Piper_Master(Robot):
         
         if self.teleop_mode:
                 self._change_mode(teleop=True)
+
+
+    def cleanup(self):
+        # TODO: decide whether to add cleanup
+        pass
     
     # ======================== EXTRA ======================== #
     def _change_mode(self, teleop):

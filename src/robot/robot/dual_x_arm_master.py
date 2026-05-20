@@ -51,6 +51,11 @@ class Dual_X_Arm_master(Robot):
         time.sleep(5)
         if self.teleop_mode:
             self._change_mode(teleop=True)
+
+
+    def cleanup(self):
+        # TODO: decide whether to add cleanup
+        pass
     
     # ======================== EXTRA ======================== #
     def _change_mode(self, teleop):
