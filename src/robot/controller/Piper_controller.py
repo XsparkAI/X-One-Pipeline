@@ -428,7 +428,7 @@ class PiperController(ArmController):
             if joint_delta < self._joint_deadband and now_ns - self._last_joint_command_ns < self._joint_min_interval_ns:
                 return
 
-        self.controller.move_j(joint.tolist())
+        self.controller.move_js(joint.tolist())
         self._last_joint_command = joint.copy()
         self._last_joint_command_ns = now_ns
 

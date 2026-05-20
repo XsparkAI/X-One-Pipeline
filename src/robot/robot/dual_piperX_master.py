@@ -44,12 +44,13 @@ class Dual_PiperX_Master(Robot):
         }
         
         # self.move_blocking(move_data)
-        time.sleep(1)
         self.controllers["arm"]["left_arm"].controller.move_j(move_data["arm"]["left_arm"]["joint"])
         self.controllers["arm"]["right_arm"].controller.move_j(move_data["arm"]["right_arm"]["joint"])
         self.controllers["arm"]["left_arm"].end_effector.move_gripper(move_data["arm"]["left_arm"]["gripper"])
         self.controllers["arm"]["right_arm"].end_effector.move_gripper(move_data["arm"]["right_arm"]["gripper"])
 
+        time.sleep(2)
+        
         if self.teleop_mode:
                 self._change_mode(teleop=True)
     
