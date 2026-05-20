@@ -1,0 +1,1 @@
+python pipeline/collect_teleop_master.py --master_base_cfg x-one-piper-master --ip 192.168.7.74 --port 1230 --teleop_freq 50 --visual 
