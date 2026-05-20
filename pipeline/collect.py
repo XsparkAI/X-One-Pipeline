@@ -1,4 +1,4 @@
-import argparse, os
+import argparse, os, sys
 from robot.config._GLOBAL_CONFIG import CONFIG_DIR
 from robot.utils.base.load_file import load_yaml
 from task_env.collect_env import CollectEnv
@@ -32,7 +32,16 @@ if __name__ == "__main__":
         )
 
         TASK_ENV.set_episode_idx(episode_id)
-        TASK_ENV.collect_one_episode()
+
+        try:
+            TASK_ENV.collect_one_episode()
+
+        except KeyboardInterrupt:
+            print(f"\n\033[91m[INTERRUPTED]\033[0m episode_id={episode_id}")
+            break
+
+        finally:
+            TASK_ENV.robot.cleanup()
 
         print(
             f"\033[92m[DONE ]\033[0m episode_id={episode_id}\n"

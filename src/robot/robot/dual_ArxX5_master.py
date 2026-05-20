@@ -46,26 +46,10 @@ class Dual_ArxX5_Master(Robot):
         except Exception as e:
             print(f"Error reloading cameras: {str(e)}")
 
-    def reset(self):	
-        self._change_mode(teleop=False)
-            
-        # move_data = {
-        #     "arm":{
-        #         "left_arm":{
-        #             "joint": self.robot_config['init_qpos']['left_arm'],
-        #             "gripper":  self.robot_config['init_qpos']['left_gripper'],
-        #         },
-        #         "right_arm":{
-        #             "joint": self.robot_config['init_qpos']['right_arm'],
-        #             "gripper":  self.robot_config['init_qpos']['right_gripper'],
-        #         }
-        #     }
-        # }
-        
-        # self.move_blocking(move_data)
-
+    def reset(self):
         self.controllers["arm"]["left_arm"].reset()
         self.controllers["arm"]["right_arm"].reset()
+        self._change_mode(teleop=False)
         
         if self.teleop_mode:
                 self._change_mode(teleop=True)
