@@ -32,11 +32,11 @@ class Dual_Piper_Orbbec(Robot):
         self.controllers["arm"]["left_arm"].set_up(self.robot_config['ROBOT_CAN']['left_arm'], teleop=self.teleop)
         self.controllers["arm"]["right_arm"].set_up(self.robot_config['ROBOT_CAN']['right_arm'], teleop=self.teleop)
 
-        self.sensors["image"]["cam_head"].set_up(CAMERA_SERIAL=self.robot_config['CAMERA_SERIALS']['head'], is_depth=False, is_jpeg=True)
-        self.sensors["image"]["cam_left_wrist"].set_up(CAMERA_SERIAL=self.robot_config['CAMERA_SERIALS']['left_wrist'], is_depth=False, is_jpeg=True)
-        self.sensors["image"]["cam_right_wrist"].set_up(CAMERA_SERIAL=self.robot_config['CAMERA_SERIALS']['right_wrist'], is_depth=False, is_jpeg=True)
+        self.sensors["image"]["cam_head"].set_up(CAMERA_SERIAL=self.robot_config['CAMERA_SERIALS']['head'], is_depth=True, is_jpeg=True)
+        self.sensors["image"]["cam_left_wrist"].set_up(CAMERA_SERIAL=self.robot_config['CAMERA_SERIALS']['left_wrist'], is_depth=True, is_jpeg=True)
+        self.sensors["image"]["cam_right_wrist"].set_up(CAMERA_SERIAL=self.robot_config['CAMERA_SERIALS']['right_wrist'], is_depth=True, is_jpeg=True)
         
-        self.set_collect_type({"arm": ["joint", "eef", "gripper"], "image": ["color"]})
+        self.set_collect_type({"arm": ["joint", "eef", "gripper"], "image": ["color", "depth"]})
         print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}] ✅ Setup complete.")
     
     def reset(self):	
