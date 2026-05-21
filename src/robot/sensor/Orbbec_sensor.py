@@ -23,6 +23,7 @@ class OrbbecSensor(BaseVisionSensor):
         self.name = name
         self.is_depth = False
         self.is_jpeg = False
+        self.depth_normalize = False
         self.context = None
         self.device = None
         self.pipeline = None
@@ -232,9 +233,11 @@ class OrbbecSensor(BaseVisionSensor):
         CAMERA_SERIAL=None,
         is_depth=False,
         is_jpeg=False,
+        depth_normalize=False,
     ):
         self.is_depth = is_depth
         self.is_jpeg = is_jpeg
+        self.depth_normalize = depth_normalize
 
         self._load_sdk()
         self.cleanup()
@@ -318,7 +321,15 @@ class OrbbecSensor(BaseVisionSensor):
             depth_frame = frames.get_depth_frame()
             if depth_frame is None:
                 raise RuntimeError("Failed to get depth frame")
-            image["depth"] = self._decode_depth(depth_frame)
+            
+            depth = self._decode_depth(depth_frame)
+            if self.depth_normalize:
+                # 处理频闪：大于3m设为0
+                depth[depth > 3000] = 0
+                # 归一化到0-4m (4000mm)
+                depth = np.clip(depth.astype(np.float32), 0, 4000) / 4000.0
+                
+            image["depth"] = depth
 
         return image
 
@@ -343,21 +354,24 @@ def visualize_depth(depth):
         return None
 
     depth = depth.astype(np.float32)
-
-    # 忽略无效深度
-    valid = depth > 0
-    if not np.any(valid):
-        return np.zeros((depth.shape[0], depth.shape[1], 3), dtype=np.uint8)
-
-    depth_vis = np.zeros_like(depth, dtype=np.uint8)
-
-    # 用有效区域做归一化，避免全黑或对比度太差
-    min_val = np.min(depth[valid])
-    max_val = np.max(depth[valid])
-
-    if max_val > min_val:
-        depth_norm = (depth - min_val) / (max_val - min_val)
-        depth_vis[valid] = (depth_norm[valid] * 255).astype(np.uint8)
+    
+    # 判定是否已经归一化 (0-1)
+    if np.max(depth) <= 1.0:
+        # 如果已经归一化，认为它反映的是 0-4m 的比例
+        depth_vis = (depth * 255).astype(np.uint8)
+        valid = depth > 0
+    else:
+        # 否则使用 0-4m 固定范围归一化处理原始深度 (mm)
+        # 过滤大于3m的数据处理频闪
+        depth[depth > 3000] = 0
+        valid = depth > 0
+        depth_vis = np.zeros_like(depth, dtype=np.uint8)
+        
+        min_val = 0
+        max_val = 4000
+        if max_val > min_val:
+            depth_norm = (depth - min_val) / (max_val - min_val)
+            depth_vis[valid] = (depth_norm[valid] * 255).astype(np.uint8)
 
     depth_color = cv2.applyColorMap(depth_vis, cv2.COLORMAP_JET)
     depth_color[~valid] = 0

@@ -161,13 +161,16 @@ def visualize_depth(depth):
         return None
 
     depth = depth.astype(np.float32)
+    
     valid = depth > 0
     if not np.any(valid):
         return np.zeros((depth.shape[0], depth.shape[1], 3), dtype=np.uint8)
 
     depth_vis = np.zeros_like(depth, dtype=np.uint8)
-    min_val = np.min(depth[valid])
-    max_val = np.max(depth[valid])
+    
+    # 限制最大距离4m进行归一化，使用固定范围防止频闪
+    min_val = 0
+    max_val = 4000
 
     if max_val > min_val:
         depth_norm = (depth - min_val) / (max_val - min_val)
