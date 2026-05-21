@@ -2,7 +2,7 @@ import argparse, os
 
 from robot.utils.base.load_file import load_yaml
 from robot.config._GLOBAL_CONFIG import CONFIG_DIR
-from robot.utils.base.data_handler import vis_video, debug_print
+from robot.utils.base.data_handler import vis_video, debug_print, vis_depth_video
 from robot.robot import get_robot
 
 parser = argparse.ArgumentParser()
@@ -23,3 +23,7 @@ if __name__ == "__main__":
     data_path = os.path.join(save_dir, f"{args_cli.idx}.hdf5")
     debug_print("vis_data", f"load data from: {data_path}", "INFO")
     vis_video(data_path, args_cli.picture_key, args_cli.save_path)
+    try:
+        vis_depth_video(data_path, args_cli.picture_key, args_cli.save_path[:-4]+"_depth.mp4")
+    except Exception as e:
+        debug_print("vis_data", f"visualize depth video failed: {e}", "WARNING")
