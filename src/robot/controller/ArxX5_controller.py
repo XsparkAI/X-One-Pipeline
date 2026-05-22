@@ -9,28 +9,66 @@ import numpy as np
 from robot.config._GLOBAL_CONFIG import THIRD_PARTY_PATH
 
 
-class ArxX5Controller(ArmController):
-    def __init__(self, name):
-        super().__init__()
-        self.name = name
-        self.controller_type = "user_controller"
-        self.controller = None
-        self._native_output_active = False
-        self._native_stdout_original_fd = None
-        self._native_stderr_original_fd = None
-        self._native_stdout_reader = None
-        self._native_stderr_reader = None
-        self._mute_markers = ("ARX方舟无限", "方舟无限")
-        self._start_native_output_filter()
+class _NativeOutputFilter:
+    def __init__(self, mute_markers):
+        self._mute_markers = tuple(mute_markers)
+        self._streams = []
+        self._users = 0
+        self._lock = threading.Lock()
+
+
+    def acquire(self):
+        with self._lock:
+            self._users += 1
+            if self._streams:
+                return
+
+            self._streams = [self._redirect_fd(1), self._redirect_fd(2)]
+
+
+    def release(self):
+        with self._lock:
+            if self._users == 0:
+                return
+
+            self._users -= 1
+            if self._users > 0:
+                return
+
+            streams = self._streams
+            self._streams = []
+
+        for target_fd, original_fd, _ in streams:
+            os.dup2(original_fd, target_fd)
+
+        for _, _, reader in streams:
+            reader.join(timeout=1)
+
+        for _, original_fd, _ in streams:
+            os.close(original_fd)
+
+
+    def _redirect_fd(self, target_fd):
+        original_fd = os.dup(target_fd)
+        read_fd, write_fd = os.pipe()
+
+        os.dup2(write_fd, target_fd)
+        os.close(write_fd)
+
+        reader = threading.Thread(
+            target=self._forward_filtered_output,
+            args=(read_fd, original_fd),
+            daemon=True,
+        )
+        reader.start()
+
+        return target_fd, original_fd, reader
 
 
     def _forward_filtered_output(self, read_fd, target_fd):
         with os.fdopen(read_fd, "rb", closefd=True) as pipe_reader:
             for raw_line in iter(pipe_reader.readline, b""):
-                try:
-                    line = raw_line.decode("utf-8", errors="replace")
-                except Exception:
-                    line = raw_line.decode(errors="replace")
+                line = raw_line.decode("utf-8", errors="replace")
 
                 if any(marker in line for marker in self._mute_markers):
                     continue
@@ -38,54 +76,18 @@ class ArxX5Controller(ArmController):
                 os.write(target_fd, raw_line)
 
 
-    def _start_native_output_filter(self):
-        if self._native_output_active:
-            return
-
-        self._native_stdout_original_fd = os.dup(1)
-        self._native_stderr_original_fd = os.dup(2)
-
-        stdout_read_fd, stdout_write_fd = os.pipe()
-        stderr_read_fd, stderr_write_fd = os.pipe()
-
-        os.dup2(stdout_write_fd, 1)
-        os.dup2(stderr_write_fd, 2)
-        os.close(stdout_write_fd)
-        os.close(stderr_write_fd)
-
-        self._native_stdout_reader = threading.Thread(
-            target=self._forward_filtered_output,
-            args=(stdout_read_fd, self._native_stdout_original_fd),
-            daemon=True,
-        )
-        self._native_stderr_reader = threading.Thread(
-            target=self._forward_filtered_output,
-            args=(stderr_read_fd, self._native_stderr_original_fd),
-            daemon=True,
-        )
-        self._native_stdout_reader.start()
-        self._native_stderr_reader.start()
-        self._native_output_active = True
+_ARX_OUTPUT_FILTER = _NativeOutputFilter(("ARX方舟无限", "方舟无限"))
 
 
-    def _stop_native_output_filter(self):
-        if not self._native_output_active:
-            return
-
-        os.dup2(self._native_stdout_original_fd, 1)
-        os.dup2(self._native_stderr_original_fd, 2)
-        os.close(self._native_stdout_original_fd)
-        os.close(self._native_stderr_original_fd)
-        self._native_stdout_original_fd = None
-        self._native_stderr_original_fd = None
-        self._native_output_active = False
-
-        if self._native_stdout_reader is not None:
-            self._native_stdout_reader.join(timeout=1)
-            self._native_stdout_reader = None
-        if self._native_stderr_reader is not None:
-            self._native_stderr_reader.join(timeout=1)
-            self._native_stderr_reader = None
+class ArxX5Controller(ArmController):
+    def __init__(self, name):
+        super().__init__()
+        self.name = name
+        self.controller_type = "user_controller"
+        self.controller = None
+        self._output_filter = _ARX_OUTPUT_FILTER
+        self._output_filter.acquire()
+        self._output_filter_acquired = True
 
 
     def set_up(self, can:str, arm_type=2, teleop=False):
@@ -158,10 +160,15 @@ class ArxX5Controller(ArmController):
 
     def cleanup(self):
         print("Cleaning up ArxX5Controller...")
-        self.reset()
-        self._stop_native_output_filter()
-        self.controller = None
-        time.sleep(3)
+        try:
+            if self.controller is not None:
+                self.reset()
+        finally:
+            if self._output_filter_acquired:
+                self._output_filter.release()
+                self._output_filter_acquired = False
+            self.controller = None
+            time.sleep(3)
 
 
 
