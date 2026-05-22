@@ -16,8 +16,29 @@ import h5py
 
 KEY_BANNED = ["timestamp"]
 
+DEPTH_COMPRESSION = "gzip"
+DEPTH_COMPRESSION_LEVEL = 4
+
+def _depth_dataset_kwargs(depth_array):
+    depth_array = np.asarray(depth_array)
+    if depth_array.ndim < 2:
+        return {}
+
+    chunk_shape = (1, *depth_array.shape[1:]) if depth_array.ndim >= 3 else depth_array.shape
+    return {
+        "compression": DEPTH_COMPRESSION,
+        "compression_opts": DEPTH_COMPRESSION_LEVEL,
+        "shuffle": True,
+        "chunks": chunk_shape,
+    }
+
+
+SPECIAL_ITEM = {
+    "depth": _depth_dataset_kwargs,
+}
+
 class CollectAny:
-    def __init__(self, config=None, start_episode=0, resume=False):
+    def __init__(self, config=None, start_episode=0, resume=True):
         
         self.collect_cfg = config
         self.episode = []
@@ -168,7 +189,11 @@ class CollectAny:
                     group = obs.create_group(name)
                     for item in items:
                         data = self.get_item(name, item)
-                        group.create_dataset(item, data=data)
+                        if item in SPECIAL_ITEM.keys():
+                            group.create_dataset(item, data=data, **SPECIAL_ITEM[item](data))
+                        else:
+                            group.create_dataset(item, data=data)
+                
             debug_print("CollectAny", f"write to {hdf5_path}", "INFO")
         self.episode = []
         self.episode_index += 1

@@ -156,6 +156,30 @@ def flush_stdin():
 def is_enter_pressed():
     return select.select([sys.stdin], [], [], 0)[0] and sys.stdin.read(1) == '\n'    
 
+def visualize_depth(depth):
+    if depth is None:
+        return None
+
+    depth = depth.astype(np.float32)
+    
+    valid = depth > 0
+    if not np.any(valid):
+        return np.zeros((depth.shape[0], depth.shape[1], 3), dtype=np.uint8)
+
+    depth_vis = np.zeros_like(depth, dtype=np.uint8)
+    
+    # 限制最大距离4m进行归一化，使用固定范围防止频闪
+    min_val = 0
+    max_val = 4000
+
+    if max_val > min_val:
+        depth_norm = (depth - min_val) / (max_val - min_val)
+        depth_vis[valid] = (depth_norm[valid] * 255).astype(np.uint8)
+
+    depth_color = cv2.applyColorMap(depth_vis, cv2.COLORMAP_JET)
+    depth_color[~valid] = 0
+    return depth_color
+
 def vis_video(data_path, picture_key, save_path=None, fps=30):
     if save_path:
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
@@ -188,6 +212,34 @@ def vis_video(data_path, picture_key, save_path=None, fps=30):
     if video_writer:
         video_writer.release()
         debug_print("vis_video", f"save video at: {save_path} .", "INFO")
+
+def vis_depth_video(data_path, picture_key, save_path=None, fps=30):
+    if save_path:
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    episode = dict_to_list(hdf5_groups_to_dict(data_path))
+
+    video_writer = None
+
+    for idx, ep in enumerate(episode):
+        depth_data = ep[picture_key]["depth"]
+        depth_img = visualize_depth(depth_data)
+        if depth_img is None:
+            continue
+
+        if save_path:
+            if video_writer is None:
+                h, w = depth_img.shape[:2]
+                fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+                video_writer = cv2.VideoWriter(save_path, fourcc, fps, (w, h))
+
+            video_writer.write(depth_img)
+        else:
+            cv2.imshow(f"{picture_key}_depth", depth_img)
+            cv2.waitKey(int(1000 / fps))
+
+    if video_writer:
+        video_writer.release()
+        debug_print("vis_depth_video", f"save video at: {save_path} .", "INFO")
 
 def jpeg_test(img_raw, jpeg_data):
     jpeg_bytes = jpeg_data.rstrip(b"\0")

@@ -22,8 +22,9 @@ Piper base code from:
 https://github.com/agilexrobotics/pyAgxArm.git
 '''
 
+
 # 基于常驻线程的重力补偿遥操控制
-def run_teleop(controller, teleop_event, stop_event, urdf_path):
+def run_teleop(controller, urdf_path, teleop_event, stop_event):
     pin = AgxPinocchio(str(urdf_path))
 
     control_frequency = 200.0
@@ -114,7 +115,7 @@ class PiperController(ArmController):
         self._last_joint_command_ns = 0
         self._last_gripper_command = None
         self._last_gripper_command_ns = 0
-        self._joint_deadband = float(os.environ.get("XONE_PIPER_JOINT_DEADBAND", "0.0001"))
+        self._joint_deadband = float(os.environ.get("XONE_PIPER_JOINT_DEADBAND", "0.003"))
         self._gripper_deadband = float(os.environ.get("XONE_PIPER_GRIPPER_DEADBAND", "0.02"))
         self._joint_min_interval_ns = int(float(os.environ.get("XONE_PIPER_JOINT_MIN_INTERVAL_MS", "8.0")) * 1_000_000)
         self._gripper_min_interval_ns = int(float(os.environ.get("XONE_PIPER_GRIPPER_MIN_INTERVAL_MS", "20.0")) * 1_000_000)
@@ -242,11 +243,9 @@ class PiperController(ArmController):
 
         self._teleop_event = threading.Event()
         self._teleop_stop_event = threading.Event()
-
-        urdf_path = Path(THIRD_PARTY_PATH) / "agilex-arm-gravity-compensation" / "piper_x_description" / "urdf" / "piper_x_description.urdf"
         self._teleop_thread = threading.Thread(
             target=run_teleop,
-            args=(self, self._teleop_event, self._teleop_stop_event, urdf_path),
+            args=(self, self.urdf_path, self._teleop_event, self._teleop_stop_event),
             daemon=True,
         )
         self._teleop_thread.start()
@@ -303,21 +302,21 @@ class PiperController(ArmController):
         self._teleop_event = None
         self._teleop_stop_event = None
 
-    def set_up(self, can: str, arm_type=ArmModel.PIPER, teleop=False):
+    def set_up(self, can: str, arm_type="piper", teleop=False):
         self._setup_debug_loggers()
 
-        if arm_type == ArmModel.PIPER_X or arm_type == "piper_x":
-            self.urdf_path = Path(THIRD_PARTY_PATH) / "agilex-arm-gravity-compensation" / "piper_x_description" / "urdf" / "piper_x_description.urdf"
-            arm_type = ArmModel.PIPER_X
-        elif arm_type == "piper" or arm_type == ArmModel.PIPER:
+        if arm_type not in ["piper", "piper_x"]:
+            raise ValueError(f"Unsupported arm_type '{arm_type}'. Supported types are 'piper' and 'piper_x'.")
+        elif arm_type == "piper":
             self.urdf_path = Path(THIRD_PARTY_PATH) / "agilex-arm-gravity-compensation" / "piper_description" / "urdf" / "piper_description_with_teach.urdf"
             arm_type = ArmModel.PIPER
-        else:
-            raise ValueError(f"Unsupported arm type: {arm_type}")
+        elif arm_type == "piper_x":
+            self.urdf_path = Path(THIRD_PARTY_PATH) / "agilex-arm-gravity-compensation" / "piper_x_description" / "urdf" / "piper_x_description.urdf"
+            arm_type = ArmModel.PIPER_X
 
         cfg = create_agx_arm_config(
             robot=arm_type,
-            firmeware_version=PiperFW.V183,
+            firmeware_version=PiperFW.V188,
             interface="socketcan",
             channel=can,
         )
@@ -332,7 +331,7 @@ class PiperController(ArmController):
 
         self.controller.set_motion_mode()
 
-        # self._start_teleop_thread()
+        self._start_teleop_thread()
 
         self.change_mode(teleop=teleop)
 
@@ -423,15 +422,23 @@ class PiperController(ArmController):
     def set_joint(self, joint):
         joint = np.asarray(joint, dtype=float)
         now_ns = time.monotonic_ns()
+
+        if self._last_joint_command is not None:
+            joint_delta = float(np.max(np.abs(joint - self._last_joint_command)))
+            if joint_delta < self._joint_deadband and now_ns - self._last_joint_command_ns < self._joint_min_interval_ns:
+                return
+
         self.controller.move_js(joint.tolist())
-        return
+        self._last_joint_command = joint.copy()
+        self._last_joint_command_ns = now_ns
 
     def set_gripper(self, gripper):
         target_width = gripper / 10
         now_ns = time.monotonic_ns()
 
         if self._last_gripper_command is not None:
-            if now_ns - self._last_gripper_command_ns < self._gripper_min_interval_ns: # 只限制高频率命令，允许微小变化cd 
+            gripper_delta = abs(float(target_width) - self._last_gripper_command)
+            if gripper_delta < self._gripper_deadband and now_ns - self._last_gripper_command_ns < self._gripper_min_interval_ns:
                 return
 
         self._log_gripper_target_update(
@@ -473,7 +480,7 @@ class PiperController(ArmController):
 
 if __name__ == "__main__":
     controller = PiperController("test_piper")
-    controller.set_up("can_left", arm_type=ArmModel.PIPER_X,teleop=False)
+    controller.set_up("can_left", teleop=False)
     controller.set_collect_info(["joint", "eef", "gripper"])
 
     print(controller.get())
