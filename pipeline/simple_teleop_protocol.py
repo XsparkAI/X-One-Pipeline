@@ -5,6 +5,7 @@ import os
 import pickle
 import struct
 import sys
+import importlib.util
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -32,13 +33,19 @@ UDP_MAX_DATAGRAM = 60000
 
 
 def configure_qt_environment() -> None:
-    qt_plugin_root = "/home/user/miniconda3/envs/Xone/lib/qt5/plugins"
-    qt_platform_plugin_path = os.path.join(qt_plugin_root, "platforms")
+    pyqt_spec = importlib.util.find_spec("PyQt5")
+    qt_plugin_root = None
+    if pyqt_spec and pyqt_spec.submodule_search_locations:
+        pyqt_root = Path(next(iter(pyqt_spec.submodule_search_locations)))
+        candidate = pyqt_root / "Qt5" / "plugins"
+        if candidate.is_dir():
+            qt_plugin_root = str(candidate)
 
-    if os.path.isdir(qt_plugin_root):
+    if qt_plugin_root:
+        qt_platform_plugin_path = os.path.join(qt_plugin_root, "platforms")
         os.environ["QT_PLUGIN_PATH"] = qt_plugin_root
-    if os.path.isdir(qt_platform_plugin_path):
-        os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = qt_platform_plugin_path
+        if os.path.isdir(qt_platform_plugin_path):
+            os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = qt_platform_plugin_path
 
     session_type = os.environ.get("XDG_SESSION_TYPE", "").lower()
     if session_type == "wayland":

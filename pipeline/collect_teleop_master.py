@@ -10,7 +10,7 @@ import time
 
 from simple_teleop_protocol import configure_qt_environment, decode_color_image
 
-os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = "/home/user/miniconda3/envs/Xone/lib/qt5/plugins/platforms"
+# os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = "/home/user/miniconda3/envs/Xone/lib/qt5/plugins/platforms"
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--master_base_cfg", type=str, required=True, help="config file name for data collection")
