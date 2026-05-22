@@ -69,6 +69,12 @@ class CollectNode(TaskNode):
     def _cleanup(self):
         self.sensor_episode = []
         self.controller_episode = []
+
+    def drain(self):
+        controller_episode = self.controller_episode
+        sensor_episode = self.sensor_episode
+        self._cleanup()
+        return controller_episode, sensor_episode
     
     def get(self):
         return self.controller_episode.copy(), self.sensor_episode.copy()
@@ -128,6 +134,35 @@ def build_robot_node(base_robot_cls):
         def __init__(self, base_config):
             super().__init__(base_config=base_config)
             self.name = self.name + "_node"
+            self.collect_node = None
+            self.collect_scheduler = None
+
+        def _ensure_collect_runtime(self):
+            if self.collect_node is None:
+                controller_buffers = []
+                for value in self.controller_data_buffers.values():
+                    controller_buffers.append(value)
+
+                sensor_buffers = []
+                for value in self.sensor_data_buffers.values():
+                    sensor_buffers.append(value)
+
+                self.collect_node = CollectNode(
+                    "COLLECT_NODE",
+                    controller_buffers=controller_buffers,
+                    sensor_buffers=sensor_buffers,
+                    start_event=self.start_event,
+                )
+                self.collect_node.start()
+
+            if self.collect_scheduler is None:
+                self.collect_scheduler = Scheduler(
+                    entry_nodes=[self.collect_node],
+                    all_nodes=[self.collect_node],
+                    final_nodes=[self.collect_node],
+                    hz=self.collect_cfg["save_freq"],
+                )
+                self.collect_scheduler.start()
         
         def set_up(self, teleop=False):
             super().set_up(teleop=teleop)
@@ -150,6 +185,8 @@ def build_robot_node(base_robot_cls):
             for c in self.controller_schedulers.values():
                 c.start()
 
+            self._ensure_collect_runtime()
+
         def get_obs(self):
             controller_data = {}
 
@@ -167,24 +204,9 @@ def build_robot_node(base_robot_cls):
         def start(self):
             if self.start_event.is_set():
                 self.reset()
-            
-            controller_buffers = []
-            for v in self.controller_data_buffers.values():
-                controller_buffers.append(v)
-            
-            sensor_buffers = []
-            for v in self.sensor_data_buffers.values():
-                sensor_buffers.append(v)
-            
-            self.collect_node = CollectNode("COLLECT_NODE", controller_buffers=controller_buffers, sensor_buffers=sensor_buffers, start_event=self.start_event)
-            self.collect_node.start()
 
-            self.collect_scheduler = Scheduler(entry_nodes=[self.collect_node], 
-                                                all_nodes=[self.collect_node],
-                                                final_nodes=[self.collect_node],
-                                                hz=self.collect_cfg["save_freq"])
-            time.sleep(1)
-            self.collect_scheduler.start()
+            self._ensure_collect_runtime()
+            self.collect_node._cleanup()
             self.start_event.set()
 
             debug_print("collect_node", "Collect data start!", "INFO")
@@ -196,7 +218,7 @@ def build_robot_node(base_robot_cls):
             if self.start_event.is_set():
                 self.start_event.clear()
 
-                controller_episode, sensor_episode = self.collect_node.get()
+                controller_episode, sensor_episode = self.collect_node.drain()
                 assert len(controller_episode) == len(sensor_episode)
 
                 print(f"本次采集到 {len(controller_episode)} 条数据。")
@@ -208,8 +230,8 @@ def build_robot_node(base_robot_cls):
 
         def reset(self):
             super().reset()
-
-            if hasattr(self, "collect_node"):
+            self.start_event.clear()
+            if self.collect_node is not None:
                 self.collect_node._cleanup()
 
     return RobotNode

@@ -38,7 +38,7 @@ SPECIAL_ITEM = {
 }
 
 class CollectAny:
-    def __init__(self, config=None, start_episode=0, resume=False):
+    def __init__(self, config=None, start_episode=0, resume=True):
         
         self.collect_cfg = config
         self.episode = []
