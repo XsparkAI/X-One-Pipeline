@@ -169,7 +169,7 @@ cd third_party/y1_sdk_python/y1_ros/can_scripts/
 cd third_party/y1_sdk_python/y1_ros2/can_scripts/
 ```
 
-查询序列号时建议只插入一只机械臂 USB，避免左右臂序列号混淆。旧实操记录中提到官方 `search.sh` 存在问题，必要时需要删除脚本第 3-9 行后再运行：
+查询序列号时建议只插入一只机械臂 USB，避免左右臂序列号混淆。官方 `search.sh` 存在问题，必要时需要删除脚本第 3-9 行后再运行：
 
 ```bash
 bash search.sh
@@ -538,7 +538,7 @@ python pipeline/deploy.py \
 
 MIT 控制是面向有经验用户的高级功能，真实机械臂力矩控制风险较高，使用前请确认急停、支撑、负载和运动空间安全。
 
-旧实操流程中，MIT 控制需要更新 `y1_sdk`，并且当前只适用于 ROS1 Noetic。如果需要启用 MIT 协议，需要用 `Y1mit_controller` 替换 `Y1_controller`，在返回数据中增加关节力矩信息，并支持通过力矩控制机械臂。
+MIT 控制需要更新 `y1_sdk`，并且当前只适用于 ROS1 Noetic。如果需要启用 MIT 协议，需要用 `Y1mit_controller` 替换 `Y1_controller`，在返回数据中增加关节力矩信息，并支持通过力矩控制机械臂。
 
 如果需要重新安装对应 SDK，可先移除旧的 `third_party/y1_sdk_python/`，再运行：
 
