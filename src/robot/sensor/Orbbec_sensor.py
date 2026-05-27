@@ -15,6 +15,15 @@ def find_device_by_serial(devices, serial):
             return device["index"]
     return None
 
+
+DEFAULT_CAMERA_COLOR = {
+    "auto_exposure": False,
+    "exposure": 150,
+    "gain": 16,
+    "auto_white_balance": True,
+}
+
+
 class OrbbecSensor(BaseVisionSensor):
     """Simple Orbbec wrapper for a single head color + depth camera."""
 
@@ -45,6 +54,8 @@ class OrbbecSensor(BaseVisionSensor):
                 OBError,
                 OBFormat,
                 OBFrameAggregateOutputMode,
+                OBPermissionType,
+                OBPropertyID,
                 OBSensorType,
                 Pipeline,
             )
@@ -77,6 +88,8 @@ class OrbbecSensor(BaseVisionSensor):
                 "OBError": OBError,
                 "OBFormat": OBFormat,
                 "OBFrameAggregateOutputMode": OBFrameAggregateOutputMode,
+                "OBPermissionType": OBPermissionType,
+                "OBPropertyID": OBPropertyID,
                 "OBSensorType": OBSensorType,
                 "frame_to_bgr_image": utils_module.frame_to_bgr_image,
             }
@@ -172,6 +185,131 @@ class OrbbecSensor(BaseVisionSensor):
             )
         return message
 
+    def _normalize_color_settings(self, color_settings):
+        if color_settings is None:
+            return None
+        if not isinstance(color_settings, dict):
+            raise TypeError("color_settings must be a dict when provided")
+
+        normalized = {**DEFAULT_CAMERA_COLOR, **color_settings}
+        for key in ("auto_exposure", "auto_white_balance"):
+            if key in normalized and normalized[key] is not None:
+                normalized[key] = bool(normalized[key])
+        for key in ("exposure", "gain"):
+            if key in normalized and normalized[key] is not None:
+                normalized[key] = int(normalized[key])
+        return normalized
+
+    def _get_active_device(self):
+        if self.device is not None:
+            return self.device
+
+        get_device = getattr(self.pipeline, "get_device", None)
+        if callable(get_device):
+            try:
+                return get_device()
+            except Exception:
+                return None
+        return None
+
+    def _read_color_property(self, device, prop_id, getter_name):
+        getter = getattr(device, getter_name, None)
+        if not callable(getter):
+            return None
+        try:
+            return getter(prop_id)
+        except Exception:
+            return None
+
+    def _set_color_property(self, device, prop_id, setter_name, value, label):
+        permission_type = self.sdk["OBPermissionType"]
+        is_supported = getattr(device, "is_property_supported", None)
+        if callable(is_supported) and not is_supported(prop_id, permission_type.PERMISSION_WRITE):
+            debug_print(self.name, f"Skip {label}: property not writable", "WARNING")
+            return False
+
+        setter = getattr(device, setter_name, None)
+        if not callable(setter):
+            debug_print(self.name, f"Skip {label}: SDK setter unavailable", "WARNING")
+            return False
+
+        try:
+            setter(prop_id, value)
+            return True
+        except Exception as exc:
+            debug_print(self.name, f"Failed to set {label}: {exc}", "WARNING")
+            return False
+
+    def _configure_color_properties(self, color_settings):
+        color_settings = self._normalize_color_settings(color_settings)
+        if color_settings is None:
+            return
+
+        device = self._get_active_device()
+        if device is None:
+            debug_print(self.name, "Skip color property setup: device unavailable", "WARNING")
+            return
+
+        property_id = self.sdk["OBPropertyID"]
+        auto_exposure = color_settings.get("auto_exposure")
+        exposure = color_settings.get("exposure")
+        gain = color_settings.get("gain")
+        auto_white_balance = color_settings.get("auto_white_balance")
+
+        if auto_exposure is not None:
+            self._set_color_property(
+                device,
+                property_id.OB_PROP_COLOR_AUTO_EXPOSURE_BOOL,
+                "set_bool_property",
+                auto_exposure,
+                f"color auto_exposure={auto_exposure}",
+            )
+
+        if auto_exposure is False:
+            if exposure is not None:
+                self._set_color_property(
+                    device,
+                    property_id.OB_PROP_COLOR_EXPOSURE_INT,
+                    "set_int_property",
+                    exposure,
+                    f"color exposure={exposure}",
+                )
+            if gain is not None:
+                self._set_color_property(
+                    device,
+                    property_id.OB_PROP_COLOR_GAIN_INT,
+                    "set_int_property",
+                    gain,
+                    f"color gain={gain}",
+                )
+
+        if auto_white_balance is not None:
+            self._set_color_property(
+                device,
+                property_id.OB_PROP_COLOR_AUTO_WHITE_BALANCE_BOOL,
+                "set_bool_property",
+                auto_white_balance,
+                f"color auto_white_balance={auto_white_balance}",
+            )
+
+        current_auto_exposure = self._read_color_property(
+            device, property_id.OB_PROP_COLOR_AUTO_EXPOSURE_BOOL, "get_bool_property"
+        )
+        current_exposure = self._read_color_property(
+            device, property_id.OB_PROP_COLOR_EXPOSURE_INT, "get_int_property"
+        )
+        current_gain = self._read_color_property(
+            device, property_id.OB_PROP_COLOR_GAIN_INT, "get_int_property"
+        )
+        debug_print(
+            self.name,
+            (
+                "Applied color camera settings: "
+                f"auto_exposure={current_auto_exposure} exposure={current_exposure} gain={current_gain}"
+            ),
+            "INFO",
+        )
+
     def _query_devices(self):
         self.context = self.sdk["Context"]()
         device_list = self.context.query_devices()
@@ -234,10 +372,12 @@ class OrbbecSensor(BaseVisionSensor):
         is_depth=False,
         is_jpeg=False,
         depth_normalize=False,
+        color_settings=None,
     ):
         self.is_depth = is_depth
         self.is_jpeg = is_jpeg
         self.depth_normalize = depth_normalize
+        self.color_settings = color_settings
 
         self._load_sdk()
         self.cleanup()
@@ -282,6 +422,8 @@ class OrbbecSensor(BaseVisionSensor):
                 )
 
             self.pipeline.start(config)
+            self.device = self._get_active_device()
+            self._configure_color_properties(self.color_settings)
             serial_info = self.camera_serial or "auto"
             debug_print(
                 self.name,

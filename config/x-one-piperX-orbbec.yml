@@ -28,6 +28,11 @@ robot:
     head: "CP2N1630005K"
     left_wrist: "CV2L360000DP"
     right_wrist: "CV2L360000DM"
+  CAMERA_COLOR:
+    auto_exposure: false
+    exposure: 150
+    gain: 16
+    auto_white_balance: true
   bias:
     left_arm:
       gripper: -0.08
