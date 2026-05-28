@@ -85,15 +85,27 @@ class ModelServer:
                     # Extract command and observation
                     cmd = data.get("cmd")
                     obs = data.get("obs")  # None if not provided
+                    # move is fire-and-forget on the master side; do not reply or the
+                    # TCP stream desyncs and later RPCs (start/finish) fail JSON decode.
+                    no_reply = data.get("no_reply") is True or cmd == "move"
 
                     # Find corresponding model method
                     method = getattr(self.model, cmd, None)
                     if not callable(method):
                         raise AttributeError(f"No model method named '{cmd}'")
-                    # Call method with or without obs
-                    
-                    st = time.monotonic()
-                    result = method(obs) if obs is not None else method()
+
+                    try:
+                        result = method(obs) if obs is not None else method()
+                    except Exception as e:
+                        if no_reply:
+                            print(f"⚠️ Error handling one-way request '{cmd}': {e}")
+                            traceback.print_exc()
+                            continue
+                        raise
+
+                    if no_reply:
+                        continue
+
                     response = {"res": result}
 
                     # Serialize response and send back with length header
