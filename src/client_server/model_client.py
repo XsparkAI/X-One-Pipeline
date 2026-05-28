@@ -1,4 +1,5 @@
 from .client_server_utils import *
+import json
 import socket
 import time
 import pickle
@@ -85,11 +86,19 @@ class ModelClient:
             chunks.append(chunk)
             received += len(chunk)
         # Deserialize with numpy reconstruction
-        return json_to_numpy(b"".join(chunks).decode("utf-8"))
+        raw = b"".join(chunks).decode("utf-8")
+        try:
+            return json_to_numpy(raw)
+        except json.JSONDecodeError as exc:
+            raise ConnectionError(
+                f"Invalid JSON from server (stream likely desynced after one-way move): {exc}"
+            ) from exc
 
     def call(self, func_name=None, obs=None):
         response = self._send_recv({"cmd": func_name, "obs": obs})
-        if "res" in response.keys():
+        if isinstance(response, dict) and "error" in response:
+            raise RuntimeError(response.get("error", "Unknown server error"))
+        if isinstance(response, dict) and "res" in response:
             return response["res"]
         return None
 
