@@ -1,0 +1,238 @@
+from robot.robot.base_robot import Robot
+
+from robot.utils.base.data_transform_pipeline import diff_freq_pipeline
+from robot.utils.base.data_handler import debug_print, dict_to_list
+from robot.utils.node.node import TaskNode
+from robot.utils.node.scheduler import Scheduler
+
+from threading import Lock, Event
+import time
+
+ROBOT_MAP = {
+    "sensor": {
+        "image": 30,
+    },
+    "controller": {
+        "arm": 200,
+        "mobile": 100,
+        "hand": 100,
+        "torso": 100,
+    }
+}
+
+class DataBuffer:
+    def __init__(self):
+        self._buffer = {}
+        self.show_buffer = {}
+        self.lock = Lock()
+
+    def update(self, name, data):
+        self.show_buffer[name] = data
+    
+    def get_latest(self):
+        return self.show_buffer
+
+class ComponentNode(TaskNode):
+    def task_init(self, component, data_buffer: DataBuffer):
+        self.component = component
+        self.data_buffer = data_buffer
+    
+    def task_step(self):
+        data = self.component.get()
+
+        self.data_buffer.update(self.component.name, data)
+
+class CollectNode(TaskNode):
+    def task_init(self, controller_buffers: list[DataBuffer], sensor_buffers: list[DataBuffer], start_event: Event):
+        self.controller_buffers = controller_buffers
+        self.sensor_buffers = sensor_buffers
+        self.controller_episode = []
+        self.sensor_episode = []
+        self.start_event = start_event
+    
+    def task_step(self):
+        if self.start_event.is_set():
+            controller_obs = {}
+            
+            for data_buffer in self.controller_buffers:
+                data_dict = data_buffer.get_latest()
+                for k,v in data_dict.items():
+                    controller_obs[k] = v
+            self.controller_episode.append(controller_obs)
+
+            sensor_obs = {}
+            for data_buffer in self.sensor_buffers:
+                data_dict = data_buffer.get_latest()
+                for k,v in data_dict.items():
+                    sensor_obs[k] = v
+            self.sensor_episode.append(sensor_obs)
+
+    def _cleanup(self):
+        self.sensor_episode = []
+        self.controller_episode = []
+
+    def drain(self):
+        controller_episode = self.controller_episode
+        sensor_episode = self.sensor_episode
+        self._cleanup()
+        return controller_episode, sensor_episode
+    
+    def get(self):
+        return self.controller_episode.copy(), self.sensor_episode.copy()
+        
+
+def init(robot: Robot):
+    start_event = Event()
+
+    sensor_data_buffers = {}
+    sensor_nodes = {}
+    for sensor_type in robot.sensors.keys():
+        sensor_nodes[sensor_type] = []
+        sensor_data_buffers[sensor_type] = DataBuffer()
+
+        for sensor_name, sensor in robot.sensors[sensor_type].items():
+            sensor_node = ComponentNode(sensor_name, component=sensor, data_buffer=sensor_data_buffers[sensor_type])
+            sensor_node.start()
+            sensor_nodes[sensor_type].append(sensor_node)
+        
+    controller_data_buffers = {}
+    controller_nodes = {}
+    for controller_type in robot.controllers.keys():
+        controller_nodes[controller_type] = []
+        controller_data_buffers[controller_type] = DataBuffer()
+
+        for controller_name, controller in robot.controllers[controller_type].items():
+            controller_node = ComponentNode(controller_name, component=controller, data_buffer=controller_data_buffers[controller_type])
+            controller_node.start()
+            controller_nodes[controller_type].append(controller_node)
+    
+    data_buffers = []
+    data_buffers.extend(sensor_data_buffers)
+    data_buffers.extend(controller_data_buffers)
+
+    return sensor_data_buffers, sensor_nodes, controller_data_buffers, controller_nodes, start_event
+
+def build_map(sensor_nodes, controller_nodes):
+    sensor_schedulers = {}
+    for sensor_type in sensor_nodes.keys():
+        sensor_hz = ROBOT_MAP["sensor"].get(sensor_type, 30)
+        sensor_schedulers[sensor_type] = Scheduler(entry_nodes=sensor_nodes[sensor_type], 
+                                                    all_nodes=sensor_nodes[sensor_type],
+                                                    final_nodes=sensor_nodes[sensor_type],
+                                                    hz=sensor_hz)
+    controller_schedulers = {}
+    for controller_type in controller_nodes.keys():
+        controller_hz = ROBOT_MAP["controller"].get(controller_type, 30)
+        controller_schedulers[controller_type] = Scheduler(entry_nodes=controller_nodes[controller_type], 
+                                                    all_nodes=controller_nodes[controller_type],
+                                                    final_nodes=controller_nodes[controller_type],
+                                                    hz=controller_hz)
+
+    return sensor_schedulers, controller_schedulers
+
+def build_robot_node(base_robot_cls):
+    class RobotNode(base_robot_cls):
+        def __init__(self, base_config):
+            super().__init__(base_config=base_config)
+            self.name = self.name + "_node"
+            self.collect_node = None
+            self.collect_scheduler = None
+
+        def _ensure_collect_runtime(self):
+            if self.collect_node is None:
+                controller_buffers = []
+                for value in self.controller_data_buffers.values():
+                    controller_buffers.append(value)
+
+                sensor_buffers = []
+                for value in self.sensor_data_buffers.values():
+                    sensor_buffers.append(value)
+
+                self.collect_node = CollectNode(
+                    "COLLECT_NODE",
+                    controller_buffers=controller_buffers,
+                    sensor_buffers=sensor_buffers,
+                    start_event=self.start_event,
+                )
+                self.collect_node.start()
+
+            if self.collect_scheduler is None:
+                self.collect_scheduler = Scheduler(
+                    entry_nodes=[self.collect_node],
+                    all_nodes=[self.collect_node],
+                    final_nodes=[self.collect_node],
+                    hz=self.collect_cfg["save_freq"],
+                )
+                self.collect_scheduler.start()
+        
+        def set_up(self, teleop=False):
+            super().set_up(teleop=teleop)
+            
+            (
+                self.sensor_data_buffers,
+                self.sensor_nodes,
+                self.controller_data_buffers,
+                self.controller_nodes,
+                self.start_event,
+            ) = init(self)
+
+            self.sensor_schedulers, self.controller_schedulers = build_map(
+                self.sensor_nodes,
+                self.controller_nodes,
+            )
+
+            for s in self.sensor_schedulers.values():
+                s.start()
+            for c in self.controller_schedulers.values():
+                c.start()
+
+            self._ensure_collect_runtime()
+
+        def get_obs(self):
+            controller_data = {}
+
+            for buf in self.controller_data_buffers.values():
+                for k, v in buf.get_latest().items():
+                    controller_data[k] = v
+
+            sensor_data = {}
+            for buf in self.sensor_data_buffers.values():
+                for k, v in buf.get_latest().items():
+                    sensor_data[k] = v
+
+            return controller_data.copy(), sensor_data.copy()
+
+        def start(self):
+            if self.start_event.is_set():
+                self.reset()
+
+            self._ensure_collect_runtime()
+            self.collect_node._cleanup()
+            self.start_event.set()
+
+            debug_print("collect_node", "Collect data start!", "INFO")
+
+        def finish(self, episode_id=None, to_zero=False):
+            if to_zero:
+                super().reset()
+            
+            if self.start_event.is_set():
+                self.start_event.clear()
+
+                controller_episode, sensor_episode = self.collect_node.drain()
+                assert len(controller_episode) == len(sensor_episode)
+
+                print(f"本次采集到 {len(controller_episode)} 条数据。")
+
+                for controller_obs, sensor_obs in zip(controller_episode, sensor_episode):
+                    self.collect((controller_obs, sensor_obs))
+
+            super().finish(episode_id=episode_id)
+
+        def reset(self):
+            super().reset()
+            self.start_event.clear()
+            if self.collect_node is not None:
+                self.collect_node._cleanup()
+
+    return RobotNode

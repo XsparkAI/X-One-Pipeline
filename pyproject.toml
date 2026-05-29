@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "robot"
+version = "1.0"
+description = "Xspark AI open source repo"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+
+dependencies = [
+  "tqdm",
+  "scipy",
+  "numpy<2.0",
+  "h5py",
+  "v4l2-python3",
+  "opencv-python",
+  "keyboard",
+  "pyyaml",
+  "scikit-image",
+  "seaborn",
+  "omegaconf",
+  "pyrealsense2",
+  "wujihandpy",
+  "pyserial",
+  "pyQt5",
+  "pyqtgraph"
+]
+
+[project.urls]
+Repository = "https://github.com/XsparkAI/X-One-Pipeline"
+
+[tool.setuptools]
+include-package-data = true
+# ✅ 关键：以仓库根目录为基准发现包
+package-dir = { "" = "." }
+
+[tool.setuptools.packages.find]
+# ✅ 同时扫描 src 与 policy_lab，但用 include 限定只打包你要的顶层包
+where = ["src", "."]
+include = ["robot*", "client_server*", "task_env*", "policy_lab*"]
+exclude = ["tests*", "third_party*", "docs*", "assets*", "packages*"]
+
+[tool.pytest.ini_options]
+markers = ["manual: should be run manually."]
+testpaths = ["src", "scripts", "pipeline"]
