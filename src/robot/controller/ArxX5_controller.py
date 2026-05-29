@@ -2,11 +2,44 @@ from robot.controller.arm_controller import ArmController
 from robot.utils.base.data_handler import debug_print
 
 from arx_x5_python_sdk import SingleArm
+import atexit
 import os
+import signal
 import threading
 import time
+import weakref
 import numpy as np
 from robot.config._GLOBAL_CONFIG import THIRD_PARTY_PATH
+
+_SHUTDOWN_HOLD_SEC = 0.3
+_NATIVE_TEARDOWN_SEC = 2.5
+
+_ACTIVE_CONTROLLERS = weakref.WeakSet()
+_SHUTDOWN_HOOKS_REGISTERED = False
+
+
+def _cleanup_all_controllers():
+    for controller in list(_ACTIVE_CONTROLLERS):
+        controller.cleanup()
+
+
+def _handle_shutdown_signal(signum, _frame):
+    _cleanup_all_controllers()
+    signal.signal(signum, signal.SIG_DFL)
+    os.kill(os.getpid(), signum)
+
+
+def _register_shutdown_hooks():
+    global _SHUTDOWN_HOOKS_REGISTERED
+    if _SHUTDOWN_HOOKS_REGISTERED:
+        return
+    _SHUTDOWN_HOOKS_REGISTERED = True
+    atexit.register(_cleanup_all_controllers)
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        try:
+            signal.signal(sig, _handle_shutdown_signal)
+        except (ValueError, OSError):
+            pass
 
 
 class _NativeOutputFilter:
@@ -88,6 +121,9 @@ class ArxX5Controller(ArmController):
         self._output_filter = _ARX_OUTPUT_FILTER
         self._output_filter.acquire()
         self._output_filter_acquired = True
+        self._cleaned_up = False
+        _ACTIVE_CONTROLLERS.add(self)
+        _register_shutdown_hooks()
 
 
     def set_up(self, can:str, arm_type=2, teleop=False):
@@ -116,12 +152,13 @@ class ArxX5Controller(ArmController):
 
 
     def change_mode(self, teleop):
+        if self.controller is None:
+            return
         if teleop:
             self.controller.gravity_compensation()
         else:
             curr_joint = self.controller.get_joint_positions()
             self.controller.set_joint_positions(curr_joint)
-
 
     def get_state(self):
         state = {}
@@ -142,34 +179,62 @@ class ArxX5Controller(ArmController):
     def set_joint(self, joint):
         self.controller.set_joint_positions(np.array(joint))
 
-    
     def set_gripper(self, gripper):
         """
         0 for close, 1 for open;
         -0.1 for firm grasp
         """
 
-        gripper = gripper * 3.4 - 3.4
+        gripper = gripper * -3.4
         self.controller.set_gripper_pos(gripper)
-
     
     def reset(self):
         self.controller.go_home()
         time.sleep(2)
 
+    def _shutdown_arm(self):
+        if self.controller is None:
+            return
+
+        curr_joint = self.controller.get_joint_positions()
+        self.controller.set_joint_positions(curr_joint[:6])
+        time.sleep(0.05)
+        self.controller.protect_mode()
+        time.sleep(_SHUTDOWN_HOLD_SEC)
 
     def cleanup(self):
-        print("Cleaning up ArxX5Controller...")
+        if self._cleaned_up:
+            return
+        self._cleaned_up = True
+
+        print(f"Cleaning up {self.name}...")
+        controller = self.controller
         try:
-            if self.controller is not None:
-                self.reset()
+            if controller is not None:
+                self._shutdown_arm()
+        except Exception as e:
+            print(f"[{self.name}] shutdown warning: {e}")
         finally:
+            self.controller = None
+            if controller is not None:
+                del controller
+            time.sleep(_NATIVE_TEARDOWN_SEC)
             if self._output_filter_acquired:
                 self._output_filter.release()
                 self._output_filter_acquired = False
-            self.controller = None
-            time.sleep(3)
 
+    def __del__(self):
+        try:
+            self.cleanup()
+        except Exception:
+            pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        self.cleanup()
+        return False
 
 
 if __name__ == "__main__":
@@ -193,8 +258,7 @@ if __name__ == "__main__":
         arm.set_gripper(1.0)
         print(arm.get_state()["gripper"])
         time.sleep(3)
-
-
+        
         arm.change_mode(teleop=True)
         for i in range(5):
             print(arm.get_state()["gripper"])
@@ -216,7 +280,3 @@ if __name__ == "__main__":
 
     except Exception as e:
         print(f"发生异常: {e}")
-
-
-    finally:
-        arm.reset()

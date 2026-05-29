@@ -1,7 +1,7 @@
 INFO_LEVEL: INFO # DEBUG, INFO, ERROR
 
 collect:
-  task_name: null
+  task_name: test
   type: x-one-x5-master
   save_dir: ./data/
   save_format: hdf5

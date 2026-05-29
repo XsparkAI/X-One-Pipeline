@@ -38,9 +38,7 @@ if __name__ == "__main__":
 
         except KeyboardInterrupt:
             print(f"\n\033[91m[INTERRUPTED]\033[0m episode_id={episode_id}")
-            TASK_ENV.robot.cleanup()
             break
-            
 
         print(
             f"\033[92m[DONE ]\033[0m episode_id={episode_id}\n"

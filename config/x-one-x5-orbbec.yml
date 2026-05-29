@@ -25,9 +25,9 @@ robot:
     left_arm: can_left
     right_arm: can_right
   CAMERA_SERIALS:
-    head: "CP2N1630009B"
-    left_wrist: "CV2L360000L3"
-    right_wrist: "CV2L360000P9"
+    head: "CP2N16300075"
+    left_wrist: "CV2L360000DP"
+    right_wrist: "CV2L360000DM"
   bias:
     left_arm:
       gripper: -0.08
