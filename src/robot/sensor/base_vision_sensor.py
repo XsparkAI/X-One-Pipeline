@@ -25,18 +25,23 @@ class BaseVisionSensor(Sensor):
                 import cv2
                 img_raw = image["color"]
                 if img_raw is not None:
-                    success, encoded_image = cv2.imencode('.jpg', image["color"]) # , [int(cv2.IMWRITE_JPEG_QUALITY), 100])
-                    jpeg_data = encoded_image.tobytes()
-                    image["color"] = jpeg_data
-                    if self.TEST:
+                    if isinstance(img_raw, (bytes, bytearray)):
+                        image["color"] = bytes(img_raw)
+                    else:
+                        success, encoded_image = cv2.imencode('.jpg', img_raw)
+                        if success:
+                            image["color"] = encoded_image.tobytes()
+                        else:
+                            image["color"] = None
+                    if self.TEST and image["color"] is not None and not isinstance(img_raw, (bytes, bytearray)):
                         from robot.utils.base.data_handler import jpeg_test
 
-                        result = jpeg_test(img_raw, jpeg_data)
+                        result = jpeg_test(img_raw, image["color"])
                         print(f"{self.name} PSNR:", result["PSNR"])
                         print(f"{self.name} MSE:", result["MSE"])
                         print(f"{self.name} SSIM:", result["SSIM"])
 
-            image_info["color"] = image["color"]
+            image_info["color"] = image.get("color")
         if "depth" in self.collect_info:
             image_info["depth"] = image["depth"]
         if "point_cloud" in self.collect_info:

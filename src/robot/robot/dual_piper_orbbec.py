@@ -1,6 +1,6 @@
 from robot.robot.base_robot import Robot
 from robot.controller.Piper_controller import PiperController
-from robot.sensor.Orbbec_sensor import OrbbecSensor
+from robot.sensor.Orbbec_sensor import OrbbecSensor, resolve_camera_color_settings
 from datetime import datetime
 import time
 
@@ -32,9 +32,24 @@ class Dual_Piper_Orbbec(Robot):
         self.controllers["arm"]["left_arm"].set_up(self.robot_config['ROBOT_CAN']['left_arm'], teleop=self.teleop)
         self.controllers["arm"]["right_arm"].set_up(self.robot_config['ROBOT_CAN']['right_arm'], teleop=self.teleop)
 
-        self.sensors["image"]["cam_head"].set_up(CAMERA_SERIAL=self.robot_config['CAMERA_SERIALS']['head'], is_depth=True, is_jpeg=True)
-        self.sensors["image"]["cam_left_wrist"].set_up(CAMERA_SERIAL=self.robot_config['CAMERA_SERIALS']['left_wrist'], is_depth=True, is_jpeg=True)
-        self.sensors["image"]["cam_right_wrist"].set_up(CAMERA_SERIAL=self.robot_config['CAMERA_SERIALS']['right_wrist'], is_depth=True, is_jpeg=True)
+        self.sensors["image"]["cam_head"].set_up(
+            CAMERA_SERIAL=self.robot_config["CAMERA_SERIALS"]["head"],
+            is_depth=True,
+            is_jpeg=True,
+            color_settings=resolve_camera_color_settings(self.robot_config, "head"),
+        )
+        self.sensors["image"]["cam_left_wrist"].set_up(
+            CAMERA_SERIAL=self.robot_config["CAMERA_SERIALS"]["left_wrist"],
+            is_depth=True,
+            is_jpeg=True,
+            color_settings=resolve_camera_color_settings(self.robot_config, "left_wrist"),
+        )
+        self.sensors["image"]["cam_right_wrist"].set_up(
+            CAMERA_SERIAL=self.robot_config["CAMERA_SERIALS"]["right_wrist"],
+            is_depth=True,
+            is_jpeg=True,
+            color_settings=resolve_camera_color_settings(self.robot_config, "right_wrist"),
+        )
         
         self.set_collect_type({"arm": ["joint", "eef", "gripper"], "image": ["color", "depth"]})
         print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}] ✅ Setup complete.")

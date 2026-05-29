@@ -8,7 +8,7 @@ import random
 import numpy as np
 
 # add your controller/sensor type here
-ALLOW_TYPES = ["arm", "mobile", "image", "tactile", "teleop"]
+ALLOW_TYPES = ["arm", "mobile", "image", "tactile", "teleop", "hand", "torso"]
 KEY_BANNED = ["timestamp", "eef"]
     
 class Robot:

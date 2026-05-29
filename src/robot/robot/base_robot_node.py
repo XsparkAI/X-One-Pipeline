@@ -16,6 +16,7 @@ ROBOT_MAP = {
         "arm": 200,
         "mobile": 100,
         "hand": 100,
+        "torso": 100,
     }
 }
 

@@ -25,9 +25,28 @@ robot:
     left_arm: can_left
     right_arm: can_right
   CAMERA_SERIALS:
-    head: "CP2N1630009B"
-    left_wrist: "CV2L360000L3"
-    right_wrist: "CV2L360000P9"
+    head: "CP2N163000EK"
+    left_wrist: "CV2L360000P9"
+    right_wrist: "CV2L360000GM"
+    CAMERA_COLOR:
+      auto_exposure: false
+      exposure: 78
+      gain: 0
+      auto_white_balance: false
+      white_balance: 5700
+      brightness: 0
+      contrast: 50
+      saturation: 64
+      hue: 0
+      gamma: 300
+      sharpness: 50
+      by_camera:
+        left_wrist:
+          exposure: 90
+          gain: 10
+        right_wrist:
+          exposure: 90
+          gain: 10
   bias:
     left_arm:
       gripper: -0.08

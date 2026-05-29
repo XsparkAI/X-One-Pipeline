@@ -37,6 +37,28 @@ SPECIAL_ITEM = {
     "depth": _depth_dataset_kwargs,
 }
 
+
+def _load_existing_config(config_path):
+    with open(config_path, "r", encoding="utf-8") as f:
+        content = f.read().strip()
+    if not content:
+        debug_print(
+            "CollectAny",
+            f"config.json is empty at {config_path}, treating as missing config",
+            "WARNING",
+        )
+        return {}
+    try:
+        return json.loads(content)
+    except json.JSONDecodeError as exc:
+        debug_print(
+            "CollectAny",
+            f"config.json is invalid at {config_path}, recreating: {exc}",
+            "WARNING",
+        )
+        return {}
+
+
 class CollectAny:
     def __init__(self, config=None, start_episode=0, resume=True):
         
@@ -130,8 +152,7 @@ class CollectAny:
         
         config_path = os.path.join(save_dir, "config.json")
         if os.path.exists(config_path):
-            with open(config_path, 'r', encoding='utf-8') as f:
-                old_config = json.load(f)
+            old_config = _load_existing_config(config_path)
             self.collect_cfg = merge_config(self.collect_cfg, old_config)
 
             for key in extra_info.keys():
